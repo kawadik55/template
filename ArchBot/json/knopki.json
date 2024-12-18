@@ -1,0 +1,50 @@
+{
+"01_01":[	[{"text": "2022", "callback_data": "01_01_2022"},{"text": "2023", "callback_data": "01_01_2023"}]
+		],
+"adm01_01":[	[{"text": "2022", "callback_data": "01_01_2022"},{"text": "2023", "callback_data": "01_01_2023"}],
+			[{"text": "АдминБота", "callback_data": "01_01_01"}]
+		],
+"02_01":[	[{"text": "Январь", "callback_data": "02_01_01"},{"text": "Февраль", "callback_data": "02_01_02"},{"text": "Март", "callback_data": "02_01_03"}],
+			[{"text": "Апрель", "callback_data": "02_01_04"},{"text": "Май", "callback_data": "02_01_05"},{"text": "Июнь", "callback_data": "02_01_06"}],
+			[{"text": "Июль", "callback_data": "02_01_07"},{"text": "Август", "callback_data": "02_01_08"},{"text": "Сентябрь", "callback_data": "02_01_09"}],
+			[{"text": "Октябрь", "callback_data": "02_01_10"},{"text": "Ноябрь", "callback_data": "02_01_11"},{"text": "Декабрь", "callback_data": "02_01_12"}],
+			[{"text": "Назад", "callback_data": "02_01_13"}]
+		],
+"02_02":[	[{"text": "МСО", "callback_data": "02_02_МСО"}],
+			[{"text": "Исполком", "callback_data": "02_02_Исполком"}],
+			[{"text": "БУ", "callback_data": "02_02_БУ"}],
+			[{"text": "ПМ", "callback_data": "02_02_ПМ"}],
+			[{"text": "РС", "callback_data": "02_02_РС"}],
+			[{"text": "ПСО", "callback_data": "02_02_ПСО"}],
+			[{"text": "МДА", "callback_data": "02_02_МДА"}],
+			[{"text": "ТЛ", "callback_data": "02_02_ТЛ"}],
+			[{"text": "Digital", "callback_data": "02_02_Digital"}],
+			[{"text": "ЛитКом", "callback_data": "02_02_ЛитКом"}],
+			[{"text": "Назад", "callback_data": "02_02_10"}]
+		],
+"02_03":[	[{"text": "Записать", "callback_data": "02_03_01"},{"text": "Прочитать", "callback_data": "02_03_02"}],
+			[{"text": "Назад", "callback_data": "02_03_10"}]
+		],
+"adm02_03":[	[{"text": "Записать", "callback_data": "02_03_01"},{"text": "Прочитать", "callback_data": "02_03_02"}],
+			[{"text": "Удалить", "callback_data": "02_03_11"}],
+			[{"text": "Назад", "callback_data": "02_03_10"}]
+		],
+"02_04":[	[{"text": "Назад", "callback_data": "02_04_10"}]
+		],
+"02_05":[	[{"text": "В начало", "callback_data": "02_01_13"}]
+		],
+"10_01":[	[{"text": "Посмотреть пароли", "callback_data": "10_01_01"}],
+			[{"text": "Изменить пароль Reader", "callback_data": "10_01_02"}],
+			[{"text": "Изменить пароль Writer", "callback_data": "10_01_03"}],
+			[{"text": "Список Reader", "callback_data": "10_01_04"}],
+			[{"text": "Список Writer", "callback_data": "10_01_05"}],
+			[{"text": "Статистика чтений", "callback_data": "10_01_06"}],
+			[{"text": "Назад", "callback_data": "02_01_13"}]
+		],
+"10_02":[	[{"text": "Назад", "callback_data": "01_01_01"}]
+		],
+"10_03":[	[{"text": "Назад", "callback_data": "02_04_10"}]
+		],
+"10_04":[	[{"text": "Да", "callback_data": "10_01_10"},{"text": "Назад", "callback_data": "02_04_10"}]
+		]
+}

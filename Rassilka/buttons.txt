@@ -1,0 +1,7 @@
+{ 	"reply_markup": 
+		{ "inline_keyboard": 
+			[ [{"text": "Бот АН Казань", "url": "https://t.me/na_kzn_bot"}],
+			  [{"text": "Духовные принципы на каждый день", "url": "https://t.me/+a8HO46bHu8MwZjZk"}]
+			]	 
+		}
+}
