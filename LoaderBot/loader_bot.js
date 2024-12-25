@@ -77,17 +77,19 @@ try
 //если файл отсутствует, то создадим его 
 catch (err) {WriteFileJson(currentDir+"/LastMessId.txt",LastMessId);}
 
-const TmpPath = "/tmp";//путь для временных файлов
-let forDeleteList = [];//список файлов на удаление
-let keyboard = require(currentDir+"/knopki.json");// массив клавиатур из файла
-/*if(!!config && !!config.url)//хвосты от прежней версии
-{let url = config.url;
+//прочитаем файл Url.txt со ссылкой для Вопросов
+let keyboard = getKeyList();// массив клавиатур
+try 
+{let url = fs.readFileSync(currentDir+"/Url.txt").toString();
  if(!!keyboard['1'][1][0].url) keyboard['1'][1][0].url = url;
  if(!!keyboard['adm1'][2][0].url) keyboard['adm1'][2][0].url = url;
- WriteFileJson(currentDir+"/knopki.json",keyboard);
- delete config.url;
- WriteFileJson(currentDir+"/config.json",config);
-}*/
+}
+//если файл отсутствует, то создадим его 
+catch (err) {fs.writeFileSync(currentDir+"/Url.txt",'https://t.me/ссылкаДляВопросов');}
+
+const TmpPath = "/tmp";//путь для временных файлов
+let forDeleteList = [];//список файлов на удаление
+//let keyboard = require(currentDir+"/knopki.json");// массив клавиатур из файла
 //====================================================================
 function klava(keyb)
 {try{	
@@ -1003,6 +1005,17 @@ try{
 			else if(button == 'По дням недели')//для показа списка дней недели
 			{	str = "Выберите необходимый день недели:";
 				await sendMessage(chatId, str, klava(keyboard['9']));//кнопки дней для текста
+			}
+			else if(button == 'Завтра')//для Завтра
+			{	let date = moment().add(1,'day').format('DD.MM.YYYY');//дата на завтра в строке
+				TempPost[chatId].date = date;//запоминаем дату
+				str = 'Режим Завтра, на '+date+'\n';
+				str += 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ), который необходимо опубликовать. ';
+				str += 'Его можно просто скопировать-вставить из любого чата, или загрузить из хранилища. ';
+				str += 'Форматирование текста и подписи сохраняется.';
+				WaitFlag[chatId]=1;//взводим флаг ожидания текста или файла от юзера
+				await sendMessage(chatId, str, klava(keyboard['3']));
+				//теперь будем ждать или текст, или файл
 			}
 		}
 		//------------ набор 'Да + Нет' при удалении поста--------
@@ -2504,3 +2517,320 @@ async function WriteLogFile(arr, flag)
 	}catch(err){}
 }
 //====================================================================
+function getKeyList()
+{
+var keyList =
+{
+  "1": [
+    [
+      {
+        "text": "Загрузить Пост",
+        "callback_data": "1_Загрузить Пост"
+      }
+    ],
+    [
+      {
+        "text": "Вопросы",
+        "url": "https://t.me/ссылкаДляВопросов"
+      }
+    ]
+  ],
+  "2": [
+    [
+      {
+        "text": "Да",
+        "callback_data": "2_Да"
+      },
+      {
+        "text": "Нет",
+        "callback_data": "2_Нет"
+      }
+    ],
+    [
+      {
+        "text": "Назад",
+        "callback_data": "2_Назад"
+      }
+    ]
+  ],
+  "3": [
+    [
+      {
+        "text": "в 'Начало'",
+        "callback_data": "3_Вначало"
+      }
+    ]
+  ],
+  "4": [
+    [
+      {
+        "text": "Да",
+        "callback_data": "4_Да"
+      },
+      {
+        "text": "Нет",
+        "callback_data": "4_Нет"
+      }
+    ]
+  ],
+  "5": [
+	[
+      {
+        "text": "Завтра",
+        "callback_data": "5_Завтра"
+      }
+    ],
+	[
+      {
+        "text": "По дням недели",
+        "callback_data": "5_По дням недели"
+      }
+    ],
+    [
+      {
+        "text": "Ежедневно",
+        "callback_data": "5_Ежедневно"
+      }
+    ],
+    [
+      {
+        "text": "Однократно",
+        "callback_data": "5_Однократно"
+      }
+    ],
+    [
+      {
+        "text": "Дата",
+        "callback_data": "5_Дата"
+      }
+    ],
+	[
+      {
+        "text": "в 'Начало'",
+        "callback_data": "3_Вначало"
+      }
+    ]
+  ],
+  "7": [
+    [
+      {
+        "text": "Да",
+        "callback_data": "7_Да"
+      },
+      {
+        "text": "Нет",
+        "callback_data": "7_Нет"
+      }
+    ],
+    [
+      {
+        "text": "Назад",
+        "callback_data": "2_Назад"
+      }
+    ]
+  ],
+  "8": [
+    [
+      {
+        "text": "Да",
+        "callback_data": "8_Да"
+      },
+      {
+        "text": "Нет",
+        "callback_data": "8_Нет"
+      }
+    ],
+    [
+      {
+        "text": "Назад",
+        "callback_data": "2_Назад"
+      }
+    ]
+  ],
+  "9": [
+    [
+      {
+        "text": "Понедельник",
+        "callback_data": "5_Понедельник"
+      }
+    ],
+    [
+      {
+        "text": "Вторник",
+        "callback_data": "5_Вторник"
+      }
+    ],
+    [
+      {
+        "text": "Среда",
+        "callback_data": "5_Среда"
+      }
+    ],
+    [
+      {
+        "text": "Четверг",
+        "callback_data": "5_Четверг"
+      }
+    ],
+    [
+      {
+        "text": "Пятница",
+        "callback_data": "5_Пятница"
+      }
+    ],
+    [
+      {
+        "text": "Суббота",
+        "callback_data": "5_Суббота"
+      }
+    ],
+    [
+      {
+        "text": "Воскресенье",
+        "callback_data": "5_Воскресенье"
+      }
+    ],
+    [
+      {
+        "text": "в 'Начало'",
+        "callback_data": "3_Вначало"
+      }
+    ]
+  ],
+  "100": [
+    [
+      {
+        "text": "Удалить Тексты",
+        "callback_data": "100_Удалить Тексты"
+      },
+      {
+        "text": "Удалить Файлы",
+        "callback_data": "100_Удалить Файлы"
+      }
+    ],
+    [
+      {
+        "text": "Публиковать Тексты",
+        "callback_data": "100_Публиковать Тексты"
+      },
+      {
+        "text": "Публиковать Файлы",
+        "callback_data": "100_Публиковать Файлы"
+      }
+    ],
+    [
+      {
+        "text": "Назад",
+        "callback_data": "3_Вначало"
+      }
+    ]
+  ],
+  "101": [
+    [
+      {
+        "text": "Да",
+        "callback_data": "101_Да"
+      },
+      {
+        "text": "Нет",
+        "callback_data": "101_Нет"
+      }
+    ],
+    [
+      {
+        "text": "Назад",
+        "callback_data": "1_Админ Бота"
+      }
+    ]
+  ],
+  "102": [
+    [
+      {
+        "text": "Назад",
+        "callback_data": "1_Админ Бота"
+      }
+    ]
+  ],
+  "103": [
+    [
+      {
+        "text": "Да",
+        "callback_data": "103_Да"
+      },
+      {
+        "text": "Нет",
+        "callback_data": "103_Нет"
+      }
+    ],
+    [
+      {
+        "text": "Назад",
+        "callback_data": "1_Админ Бота"
+      }
+    ]
+  ],
+  "104": [
+    [
+      {
+        "text": "Да",
+        "callback_data": "104_Да"
+      },
+      {
+        "text": "Нет",
+        "callback_data": "104_Нет"
+      }
+    ],
+    [
+      {
+        "text": "Назад",
+        "callback_data": "1_Админ Бота"
+      }
+    ]
+  ],
+  "105": [
+    [
+      {
+        "text": "Да",
+        "callback_data": "105_Да"
+      },
+      {
+        "text": "Нет",
+        "callback_data": "105_Нет"
+      }
+    ],
+    [
+      {
+        "text": "Назад",
+        "callback_data": "1_Админ Бота"
+      }
+    ]
+  ],
+  "adm1": [
+    [
+      {
+        "text": "Загрузить Пост",
+        "callback_data": "1_Загрузить Пост"
+      }
+    ],
+    [
+      {
+        "text": "Удалить Пост",
+        "callback_data": "1_Удалить Пост"
+      }
+    ],
+    [
+      {
+        "text": "Вопросы",
+        "url": "https://t.me/ссылкаДляВопросов"
+      }
+    ],
+    [
+      {
+        "text": "Модерация Постов",
+        "callback_data": "1_Админ Бота"
+      }
+    ]
+  ]
+}
+return keyList;
+}
