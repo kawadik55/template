@@ -1677,7 +1677,7 @@ try{
 		if(url.indexOf('https://t.me/')<0) return;
 		if(!!keyboard['1'][1][0].url) keyboard['1'][1][0].url = url;
 		if(!!keyboard['adm1'][2][0].url) keyboard['adm1'][2][0].url = url;
-		WriteFileJson(currentDir+"/knopki.json", keyboard);
+		WriteFileJson(currentDir+"/Url.txt", url);
 		let str='Новый URl '+url+' принят!';
 		sendMessage(chatId, str);
 		if(!!config && !!config.url)
