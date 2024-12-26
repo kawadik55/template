@@ -81,6 +81,7 @@ catch (err) {WriteFileJson(currentDir+"/LastMessId.txt",LastMessId);}
 let keyboard = getKeyList();// массив клавиатур
 try 
 {let url = fs.readFileSync(currentDir+"/Url.txt").toString();
+ if(url.search(/^http+s?:\/\//)<0) url = 'https://t.me/битаяСсылка';
  if(!!keyboard['1'][1][0].url) keyboard['1'][1][0].url = url;
  if(!!keyboard['adm1'][2][0].url) keyboard['adm1'][2][0].url = url;
 }
