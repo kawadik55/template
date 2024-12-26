@@ -133,8 +133,8 @@ async function send_Images()
           {
             if(public_byDate(date)) flag++;
           }
-          //если Однократно и дата верна
-		  else if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && day=='Однократно')
+          //если Однократно или Завтра и дата верна
+		  else if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && (day=='Однократно' || day=='Завтра'))
           { 
             let time = moment(now,'DD.MM.YYYY').format('DD.MM.YYYY');
 			if(date==time) flag++;//прям сегодня
@@ -227,7 +227,7 @@ async function send_Text()
             if(public_byDate(date)) flag++;
           }
           //если Однократно и дата верна
-		  else if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && day=='Однократно')
+		  else if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && (day=='Однократно' || day=='Завтра'))
           { 
             let time = moment(now,'DD.MM.YYYY').format('DD.MM.YYYY');
 			if(date==time) flag++;//прям сегодня
