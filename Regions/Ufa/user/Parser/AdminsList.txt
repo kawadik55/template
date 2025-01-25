@@ -1,0 +1,4 @@
+{
+  "text": "<strong>Список Админов всех ботов</strong>\n\n@na_ufa_arch_bot\nАрслан\n\n@na_ufa_arch_groups_bot\nАрслан\n\n@na_ufa_bot\n@na_ufa_info_bot\nАлексей\n\n@na_ufa_loader_bot\n@na_ufa_info_loader_bot\nАлексей\n\n@na_ufa_note_bot\nАрслан\n\n@na_ufa_xls_bot\nАртур\n\n",
+  "mode": "HTML"
+}

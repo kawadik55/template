@@ -1,0 +1,2244 @@
+﻿{
+    "region": "Анонимные Наркоманы г.Казань",
+    "shortname": "АН Казань",
+    "email": "sea@na-sea.ru",
+    "rubric_id": "184106274",
+    "site": "https://na-kzn.ru/",
+    "links": {
+        "phone": "+78432392662",
+        "telegream": "https://t.me/TL_KazAN",
+        "whatsApp": "https://wa.me/79961227461",
+        "vk": "https://vk.com/kzn_na",
+        "yandexDzen": "https://dzen.ru/na_kzn",
+        "bot": "https://t.me/na_kzn_bot",
+        "newsletter": {
+            "telegram": "https://t.me/telega_NA_Kazan",
+            "whatsApp": "https://wa.me/79968260314"
+        }
+    },
+    "serviceCommittees": [
+        {
+            "id": 1,
+            "title": "Местный совет обслуживания",
+            "description": "Цель комитета обслуживать группы АН объединенные в границах данной местности…",
+            "mail": "mailto:mko@na-kzn.ru",
+            "phone": "+790171234567"
+        },
+        {
+            "id": 2,
+            "title": "Диджитал",
+            "description": "Цель комитета обслуживать группы АН объединенные в границах данной местности…",
+            "mail": "mailto:mko@na-kzn.ru",
+            "phone": "+790171234567"
+        }
+    ],
+    "towns": [
+        {
+            "town": "г.Казань",
+            "groups": [
+                {
+                    "id": "34",
+                    "name": "Freedom online",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Пятница",
+                            "time": "23:59",
+                            "address": "Пароль : 168107",
+                            "tema": "Ежедневник",
+                            "image": "https://us04web.zoom.us/j/7517967769",
+                            "add_url": "https://us04web.zoom.us/j/7517967769",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "33",
+                    "name": "Freedom",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Пятница",
+                            "time": "23:59",
+                            "address": "ул.Музыкальная д. 11А",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/freedom.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "29",
+                    "name": "Neon",
+                    "description": "Группа ориентирована на молодежь",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Четверг",
+                            "time": "19:00",
+                            "address": "ул.К.Маркса, 26",
+                            "tema": "чтения литературы АН",
+                            "image": "https://na-kzn.ru/img/gruppi/centr.jpeg",
+                            "add_url": "https://na-kzn.ru/neon.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "18:00",
+                            "address": "ул.К.Маркса, 26",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/centr.jpeg",
+                            "add_url": "https://na-kzn.ru/neon.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "1-ое воскресенье месяца",
+                            "time": "18:00",
+                            "address": "ул.К.Маркса, 26",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/centr.jpeg",
+                            "add_url": "https://na-kzn.ru/neon.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "23",
+                    "name": "Sreda",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Среда",
+                            "time": "15:00",
+                            "address": "ул.Энгельса, д.7 к.4",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/edinstvo.jpg",
+                            "add_url": "https://na-kzn.ru/sreda.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "1-ая среда месяца",
+                            "time": "15:00",
+                            "address": "ул.Энгельса, д.7 к.4",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/edinstvo.jpg",
+                            "add_url": "https://na-kzn.ru/sreda.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "8",
+                    "name": "Авиастрой",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "19:00",
+                            "address": "ул.Лукина д. 50",
+                            "address_add": "Вход справа от магазина \"Пятерочка\", цокольный этаж , парикхмахерская \"У Фаи\"",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/avia.jpeg",
+                            "add_url": "https://na-kzn.ru/avia.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Вторник",
+                            "time": "19:00",
+                            "address": "ул.Лукина д. 50",
+                            "address_add": "Вход справа от магазина \"Пятерочка\", цокольный этаж , парикхмахерская \"У Фаи\"",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/avia.jpeg",
+                            "add_url": "https://na-kzn.ru/avia.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "19:00",
+                            "address": "ул.Лукина д. 50",
+                            "address_add": "Вход справа от магазина \"Пятерочка\", цокольный этаж , парикхмахерская \"У Фаи\"",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/avia.jpeg",
+                            "add_url": "https://na-kzn.ru/avia.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "19:00",
+                            "address": "ул.Лукина д. 50",
+                            "address_add": "Вход справа от магазина \"Пятерочка\", цокольный этаж , парикхмахерская \"У Фаи\"",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/avia.jpeg",
+                            "add_url": "https://na-kzn.ru/avia.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "19:00",
+                            "address": "ул.Лукина д. 50",
+                            "address_add": "Вход справа от магазина \"Пятерочка\", цокольный этаж , парикхмахерская \"У Фаи\"",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/avia.jpeg",
+                            "add_url": "https://na-kzn.ru/avia.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "19:00",
+                            "address": "ул.Лукина д. 50",
+                            "address_add": "Вход справа от магазина \"Пятерочка\", цокольный этаж , парикхмахерская \"У Фаи\"",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/avia.jpeg",
+                            "add_url": "https://na-kzn.ru/avia.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "19:00",
+                            "address": "ул.Лукина д. 50",
+                            "address_add": "Вход справа от магазина \"Пятерочка\", цокольный этаж , парикхмахерская \"У Фаи\"",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/avia.jpeg",
+                            "add_url": "https://na-kzn.ru/avia.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "1-ый понедельник",
+                            "time": "19:00",
+                            "address": "ул.Лукина д. 50",
+                            "address_add": "Вход справа от магазина \"Пятерочка\", цокольный этаж , парикхмахерская \"У Фаи\"",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/avia.jpeg",
+                            "add_url": "https://na-kzn.ru/avia.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "5",
+                    "name": "Альтернатива",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "18:30",
+                            "address": "ул. Чуйкова 60",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/alternativa.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ]
+                        },
+                        {
+                            "day": "Вторник",
+                            "time": "17:20",
+                            "address": "ул. Чуйкова 60",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/alternativa.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ]
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "18:30",
+                            "address": "ул. Чуйкова 60",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/alternativa.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ]
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "18:30",
+                            "address": "ул. Чуйкова 60",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/alternativa.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ]
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "2-ая среда",
+                            "time": "18:30",
+                            "address": "ул. Чуйкова 60",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/alternativa.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "25",
+                    "name": "База 116",
+                    "description": "Первое собрание группа провела 1 декабря 2014 года",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Среда",
+                            "time": "18:30",
+                            "address": "ул.Энгельса, д.7 к.4",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/edinstvo.jpg",
+                            "add_url": "https://na-kzn.ru/baza116.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "38",
+                    "name": "Без Баб",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Суббота",
+                            "time": "20:00",
+                            "address": "ул.Музыкальная, 11А",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/centr.jpeg",
+                            "add_url": "https://na-kzn.ru/bezbab.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "26",
+                    "name": "Весна",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Среда",
+                            "time": "19:00",
+                            "address": "ул.Островского, 73",
+                            "address_add": "ориентирована на женщин",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/vesna3.jpeg",
+                            "add_url": "https://na-kzn.ru/vesna.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "19:00",
+                            "address": "ул.Островского, 73",
+                            "address_add": "ориентирована на женщин",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/vesna3.jpeg",
+                            "add_url": "https://na-kzn.ru/vesna.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "6",
+                    "name": "Вечерняя",
+                    "description": "Группа Вечерняя была основана в 2016 году",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "19:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/vecher.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Вторник",
+                            "time": "19:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник/спикерская",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/vecher.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "19:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/vecher.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "19:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/vecher.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "19:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "По бочонкам",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/vecher.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "19:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "При свечах",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/vecher.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "19:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Вопрос/ответ",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/vecher.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "1-ый понедельник",
+                            "time": "19:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/vecher.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "serviceMeetingtime": [
+                        {
+                            "day": "Четверг",
+                            "time": "21:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/vecher.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "13",
+                    "name": "Гараж",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "21:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/garaz.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Вторник",
+                            "time": "21:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/garaz.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "21:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/garaz.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "21:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/garaz.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "21:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/garaz.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "21:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/garaz.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "21:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/garaz.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "Последнее воскресенье",
+                            "time": "21:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/garaz.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "7",
+                    "name": "Горки",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "19:00",
+                            "address": "ул.Зорге д. 13б",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/gorki.jpg",
+                            "add_url": "https://na-kzn.ru/gorki.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "19:00",
+                            "address": "ул.Зорге д. 13б",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/gorki.jpg",
+                            "add_url": "https://na-kzn.ru/gorki.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "19:00",
+                            "address": "ул.Зорге д. 13б",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/gorki.jpg",
+                            "add_url": "https://na-kzn.ru/gorki.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "19:00",
+                            "address": "ул.Зорге д. 13б",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/gorki.jpg",
+                            "add_url": "https://na-kzn.ru/gorki.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "4-ое воскресенье",
+                            "time": "19:00",
+                            "address": "ул.Зорге д. 13б",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/gorki.jpg",
+                            "add_url": "https://na-kzn.ru/gorki.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "17",
+                    "name": "Двенадцать",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Вторник",
+                            "time": "18:30",
+                            "address": "ул. Химиков д. 11 каб. 307",
+                            "address_add": "ДК “Юность”",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/12.html",
+                            "add_url": "https://na-kzn.ru/12.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "18:30",
+                            "address": "ул. Химиков д. 11 каб. 307",
+                            "address_add": "ДК “Юность”",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/12.html",
+                            "add_url": "https://na-kzn.ru/12.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "18:30",
+                            "address": "ул. Химиков д. 11 каб. 307",
+                            "address_add": "ДК “Юность”",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/12.html",
+                            "add_url": "https://na-kzn.ru/12.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "12:00",
+                            "address": "ул. Химиков д. 11 каб. 307",
+                            "address_add": "ДК “Юность”",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/12.html",
+                            "add_url": "https://na-kzn.ru/12.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "Последнее воскресенье",
+                            "time": "12:00",
+                            "address": "ул. Химиков д. 11 каб. 307",
+                            "address_add": "ДК “Юность”",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/12.html",
+                            "add_url": "https://na-kzn.ru/12.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "19",
+                    "name": "Динамика",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Вторник",
+                            "time": "19:00",
+                            "address": "ул.Зорге д. 13Б",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/gorki.jpg",
+                            "add_url": "https://na-kzn.ru/dinamika.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "19:00",
+                            "address": "ул.Зорге д. 13Б",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/gorki.jpg",
+                            "add_url": "https://na-kzn.ru/dinamika.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "12:00",
+                            "address": "ул.Зорге д. 13Б",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/gorki.jpg",
+                            "add_url": "https://na-kzn.ru/dinamika.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "1-ый вторник месяца",
+                            "time": "19:00",
+                            "address": "ул.Зорге д. 13Б",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/gorki.jpg",
+                            "add_url": "https://na-kzn.ru/dinamika.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "2",
+                    "name": "Дневная",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "13:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/dnevnaya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Вторник",
+                            "time": "13:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/dnevnaya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "13:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/dnevnaya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "13:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/dnevnaya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "13:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/dnevnaya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "13:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/dnevnaya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "13:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/dnevnaya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "Последнее воскресенье",
+                            "time": "13:00",
+                            "address": "ул.Музыкальная д. 11А",
+                            "tema": "Свободная",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/dnevnaya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "22",
+                    "name": "Дружба",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Вторник",
+                            "time": "19:00",
+                            "address": "ул.Четаева, д. 4",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/nachalo.jpeg",
+                            "add_url": "https://na-kzn.ru/druzhba.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "19:00",
+                            "address": "ул.Четаева, д. 4",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/nachalo.jpeg",
+                            "add_url": "https://na-kzn.ru/druzhba.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "20:00",
+                            "address": "ул.Четаева, д. 4",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/nachalo.jpeg",
+                            "add_url": "https://na-kzn.ru/druzhba.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "1-ый вторник месяца",
+                            "time": "19:00",
+                            "address": "ул.Четаева, д. 4",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/nachalo.jpeg",
+                            "add_url": "https://na-kzn.ru/druzhba.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "36",
+                    "name": "Единство",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Суббота",
+                            "time": "18:00",
+                            "address": "ул.Энгельса, д.7, к.4",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/edinstvo.jpg",
+                            "add_url": "https://na-kzn.ru/edin.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "4-ая суббота месяца",
+                            "time": "18:00",
+                            "address": "ул.Энгельса, д.7, к.4",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/edinstvo.jpg",
+                            "add_url": "https://na-kzn.ru/edin.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "3",
+                    "name": "Квартал",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "17:20",
+                            "address": "ул.Чуйкова д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/kvartal.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Вторник",
+                            "time": "18:30",
+                            "address": "ул.Чуйкова д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/kvartal.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "21:30",
+                            "address": "ул.Чуйкова д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/kvartal.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "15:00",
+                            "address": "ул.Чуйкова д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/kvartal.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "Каждый четверг",
+                            "time": "21:30",
+                            "address": "ул.Чуйкова д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/kvartal.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "31",
+                    "name": "Малина",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Четверг",
+                            "time": "19:15",
+                            "address": "ул.Четаева, 4",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/nachalo.jpeg",
+                            "add_url": "https://na-kzn.ru/malina.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "1-ый четверг месяца",
+                            "time": "19:15",
+                            "address": "ул.Четаева, 4",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/nachalo.jpeg",
+                            "add_url": "https://na-kzn.ru/malina.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "37",
+                    "name": "Маяк",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Суббота",
+                            "time": "19:00",
+                            "address": "ул.К.Маркса, 26",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/centr.jpeg",
+                            "add_url": "https://na-kzn.ru/mayak.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "Последняя суббота месяца",
+                            "time": "19:00",
+                            "address": "ул.К.Маркса, 26",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/centr.jpeg",
+                            "add_url": "https://na-kzn.ru/mayak.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "14",
+                    "name": "Начало",
+                    "description": "Группа открылась в феврале 2015 года",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "21:00",
+                            "address": "ул.Четаева д. 4",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/nachalo.jpeg",
+                            "add_url": "https://na-kzn.ru/nachalo.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "12:00",
+                            "address": "ул.Четаева д. 4",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/nachalo.jpeg",
+                            "add_url": "https://na-kzn.ru/nachalo.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "17:00",
+                            "address": "ул.Четаева д. 4",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/nachalo.jpeg",
+                            "add_url": "https://na-kzn.ru/nachalo.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "3-е воскресенье",
+                            "time": "17:00",
+                            "address": "ул.Четаева д. 4",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/nachalo.jpeg",
+                            "add_url": "https://na-kzn.ru/nachalo.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "27",
+                    "name": "Новая жизнь",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Четверг",
+                            "time": "18:00",
+                            "address": "ул.Чуйкова, 79А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/novayajizn.jpg",
+                            "add_url": "https://na-kzn.ru/novayajizn.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "40",
+                    "name": "Ночная",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Воскресенье",
+                            "time": "21:30",
+                            "address": "ул.Чуйкова, 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/noch.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "18",
+                    "name": "Оазис",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Вторник",
+                            "time": "19:00",
+                            "address": "ул.П.Лумумбы д. 57А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/oazis.jpg",
+                            "add_url": "https://na-kzn.ru/oazis.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "09:00",
+                            "address": "ул.П.Лумумбы д. 57А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/oazis.jpg",
+                            "add_url": "https://na-kzn.ru/oazis.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "19:00",
+                            "address": "ул.П.Лумумбы д. 57А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/oazis.jpg",
+                            "add_url": "https://na-kzn.ru/oazis.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "13:00",
+                            "address": "ул.П.Лумумбы д. 57А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/oazis.jpg",
+                            "add_url": "https://na-kzn.ru/oazis.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "3-ий вторник месяца",
+                            "time": "19:00",
+                            "address": "ул.П.Лумумбы д. 57А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/oazis.jpg",
+                            "add_url": "https://na-kzn.ru/oazis.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "12",
+                    "name": "Открытие",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "19:00",
+                            "address": "ул.Наиля Юсупова д. 2",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/otkritie.jpg",
+                            "add_url": "https://na-kzn.ru/otkritie.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "19:00",
+                            "address": "ул.Наиля Юсупова д. 2",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/otkritie.jpg",
+                            "add_url": "https://na-kzn.ru/otkritie.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "19:00",
+                            "address": "ул.Наиля Юсупова д. 2",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/otkritie.jpg",
+                            "add_url": "https://na-kzn.ru/otkritie.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "19:00",
+                            "address": "ул.Наиля Юсупова д. 2",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/otkritie.jpg",
+                            "add_url": "https://na-kzn.ru/otkritie.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "4",
+                    "name": "Пятый элемент",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "18:00",
+                            "address": "Музыкальная 11А",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/5element.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "18:00",
+                            "address": "Музыкальная 11А",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/5element.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "17:30",
+                            "address": "Музыкальная 11А",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/5element.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "3-я пятница",
+                            "time": "18:00",
+                            "address": "Музыкальная 11А",
+                            "address_add": "2 этаж",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/dnevnaya.png",
+                            "add_url": "https://na-kzn.ru/5element.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "21",
+                    "name": "Ракета",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Вторник",
+                            "time": "19:00",
+                            "address": "Парковая д. 21А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/raketa.html",
+                            "add_url": "https://na-kzn.ru/raketa.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "19:00",
+                            "address": "Парковая д. 21А",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/raketa.html",
+                            "add_url": "https://na-kzn.ru/raketa.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "20",
+                    "name": "Ретро ФМ",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Вторник",
+                            "time": "19:00",
+                            "address": "ул.Чистопольская, 19А",
+                            "address_add": "кабинет 35",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/retrofm.jpeg",
+                            "add_url": "https://na-kzn.ru/retro.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "39",
+                    "name": "Ретро",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Воскресенье",
+                            "time": "18:00",
+                            "address": "ул.Серова, 7, к.227",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/utro.jpg",
+                            "add_url": "https://na-kzn.ru/retro2.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "11",
+                    "name": "Сегодня",
+                    "description": "Группа была создана 2 марта 1998 года",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "19:30",
+                            "address": "ул.Серова д. 7",
+                            "address_add": "ДК “Слепых” комната 227",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/utro.jpg",
+                            "add_url": "https://na-kzn.ru/segodnya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "19:30",
+                            "address": "ул.Серова д. 7",
+                            "address_add": "ДК “Слепых” комната 227",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/utro.jpg",
+                            "add_url": "https://na-kzn.ru/segodnya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "19:30",
+                            "address": "ул.Серова д. 7",
+                            "address_add": "ДК “Слепых” комната 227",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/utro.jpg",
+                            "add_url": "https://na-kzn.ru/segodnya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "Последняя пятница",
+                            "time": "19:30",
+                            "address": "ул.Серова д. 7",
+                            "address_add": "ДК “Слепых” комната 227",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/utro.jpg",
+                            "add_url": "https://na-kzn.ru/segodnya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "serviceMeetingtime": [
+                        {
+                            "day": "Каждый понедельник",
+                            "time": "21:05",
+                            "address": "ул.Серова д. 7",
+                            "address_add": "ДК “Слепых” комната 227",
+                            "image": "https://na-kzn.ru/img/gruppi/utro.jpg",
+                            "add_url": "https://na-kzn.ru/segodnya.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "1",
+                    "name": "Утро",
+                    "description": "Первое собрание прошло – 7 сентября 2015",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "08:30",
+                            "address": "ул.Серова д.7 комната 227",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/utro.jpg",
+                            "add_url": "https://na-kzn.ru/utro.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "08:30",
+                            "address": "ул.Серова д.7 комната 227",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/utro.jpg",
+                            "add_url": "https://na-kzn.ru/utro.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "08:30",
+                            "address": "ул.Серова д.7 комната 227",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/utro.jpg",
+                            "add_url": "https://na-kzn.ru/utro.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "Последняя пятница месяца",
+                            "time": "08:30",
+                            "address": "ул.Серова д.7 комната 227",
+                            "tema": "Свободная",
+                            "image": "https://na-kzn.ru/img/gruppi/utro.jpg",
+                            "add_url": "https://na-kzn.ru/utro.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "serviceMeetingtime": [
+                        {
+                            "day": "Первый понедельник месяца Ниссан",
+                            "time": "11:30",
+                            "address": "ул.Серова д.7 комната 227",
+                            "tema": "Служения",
+                            "image": "https://na-kzn.ru/img/gruppi/utro.jpg",
+                            "add_url": "https://na-kzn.ru/utro.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "24",
+                    "name": "Хлебная",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Среда",
+                            "time": "17:20",
+                            "address": "ул.Чуйкова, д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/hleb.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "18:30",
+                            "address": "ул.Чуйкова, д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/hleb.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "21:30",
+                            "address": "ул.Чуйкова, д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/hleb.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "18:30",
+                            "address": "ул.Чуйкова, д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/hleb.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "18:30",
+                            "address": "ул.Чуйкова, д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/hleb.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "Каждое воскресенье",
+                            "time": "18:30",
+                            "address": "ул.Чуйкова, д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/hleb.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "9",
+                    "name": "Центральная",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "19:00",
+                            "address": "ул.К.Маркса д. 26",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/centr.jpeg",
+                            "add_url": "https://na-kzn.ru/centr.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "1-ый понедельник месяца",
+                            "time": "19:00",
+                            "address": "ул.К.Маркса д. 26",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/centr.jpeg",
+                            "add_url": "https://na-kzn.ru/centr.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "16",
+                    "name": "Чайная",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "21:30",
+                            "address": "ул.Чуйкова д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/chay.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "21:30",
+                            "address": "ул.Чуйкова д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/chay.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "17:20",
+                            "address": "ул.Чуйкова д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/chay.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "17:20",
+                            "address": "ул.Чуйкова д. 60",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/kvartal.jpg",
+                            "add_url": "https://na-kzn.ru/chay.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "28",
+                    "name": "Чистый день",
+                    "description": "Одна из старейших групп, первое собрание прошло 25 января 1999 года",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Четверг",
+                            "time": "18:00",
+                            "address": "ул.Ямашева, д.1, к.309",
+                            "address_add": "Дом Культуры \"Химиков\"",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/chistiiden.jpg",
+                            "add_url": "https://na-kzn.ru/chist.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "16:00",
+                            "address": "ул.Ямашева, д.1, к.309",
+                            "address_add": "Дом Культуры \"Химиков\"",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/chistiiden.jpg",
+                            "add_url": "https://na-kzn.ru/chist.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "1-ое воскресенье месяца",
+                            "time": "18:00",
+                            "address": "ул.Ямашева, д.1, к.309",
+                            "address_add": "Дом Культуры \"Химиков\"",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/chistiiden.jpg",
+                            "add_url": "https://na-kzn.ru/chist.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "32",
+                    "name": "Шагаем вместе",
+                    "description": "Группа проходит в здании Евангелическо-Лютеранской общины им. св. Екатерины в сиреневом зале",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Пятница",
+                            "time": "19:00",
+                            "address": "ул.К.Маркса, д.26",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/centr.jpeg",
+                            "add_url": "https://na-kzn.ru/shagaem.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                },
+                {
+                    "id": "10",
+                    "name": "Штаб",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "19:00",
+                            "address": "ул.Фучика д. 99А",
+                            "address_add": "за домом рядом с салоном красоты цокольный этаж под навесом",
+                            "tema": "Базовый Текст",
+                            "image": "https://na-kzn.ru/img/gruppi/shtab.jpeg",
+                            "add_url": "https://na-kzn.ru/shtab.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Вторник",
+                            "time": "19:00",
+                            "address": "ул.Фучика д. 99А",
+                            "address_add": "за домом рядом с салоном красоты цокольный этаж под навесом",
+                            "tema": "Бочонки",
+                            "image": "https://na-kzn.ru/img/gruppi/shtab.jpeg",
+                            "add_url": "https://na-kzn.ru/shtab.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "19:00",
+                            "address": "ул.Фучика д. 99А",
+                            "address_add": "за домом рядом с салоном красоты цокольный этаж под навесом",
+                            "tema": "Мячик",
+                            "image": "https://na-kzn.ru/img/gruppi/shtab.jpeg",
+                            "add_url": "https://na-kzn.ru/shtab.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "19:00",
+                            "address": "ул.Фучика д. 99А",
+                            "address_add": "за домом рядом с салоном красоты цокольный этаж под навесом",
+                            "tema": "Ежедневник/спикерская",
+                            "image": "https://na-kzn.ru/img/gruppi/shtab.jpeg",
+                            "add_url": "https://na-kzn.ru/shtab.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "19:00",
+                            "address": "ул.Фучика д. 99А",
+                            "address_add": "за домом рядом с салоном красоты цокольный этаж под навесом",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/shtab.jpeg",
+                            "add_url": "https://na-kzn.ru/shtab.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "20:00",
+                            "address": "ул.Фучика д. 99А",
+                            "address_add": "за домом рядом с салоном красоты цокольный этаж под навесом",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/shtab.jpeg",
+                            "add_url": "https://na-kzn.ru/shtab.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "19:00",
+                            "address": "ул.Фучика д. 99А",
+                            "address_add": "за домом рядом с салоном красоты цокольный этаж под навесом",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/shtab.jpeg",
+                            "add_url": "https://na-kzn.ru/shtab.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ],
+                    "openMeetingtime": [
+                        {
+                            "day": "3 воскресенье месяца",
+                            "time": "19:00",
+                            "address": "ул.Фучика д. 99А",
+                            "address_add": "за домом рядом с салоном красоты цокольный этаж под навесом",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/shtab.jpeg",
+                            "add_url": "https://na-kzn.ru/shtab.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "town": "ZOOM",
+            "groups": [
+                {
+                    "id": "15",
+                    "name": "Казанская в ZOOM",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Понедельник",
+                            "time": "21:00",
+                            "address": "Пароль : 168107",
+                            "tema": "Ежедневник",
+                            "image": "https://us04web.zoom.us/j/7517967769",
+                            "add_url": "https://us04web.zoom.us/j/7517967769",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Вторник",
+                            "time": "21:00",
+                            "address": "Пароль : 168107",
+                            "tema": "Ежедневник",
+                            "image": "https://us04web.zoom.us/j/7517967769",
+                            "add_url": "https://us04web.zoom.us/j/7517967769",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Среда",
+                            "time": "21:00",
+                            "address": "Пароль : 168107",
+                            "tema": "Ежедневник",
+                            "image": "https://us04web.zoom.us/j/7517967769",
+                            "add_url": "https://us04web.zoom.us/j/7517967769",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Четверг",
+                            "time": "21:00",
+                            "address": "Пароль : 168107",
+                            "tema": "Ежедневник",
+                            "image": "https://us04web.zoom.us/j/7517967769",
+                            "add_url": "https://us04web.zoom.us/j/7517967769",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Пятница",
+                            "time": "21:00",
+                            "address": "Пароль : 168107",
+                            "tema": "Ежедневник",
+                            "image": "https://us04web.zoom.us/j/7517967769",
+                            "add_url": "https://us04web.zoom.us/j/7517967769",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Суббота",
+                            "time": "21:00",
+                            "address": "Пароль : 168107",
+                            "tema": "Ежедневник",
+                            "image": "https://us04web.zoom.us/j/7517967769",
+                            "add_url": "https://us04web.zoom.us/j/7517967769",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        },
+                        {
+                            "day": "Воскресенье",
+                            "time": "21:00",
+                            "address": "Пароль : 168107",
+                            "tema": "Ежедневник",
+                            "image": "https://us04web.zoom.us/j/7517967769",
+                            "add_url": "https://us04web.zoom.us/j/7517967769",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "town": "г.Чистополь",
+            "groups": [
+                {
+                    "id": "1",
+                    "name": "Чистый день",
+                    "closeMeetingtime": [
+                        {
+                            "day": "Вторник",
+                            "time": "19:00",
+                            "address": "ул.Радищева, д.35",
+                            "tema": "Ежедневник",
+                            "image": "https://na-kzn.ru/img/gruppi/chistiidenChistopol.jpeg",
+                            "add_url": "https://na-kzn.ru/chistiiden.html",
+                            "coordinates": [
+                                null,
+                                null
+                            ],
+                            "longtime": "01:30"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

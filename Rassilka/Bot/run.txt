@@ -1,0 +1,6 @@
+{
+  "Text": true,
+  "Image": true,
+  "Eg": false,
+  "Raspis": true
+}

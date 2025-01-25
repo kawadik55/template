@@ -1,0 +1,1152 @@
+﻿{
+    "region": "Анонимные Наркоманы г.Уфа",
+    "shortname": "АН г.Уфа",
+    "phone": "7 917 38-38-380",
+    "site": "https://na-ufa.ru/",
+    "email": "ufa@na-ufa.ru",
+    "rubric_id": "184106274",
+    "groups": {
+        "г.Благовещенск": {
+            "NAБлаго": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "21:00": {
+                            "address": "ул. Комарова, 25",
+                            "address_add": "(цокольный этаж, вход с табличкой «швейный цех»)",
+                            "add_url": "https://go.2gis.com/gro69",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3678",
+                            "mode": "Онлайн собрание",
+                            "map2gis": "да",
+                            "longtime": "01:00",
+                            "online": "https://t.me/+IkgVkOa64lpiNzEy"
+                        }
+                    }
+                }
+            }
+        },
+        "г.Уфа": {
+            "В тылу врага": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "20:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        },
+                        "21:30": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Руководство по шагам",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        }
+                    },
+                    "Вторник": {
+                        "20:30": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        },
+                        "22:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        }
+                    },
+                    "Среда": {
+                        "20:30": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        },
+                        "22:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        }
+                    },
+                    "Четверг": {
+                        "20:30": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        },
+                        "22:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        }
+                    },
+                    "Пятница": {
+                        "20:30": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        },
+                        "22:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        }
+                    },
+                    "Суббота": {
+                        "20:30": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "comment": "Открытое собрание",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        },
+                        "22:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        }
+                    },
+                    "Воскресенье": {
+                        "20:30": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        },
+                        "22:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        }
+                    }
+                },
+                "Открытое": {
+                    "Каждую субботу": {
+                        "20:30": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                            "mode": "Открытое",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Вечерняя": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "21:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Вторник": {
+                        "21:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "comment": "Второй вторник месяца – Открытое собрание",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Среда": {
+                        "21:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Четверг": {
+                        "21:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Пятница": {
+                        "21:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "comment": "Через пятницу – в Online. Уточняйте в чате группы. Ссылка на Telegram",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Суббота": {
+                        "12:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Онлайн собрание",
+                            "map2gis": "да",
+                            "longtime": "01:30",
+                            "online": "https://t.me/+eXeM3xI-bMFhNmMy"
+                        },
+                        "21:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                },
+                "Открытое": {
+                    "Второй вторник месяца": {
+                        "21:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Открытое",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Гагарин": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "20:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Вторник": {
+                        "20:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        },
+                        "22:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Среда": {
+                        "21:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Четверг": {
+                        "20:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        },
+                        "22:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Пятница": {
+                        "20:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        },
+                        "22:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Суббота": {
+                        "10:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        },
+                        "20:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Воскресенье": {
+                        "20:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Ежедневник",
+                            "comment": "Открытое собрание",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                },
+                "Открытое": {
+                    "Каждое воскресенье": {
+                        "20:00": {
+                            "address": "ул.Ю. Гагарина, 41/2",
+                            "address_add": "(центральный вход, 2-й этаж, налево)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                            "mode": "Открытое",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Дёма": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "20:00": {
+                            "address": "ул.Альшеевская, 11",
+                            "address_add": "(каб.028 в помещении “ДОСАФ”)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3705",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Вторник": {
+                        "20:00": {
+                            "address": "ул.Альшеевская, 11",
+                            "address_add": "(каб.028 в помещении “ДОСАФ”)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3705",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Четверг": {
+                        "20:00": {
+                            "address": "ул.Альшеевская, 11",
+                            "address_add": "(каб.028 в помещении “ДОСАФ”)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3705",
+                            "mode": "Ежедневник",
+                            "comment": "Первый четверг месяца – Открытое собрание",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Суббота": {
+                        "19:00": {
+                            "address": "ул.Альшеевская, 11",
+                            "address_add": "(каб.028 в помещении “ДОСАФ”)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3705",
+                            "mode": "Ежедневник",
+                            "comment": "Первая суббота месяца – Спикерская",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                },
+                "Открытое": {
+                    "Первый четверг месяца": {
+                        "20:00": {
+                            "address": "ул.Альшеевская, 11",
+                            "address_add": "(каб.028 в помещении “ДОСАФ”)",
+                            "add_url": "https://go.2gis.com/6q45n",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3705",
+                            "mode": "Открытое",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Единство": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "19:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Вторник": {
+                        "19:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Среда": {
+                        "19:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Четверг": {
+                        "19:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Пятница": {
+                        "19:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Суббота": {
+                        "18:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "comment": "Последняя суббота месяца – Открытое собрание",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Воскресенье": {
+                        "18:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                },
+                "Открытое": {
+                    "Последняя суббота месяца": {
+                        "18:00": {
+                            "address": "ул.Интернациональная, 133А",
+                            "address_add": "(вход со стороны ул. Машиностроителей)",
+                            "add_url": "https://go.2gis.com/p2v5wt",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                            "mode": "Открытое",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Кызлар": {
+                "Закрытое": {
+                    "Воскресенье": {
+                        "17:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3682",
+                            "mode": "Ежедневник",
+                            "comment": "Группа ориентирована на женщин, но открыта для всех",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Маяк": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "19:00": {
+                            "address": "ул.Лесотехникума, 22/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/t0naw",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Вторник": {
+                        "19:00": {
+                            "address": "ул.Лесотехникума, 22/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/t0naw",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Среда": {
+                        "19:00": {
+                            "address": "ул.Лесотехникума, 22/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/t0naw",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        },
+                        "21:00": {
+                            "address": "ул.Лесотехникума, 22/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/t0naw",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                            "mode": "При свечах",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        }
+                    },
+                    "Четверг": {
+                        "19:00": {
+                            "address": "ул.Лесотехникума, 22/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/t0naw",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Пятница": {
+                        "19:00": {
+                            "address": "ул.Лесотехникума, 22/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/t0naw",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                            "mode": "Чёрная пятница",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        },
+                        "21:00": {
+                            "address": "ул.Лесотехникума, 22/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/t0naw",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                            "mode": "Чёрная пятница",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        }
+                    },
+                    "Суббота": {
+                        "19:00": {
+                            "address": "ул.Лесотехникума, 22/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/t0naw",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                            "mode": "Чайная суббота",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        },
+                        "21:00": {
+                            "address": "ул.Лесотехникума, 22/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/t0naw",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                            "mode": "Путеводные принципы",
+                            "map2gis": "да",
+                            "longtime": "01:15"
+                        }
+                    },
+                    "Воскресенье": {
+                        "19:00": {
+                            "address": "ул.Лесотехникума, 22/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/t0naw",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                            "mode": "Открытое собрание",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                },
+                "Открытое": {
+                    "Каждое воскресенье": {
+                        "19:00": {
+                            "address": "ул.Лесотехникума, 22/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/t0naw",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                            "mode": "Открытое",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Ноябрь": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "20:00": {
+                            "address": "ул.Султанова, 2",
+                            "address_add": "(вход со двора, красная крыша, ком. 9)",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                            "mode": "Спикер 15 минут",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Вторник": {
+                        "20:00": {
+                            "address": "ул.Султанова, 2",
+                            "address_add": "(вход со двора, красная крыша, ком. 9)",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                            "mode": "Спикер 15 минут",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Среда": {
+                        "20:00": {
+                            "address": "ул.Султанова, 2",
+                            "address_add": "(вход со двора, красная крыша, ком. 9)",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                            "mode": "Спикер 15 минут",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Четверг": {
+                        "20:00": {
+                            "address": "ул.Султанова, 2",
+                            "address_add": "(вход со двора, красная крыша, ком. 9)",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                            "mode": "Спикер 15 минут",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Пятница": {
+                        "20:00": {
+                            "address": "ул.Султанова, 2",
+                            "address_add": "(вход со двора, красная крыша, ком. 9)",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                            "mode": "Спикер 15 минут",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Суббота": {
+                        "19:00": {
+                            "address": "ул.Султанова, 2",
+                            "address_add": "(вход со двора, красная крыша, ком. 9)",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                            "mode": "Спикер 15 минут",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Воскресенье": {
+                        "19:00": {
+                            "address": "ул.Султанова, 2",
+                            "address_add": "(вход со двора, красная крыша, ком. 9)",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                            "mode": "Спикер 15 минут",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Олдскул": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "20:00": {
+                            "address": "ул.Айская, 75/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/hb4y9",
+                            "mode": "Ежедневник",
+                            "comment": "Первый понедельник месяца – Открытое собрание",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Вторник": {
+                        "20:00": {
+                            "address": "ул.Айская, 75/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/hb4y9",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Среда": {
+                        "18:00": {
+                            "address": "ул.Айская, 75/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/hb4y9",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        },
+                        "20:00": {
+                            "address": "ул.Айская, 75/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/hb4y9",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Четверг": {
+                        "20:00": {
+                            "address": "ул.Айская, 75/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/hb4y9",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Пятница": {
+                        "18:00": {
+                            "address": "ул.Айская, 75/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/hb4y9",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        },
+                        "20:00": {
+                            "address": "ул.Айская, 75/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/hb4y9",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Суббота": {
+                        "20:00": {
+                            "address": "ул.Айская, 75/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/hb4y9",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Воскресенье": {
+                        "20:00": {
+                            "address": "ул.Айская, 75/2",
+                            "address_add": "(вход с торца)",
+                            "add_url": "https://go.2gis.com/hb4y9",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                },
+                "Открытое": {
+                    "Первый понедельник месяца": {
+                        "20:00": {
+                            "address": "ул.8 марта, 30",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/racna",
+                            "mode": "Открытое",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Полтинник": {
+                "Закрытое": {
+                    "Вторник": {
+                        "19:00": {
+                            "address": "ул.50 лет СССР 43",
+                            "address_add": "(вход наркология, слева)",
+                            "add_url": "https://go.2gis.com/9ww6q",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4343",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Четверг": {
+                        "19:00": {
+                            "address": "ул.50 лет СССР 43",
+                            "address_add": "(вход наркология, слева)",
+                            "add_url": "https://go.2gis.com/9ww6q",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4343",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Путь": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "19:45": {
+                            "address": "м-н Шакша, ул. Высоковольтная, 10",
+                            "address_add": "(желтое крыльцо с угла дома, цокольный этаж)",
+                            "add_url": "https://go.2gis.com/yy04od",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3711",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Среда": {
+                        "20:00": {
+                            "address": "м-н Шакша, ул. Высоковольтная, 10",
+                            "address_add": "(желтое крыльцо с угла дома, цокольный этаж)",
+                            "add_url": "https://go.2gis.com/yy04od",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3711",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Пятница": {
+                        "20:00": {
+                            "address": "м-н Шакша, ул. Высоковольтная, 10",
+                            "address_add": "(желтое крыльцо с угла дома, цокольный этаж)",
+                            "add_url": "https://go.2gis.com/yy04od",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3711",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Рассвет": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "09:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3682",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Вторник": {
+                        "09:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3682",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Среда": {
+                        "09:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3682",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Четверг": {
+                        "09:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3682",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Пятница": {
+                        "09:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3682",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Суббота": {
+                        "09:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3682",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Воскресенье": {
+                        "09:00": {
+                            "address": "ул.Бакалинская, 11",
+                            "address_add": " ",
+                            "add_url": "https://go.2gis.com/31rm2",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3682",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            },
+            "Юг": {
+                "Закрытое": {
+                    "Понедельник": {
+                        "19:00": {
+                            "address": "ул.Кировоградская, 33А",
+                            "address_add": "(2-й этаж, синяя лестница)",
+                            "add_url": "https://go.2gis.com/0xums",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Вторник": {
+                        "19:00": {
+                            "address": "ул.Кировоградская, 33А",
+                            "address_add": "(2-й этаж, синяя лестница)",
+                            "add_url": "https://go.2gis.com/0xums",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Среда": {
+                        "19:00": {
+                            "address": "ул.Кировоградская, 33А",
+                            "address_add": "(2-й этаж, синяя лестница)",
+                            "add_url": "https://go.2gis.com/0xums",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Четверг": {
+                        "19:00": {
+                            "address": "ул.Кировоградская, 33А",
+                            "address_add": "(2-й этаж, синяя лестница)",
+                            "add_url": "https://go.2gis.com/0xums",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Пятница": {
+                        "19:00": {
+                            "address": "ул.Кировоградская, 33А",
+                            "address_add": "(2-й этаж, синяя лестница)",
+                            "add_url": "https://go.2gis.com/0xums",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Суббота": {
+                        "18:00": {
+                            "address": "ул.Кировоградская, 33А",
+                            "address_add": "(2-й этаж, синяя лестница)",
+                            "add_url": "https://go.2gis.com/0xums",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Воскресенье": {
+                        "18:00": {
+                            "address": "ул.Кировоградская, 33А",
+                            "address_add": "(2-й этаж, синяя лестница)",
+                            "add_url": "https://go.2gis.com/0xums",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                            "mode": "Ежедневник",
+                            "comment": "Последнее воскресенье – Открытое собрание",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                },
+                "Открытое": {
+                    "Последнее воскресенье месяца": {
+                        "18:00": {
+                            "address": "ул.Кировоградская, 33А",
+                            "address_add": "(2-й этаж, синяя лестница)",
+                            "add_url": "https://go.2gis.com/0xums",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                            "mode": "Открытое",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            }
+        },
+        "г.Белебей": {
+            "Надежда": {
+                "Закрытое": {
+                    "Вторник": {
+                        "19:00": {
+                            "address": "ул.Красная, 95",
+                            "address_add": "(общежитие “Современник”, 1-й этаж, направо)",
+                            "add_url": "https://go.2gis.com/l6h0kd",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3823",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    },
+                    "Пятница": {
+                        "19:00": {
+                            "address": "ул.Красная, 95",
+                            "address_add": "(общежитие “Современник”, 1-й этаж, направо)",
+                            "add_url": "https://go.2gis.com/l6h0kd",
+                            "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3823",
+                            "mode": "Ежедневник",
+                            "map2gis": "да",
+                            "longtime": "01:30"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
