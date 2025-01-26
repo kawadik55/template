@@ -25,6 +25,7 @@ let area = 'АН';//местность
 let timePablic = '06:00:00';//опорное машинное время выхода публикаций на текущие сутки по-умолчанию
 let forDate = [3,0];//массив дней по дате - 3й и 0й день, если меньше 2х недель
 let lifeTime = 180;//время жизни юзера в днях
+let rassilka = true;//выключатель крона рассылки
 //проверим папку логов
 if(!fs.existsSync(PathToLog)) {fs.mkdirSync(PathToLog); fs.chmod(currentDir+"/../log", 0o777, () => {});}
 //---------------------------------------------------
@@ -39,10 +40,10 @@ let config={};
 try{config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
 	if(!config.lifeTime) {config.lifeTime = lifeTime; WriteFileJson(currentDir+"/config.json",config);}
 }catch(err)
-{config = {"area":area, "timePablic":timePablic, "forDate":forDate, "lifeTime":lifeTime};
+{config = {"area":area, "timePablic":timePablic, "forDate":forDate, "lifeTime":lifeTime, "rassilka":rassilka};
  WriteFileJson(currentDir+"/config.json",config);
 }
-area = config.area; timePablic = config.timePablic; forDate = config.forDate; lifeTime = config.lifeTime;
+area = config.area; timePablic = config.timePablic; forDate = config.forDate; lifeTime = config.lifeTime; rassilka = config.rassilka;
 
 const chat_Supervisor = require(TokenDir+"/chatId.json").Supervisor;//пользователь 'Supervisor'
 // выбор токена
@@ -117,15 +118,16 @@ if(!timeCron)
 }
 //установим службу публикаций в каналах
 cron.schedule(timeCron, function() 
-{
-	console.log('---------------------');
-	console.log('Running Cron Job');
-
-	execFile('/home/pi/rassilka', (err, stdout, stderr) => 
-	{
-		if (err) WriteLogFile(err+'\nfrom cron()');
-		console.log(stdout);
-	});
+{	if(rassilka)//если рассылка включена
+	{	console.log('---------------------');
+		console.log('Running Cron Job');
+		//запускаем файл рассылки
+		execFile('/home/pi/rassilka', (err, stdout, stderr) => 
+		{
+			if (err) WriteLogFile(err+'\nfrom cron()');
+			console.log(stdout);
+		});
+	}
 });
 //====================================================================
 function klava(keyb)
@@ -263,7 +265,7 @@ else
 	console.log('sec='+sec);
 })();*/
 WriteLogFile('Запуск бота @'+namebot,'непосылать');
-WriteLogFile('Установлено время публикации - '+timePablic,'непосылать');
+if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic,'непосылать');
 //====================================================================
 // СТАРТ
 LoaderBot.onText(/\/start/, async (msg) => 
@@ -2657,9 +2659,10 @@ function setContextFiles()
 		{	let obj;
 			try{obj = JSON.parse(fs.readFileSync(currentDir+'/config.json'));}catch(err){console.log(err);}
 			if(typeof(obj) != 'object')
-			{obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180;
+			{obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true;
 			 WriteFileJson(currentDir+'/config.json',obj);
 			}
+			if(!Object.hasOwn(obj,'rassilka')) {obj.rassilka = true; WriteFileJson(currentDir+'/config.json',obj);}
 			//если запрошено изменение конфига в ENV
 			if(!!CONFIG_OBJ) 
 			{	let mas;
@@ -2679,7 +2682,7 @@ function setContextFiles()
 		if(fs.existsSync(currentDir+'/buttons.txt'))//если файл уже имеется
 		{	let obj;
 			try{obj = JSON.parse(fs.readFileSync(currentDir+'/buttons.txt'));}catch(err){console.log(err);}
-			if(typeof(obj) != 'object') {obj={}; WriteFileJson(currentDir+'/buttons.txt',obj);}
+			if(typeof(obj) != 'object' || Object.keys(obj).length === 0) {obj={}; WriteFileJson(currentDir+'/buttons.txt',obj);}
 			//если запрошено изменение кнопок в ENV
 			if(!!BUTTONS_OBJ) 
 			{	let mas;
@@ -2700,10 +2703,10 @@ function setContextFiles()
 		if(fs.existsSync(currentDir+'/run.txt'))//если файл уже имеется
 		{	let obj;
 			try{obj = JSON.parse(fs.readFileSync(currentDir+'/run.txt'));}catch(err){console.log(err);}
-			if(typeof(obj) != 'object') 
+			if(typeof(obj) != 'object' || Object.keys(obj).length === 0) 
 			{	obj={}; obj.Text = true; obj.Image = true; obj.Eg = false; obj.Raspis = false;
-				obj.FileEg = currentDir+'/../Rassilka/eg.txt';
-				obj.FileRaspis = currentDir+'/../Rassilka/raspis.txt';
+				obj.FileEg = '/../Rassilka/eg.txt';
+				obj.FileRaspis = '/../Rassilka/raspis.txt';
 				WriteFileJson(currentDir+'/run.txt',obj);
 			}
 			//если запрошено изменение RUN_OBJ в ENV
@@ -2729,7 +2732,7 @@ function setContextFiles()
 		if(fs.existsSync(TokenDir+'/chatId.json'))//если файл уже имеется.
 		{	let obj = {};
 			try{obj = JSON.parse(fs.readFileSync(TokenDir+"/chatId.json"));}catch(err){obj = {};}
-			if(typeof(obj) != 'object') {obj={}; obj.Supervisor="123456789"; WriteFileJson(TokenDir+'/chatId.json',obj);}
+			if(typeof(obj) != 'object' || Object.keys(obj).length === 0) {obj={}; obj.Supervisor="123456789"; WriteFileJson(TokenDir+'/chatId.json',obj);}
 			if(!obj.Supervisor) {obj.Supervisor = "123456789"; WriteFileJson(TokenDir+'/chatId.json',obj);}
 			if(!obj.chat_news) 
 			{obj.chat_news = {};
