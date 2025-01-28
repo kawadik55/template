@@ -6,7 +6,7 @@ const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirna
 const TokenDir=currentDir+"/Token";//путь к папке с токенами
 const FileImages = 	currentDir+'/ImagesList.txt';//файл картинок
 const FileText =   	currentDir+'/TextList.txt';//файл Текстов
-const FileForDate = currentDir+'/config.json';//файл дней по дате
+const FileForDate = currentDir+'/config.json';//файл дней по дате.
 var FileEg = 		currentDir+'/../Raspis/eg.txt';//файл с ежиком
 var FileRaspis = currentDir+'/../Raspis/raspis.txt';//файл с расписанием на день.
 const FileRun = currentDir+'/run.txt';//файл со списком запуска
@@ -290,6 +290,7 @@ async function send_Text()
   }
 }
 //====================================================================
+//посылает Ежик всегда в markdown
 async function send_Eg()
 { try
   {	if(flagEg)
