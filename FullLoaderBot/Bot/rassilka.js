@@ -112,6 +112,7 @@ async function send_Images()
 	let interval = 60*1000*10;//10 мин
     if(Object.keys(ImagesList).length == 0) return;
     WriteLogFile('Рассылка картинок:');
+	let made = 0;
 	//читаем список
 	let now = moment().startOf('day');//текущий день
 	for(let key in ImagesList)
@@ -147,7 +148,7 @@ async function send_Images()
 			if(date==time) flag++;//прям сегодня
           }
 		  
-		  WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date+'('+((flag>0)?'да':'нет')+')');
+		  if(flag>0) {WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date+'('+((flag>0)?'да':'нет')+')');made++;}
           
           //публикуем файлы
           if(flag) 
@@ -193,6 +194,7 @@ async function send_Images()
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Images()=>for()','вчат');}
 	}
+	if(made==0) WriteLogFile('К сожалению на сегодня ничего нет :(');
   } catch (err) 
   {console.error(getTimeStr()+err); 
    WriteLogFile(err+'\nfrom send_Images()','вчат');
@@ -207,6 +209,7 @@ async function send_Text()
 	let interval = 60*1000*10;//10 мин
 	if(Object.keys(TextList).length == 0) return;
 	WriteLogFile('Рассылка текстов:');
+	let made = 0;
 	//читаем список
 	let now = moment().startOf('day');//текущий день
 	for(let key in TextList)
@@ -242,7 +245,7 @@ async function send_Text()
 			if(date==time) flag++;//прям сегодня
           }
 		  
-		  WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date+'('+((flag>0)?'да':'нет')+')');
+		  if(flag>0) {WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date+'('+((flag>0)?'да':'нет')+')');made++;}
           
           //публикуем текст
 		  if(flag)
@@ -284,6 +287,7 @@ async function send_Text()
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Text()=>for()','вчат');}
 	}
+	if(made==0) WriteLogFile('К сожалению на сегодня ничего нет :(');
   } catch (err) 
   {console.error(getTimeStr()+err); 
    WriteLogFile(err+'\nfrom send_Text()','вчат');
