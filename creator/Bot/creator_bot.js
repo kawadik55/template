@@ -7,7 +7,7 @@ const TelegramBot = require('node-telegram-bot-api');
 //const exec = util.promisify(require('child_process').exec);
 const homedir = require('os').homedir();
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше
+const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше.
 const FileAdminList = currentDir+"/AdminList.txt";//имя файла списка админов
 const FileUserList = currentDir+"/UserList.txt";//имя файла списка служенцев
 const FileEventList = currentDir+"/EventList.txt";//имя файла списка событий
@@ -183,7 +183,7 @@ try{
 		else option.entities = obj;
 		if(Object.hasOwn(obj, 'disable_web_page_preview')) option.disable_web_page_preview = obj.disable_web_page_preview;
 	}
-	if(Object.hasOwn(Tree, num) && Tree[num].child.length>0)//если есть потомки
+	if(Object.hasOwn(Tree, num) && !!Tree[num].child && Tree[num].child.length>0)//если есть потомки
 	{	option.reply_markup = new Object();
 		option.reply_markup.inline_keyboard = [];
 		//сначала проверим, а все ли потомки есть в наличии
@@ -203,7 +203,7 @@ try{
 		}
 	}
 	//Добавляем кнопку Следующая, если это Истории
-	if(!!Tree[num].type && Tree[num].type == 'history')
+	if(Object.hasOwn(Tree, num) && !!Tree[num].type && Tree[num].type == 'history')
 	{	if(!option.reply_markup) 
 		{	option.reply_markup = new Object();
 			option.reply_markup.inline_keyboard = [];
@@ -214,7 +214,7 @@ try{
 		option.reply_markup.inline_keyboard[i][0].callback_data = num+'_next';//в колбек - номер той же кнопки
 	}
 	//добавляем кнопку Назад, если есть родитель
-	if(Tree[num].parent != null)
+	if(Object.hasOwn(Tree, num) && Tree[num].parent != null)
 	{	if(!option.reply_markup) 
 		{	option.reply_markup = new Object();
 			option.reply_markup.inline_keyboard = [];
@@ -225,7 +225,7 @@ try{
 		option.reply_markup.inline_keyboard[i][0].callback_data = Tree[num].parent+'_'+Tree[Tree[num].parent].type;//в колбек - номер кнопки родителя и тип
 	}
 	//в текстовых кнопках добавляем превью, если есть
-	if(!!Tree[num].type && Tree[num].type == 'text' && Object.hasOwn(Tree[num], 'link_preview_options'))
+	if(Object.hasOwn(Tree, num) && !!Tree[num].type && Tree[num].type == 'text' && Object.hasOwn(Tree[num], 'link_preview_options'))
 	{	if(Object.hasOwn(Tree[num].link_preview_options, 'is_disabled')) option.disable_web_page_preview = true;
 		option.link_preview_options = Tree[num].link_preview_options;
 	}
