@@ -24,7 +24,8 @@ build_ArchBot:
     - docker images
     - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
-    - docker login -u ${LOGIN} --password ${PASSW}
+    #- docker login -u ${LOGIN} --password ${PASSW}
+    - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
@@ -51,7 +52,8 @@ build_ArchGroupsBot:
     - docker images
     - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
-    - docker login -u ${LOGIN} --password ${PASSW}
+    #- docker login -u ${LOGIN} --password ${PASSW}
+    - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
@@ -77,7 +79,8 @@ build_LoaderBot:
     - docker images
     - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
-    - docker login -u ${LOGIN} --password ${PASSW}
+    #- docker login -u ${LOGIN} --password ${PASSW}
+    - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
@@ -103,7 +106,7 @@ build_Creator:
     - docker images
     - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
-    ##- docker login -u ${LOGIN} --password ${PASSW}
+    #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
@@ -130,7 +133,8 @@ build_Rassilka:
     - docker images
     - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
-    - docker login -u ${LOGIN} --password ${PASSW}
+    #- docker login -u ${LOGIN} --password ${PASSW}
+    - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
@@ -156,7 +160,8 @@ build_GitLabBot:
     - docker images
     - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
-    - docker login -u ${LOGIN} --password ${PASSW}
+    #- docker login -u ${LOGIN} --password ${PASSW}
+    - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
@@ -182,7 +187,8 @@ build_FullLoaderBot:
     - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
-    - docker login -u ${LOGIN} --password ${PASSW}
+    #- docker login -u ${LOGIN} --password ${PASSW}
+    - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
