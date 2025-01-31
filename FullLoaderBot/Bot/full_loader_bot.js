@@ -112,7 +112,7 @@ let forDeleteList = [];//список файлов на удаление
 //====================================================================
 if(!timeCron)
 {	if(timePablic != moment(timePablic,'HH:mm:ss').format('HH:mm:ss'))
-	{WriteLogFile('Ошибка в timePublic'); timePablic = '06:00:00';
+	{WriteLogFile('Ошибка в timePublic','вчат'); timePablic = '06:00:00';
 	}
 	let tmp=timePablic.split(':'); timeCron = tmp[1]+' '+tmp[0]+' * * *';
 }
@@ -124,7 +124,7 @@ cron.schedule(timeCron, function()
 		//запускаем файл рассылки
 		execFile('/home/pi/rassilka', (err, stdout, stderr) => 
 		{
-			if (err) WriteLogFile(err+'\nfrom cron()');
+			if (err) WriteLogFile(err+'\nfrom cron()','вчат');
 			console.log(stdout);
 		});
 	}
@@ -137,7 +137,7 @@ function klava(keyb)
 	arr.reply_markup.inline_keyboard = keyb;
 	arr.parse_mode = "markdown";
 	return arr;
-}catch(err){WriteLogFile(err+'\nfrom klava()');}
+}catch(err){WriteLogFile(err+'\nfrom klava()','вчат');}
 }
 //====================================================================
 //сначала читаем сохраненные списки
@@ -264,8 +264,8 @@ else
 	let sec = now.diff(time, 'seconds');//разница в секундах
 	console.log('sec='+sec);
 })();*/
-WriteLogFile('Запуск бота @'+namebot,'непосылать');
-if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic,'непосылать');
+WriteLogFile('Запуск бота @'+namebot);
+if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic);
 //====================================================================
 // СТАРТ
 LoaderBot.onText(/\/start/, async (msg) => 
@@ -290,7 +290,7 @@ try{
 	{	await sendMessage(chatId, str);
 		await welcome(chatId,name);
 	}
-}catch(err){WriteLogFile(err+'\nfrom /start/');}
+}catch(err){WriteLogFile(err+'\nfrom /start/','вчат');}
 });
 //====================================================================
 // ПАРОЛЬ
@@ -414,7 +414,7 @@ try{
 		sendMessage(chatId, 'Поздравляю, '+name+'! Картинка "'+date+' ('+day+')" отправлена на модерацию!', klava(begin(chatId)));
 		delete TempPost[chatId];
 	}
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(photo)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(photo)','вчат');}
 });
 //====================================================================
 // ВИДЕО
@@ -493,7 +493,7 @@ try{
 		sendMessage(chatId, 'Поздравляю, '+name+'! Ролик "'+date+' ('+day+')" отправлен на модерацию!', klava(begin(chatId)));
 		delete TempPost[chatId];
 	}
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(video)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(video)','вчат');}
 });
 //====================================================================
 // АУДИО
@@ -572,7 +572,7 @@ try{
 		sendMessage(chatId, 'Поздравляю, '+name+'! Аудиотрек "'+date+' ('+day+')" отправлен на модерацию!', klava(begin(chatId)));
 		delete TempPost[chatId];
 	}
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(audio)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(audio)','вчат');}
 });
 //====================================================================
 // ДОКУМЕНТ
@@ -651,7 +651,7 @@ try{
 		sendMessage(chatId, 'Поздравляю, '+name+'! Документ "'+date+' ('+day+')" отправлен на модерацию!', klava(begin(chatId)));
 		delete TempPost[chatId];
 	}
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(document)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(document)','вчат');}
 });
 //====================================================================
 // ловим тексты
@@ -894,7 +894,7 @@ try{
 		welcome(chatId,name);
 	  }	
 	}
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(message)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(message)','вчат');}
 });
 //====================================================================
 // обработка ответов от кнопок
@@ -1299,7 +1299,7 @@ try{
 			}
 		}
 	}
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(callback_query)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(callback_query)','вчат');}
 });
 //====================================================================
 // Показать список команд
@@ -1331,7 +1331,7 @@ try{
 		sendMessage(chatId, str);
 	}
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/help/)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/help/)','вчат');}
 });
 //====================================================================
 // Показать UserList
@@ -1348,7 +1348,7 @@ try{
 		sendMessage(chatId, str);
 	}
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/UserList/)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/UserList/)','вчат');}
 });
 //====================================================================
 // Показать BlackList
@@ -1364,7 +1364,7 @@ try{
 		sendMessage(chatId, str);
 	}
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/BlackList/)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/BlackList/)','вчат');}
 });
 //====================================================================
 // Показать AdminList
@@ -1383,7 +1383,7 @@ try{
         sendMessage(chatId, str, {parse_mode:"markdown"});
     }
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AdminList/)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AdminList/)','вчат');}
 });
 //====================================================================
 // Добавить Админа Бота
@@ -1417,7 +1417,7 @@ try{
         sendMessage(chatId, str, {parse_mode:"markdown"});
     }
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AddAdmin/)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AddAdmin/)','вчат');}
 });
 //====================================================================
 // Добавить Координатора Вотсап
@@ -1452,7 +1452,7 @@ try{
 		chat_coordinatorWhatsApp = AdminList.coordinatorWhatsApp;
     }
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AddWhatsApp/)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AddWhatsApp/)','вчат');}
 });
 //====================================================================
 // Добавить Юзера
@@ -1491,7 +1491,7 @@ try{
         sendMessage(chatId, str);
     }
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AddUser/)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AddUser/)','вчат');}
 });
 //====================================================================
 // Добавить в Черный список
@@ -1524,7 +1524,7 @@ try{
         sendMessage(chatId, str);
     }
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AddBun/)');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AddBun/)','вчат');}
 });
 //====================================================================
 // Показать ImagesList
@@ -1536,7 +1536,7 @@ try{
 	await readImagesList();//читаем список из файла
     if(valid) sendMessage(chatId, 'Список файлов:\r\n'+JSON.stringify(ImagesList,null,2));
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ImagesList/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ImagesList/)','вчат');}	
 });
 //====================================================================
 // Показать файлы из ImagesList
@@ -1548,7 +1548,7 @@ try{
 	await readImagesList();//читаем список из файла
     if(valid) {showImagesList(chatId, 0);}
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ShowUserList/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ShowUserList/)','вчат');}	
 });
 //====================================================================
 // Показать срок действия регистрации юзеров lifeTime
@@ -1559,7 +1559,7 @@ try{
 	let valid = validAdmin(chatId) | validAdminBot(chatId);
     if(valid) {sendMessage(chatId, 'Текущий срок действия регистрации юзеров:\n'+lifeTime+' дн.');}
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ShowLifeTime/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ShowLifeTime/)','вчат');}	
 });
 //====================================================================
 // Показать TextList
@@ -1571,7 +1571,7 @@ try{
 	await readTextList();//читаем файл текстов в TextList
 	if(valid) sendMessage(chatId, 'Список текстов:\r\n'+JSON.stringify(TextList,null,2));
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/TextList/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/TextList/)','вчат');}	
 });
 //====================================================================
 // Показать сообщения TextList
@@ -1583,7 +1583,7 @@ try{
 	await readTextList();//читаем файл текстов в TextList
 	if(valid) showTextList(chatId, 0); 
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ShowTextList/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ShowTextList/)','вчат');}	
 });
 //====================================================================
 // Удаление Админа Бота
@@ -1610,7 +1610,7 @@ try{
 		sendMessage(chatId, str, {parse_mode:"markdown"});
 	}
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DelAdmin/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DelAdmin/)','вчат');}	
 });
 //====================================================================
 // Удаление Координатора Вотсап
@@ -1630,7 +1630,7 @@ try{
 		chat_coordinatorWhatsApp = 0;
 	}
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DelWhatsApp/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DelWhatsApp/)','вчат');}	
 });
 //====================================================================
 // Удаление Юзера
@@ -1656,7 +1656,7 @@ try{
 		sendMessage(chatId, str, {parse_mode:"markdown"});
 	}
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DelUser/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DelUser/)','вчат');}	
 });
 //====================================================================
 // Удаление из Черного списка
@@ -1682,7 +1682,7 @@ try{
 		sendMessage(chatId, str, {parse_mode:"markdown"});
 	}
 	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DelBan/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DelBan/)','вчат');}	
 });
 //====================================================================
 // Очистка папки картинок от старых файлов
@@ -1720,7 +1720,7 @@ try{
 		else sendMessage(chatId, 'Нет старых файлов для удаления!');
 		
 	}
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DeleteFiles/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DeleteFiles/)','вчат');}	
 });
 //====================================================================
 // Изменить ссылку в кнопке Вопросы
@@ -1752,7 +1752,7 @@ try{
 			WriteFileJson(currentDir+"/config.json", config);
 		}
 	}
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/EditUrl/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/EditUrl/)','вчат');}	
 });
 //====================================================================
 // Изменить срок действия допуска юзеров
@@ -1780,7 +1780,7 @@ try{
 		let str='Новый срок '+url+' принят!';
 		sendMessage(chatId, str);
 	}
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/EditLifeTime/)');}	
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/EditLifeTime/)','вчат');}	
 });
 //====================================================================
 // СМЕНА ПАРОЛЯ
@@ -1883,7 +1883,7 @@ try{
 	//---------------------------------------------
 	//заодно тут же сохраняем файл LastMessId
 	fs.writeFile(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2), (err) => {if(err) console.log(err);});
-}catch(err){WriteLogFile(err+'\nfrom SetInterval()');}		
+}catch(err){WriteLogFile(err+'\nfrom SetInterval()','вчат');}		
 },2*3600000);
 //====================================================================
 async function send_instruction(chatId,user,pass)
@@ -1893,7 +1893,7 @@ async function send_instruction(chatId,user,pass)
 	//let but = keyboard['1']; but.splice(0,1);//оставляем только Вопросы
 	//await sendMessage(chatId, str, klava(but));
 	await sendMessage(chatId, str, klava(keyboard['1']));
-}catch(err){WriteLogFile(err+'\nfrom send_instruction()');}
+}catch(err){WriteLogFile(err+'\nfrom send_instruction()','вчат');}
 }
 //====================================================================
 //запись в файл объекта, массива
@@ -1902,7 +1902,7 @@ async function WriteFileJson(path,arr)
 try{
 	if(typeof arr === 'object') res = fs.writeFileSync(path, JSON.stringify(arr,null,2));
     else res = fs.writeFileSync(path, arr);
-}catch(err){console.log(err+'\nfrom WriteFileJson()'); WriteLogFile(err+'\nfrom WriteFileJson()');}
+}catch(err){console.log(err+'\nfrom WriteFileJson()'); WriteLogFile(err+'\nfrom WriteFileJson()','вчат');}
 }
 //====================================================================
 //запись с бэкап файл массива с добавлением в конец
@@ -1912,7 +1912,7 @@ try{
 	fs.appendFile(path, JSON.stringify(arr,null,2), (err) => 
 	{if(err) {console.log(err);}
 	});
-}catch(err){WriteLogFile(err+'\nfrom AppendFileJson()');}
+}catch(err){WriteLogFile(err+'\nfrom AppendFileJson()','вчат');}
 }
 //====================================================================
 //проверка юзера на валидность
@@ -1928,7 +1928,7 @@ function validUser(chatId)
 		{	let tmp = UserList[chatId];
 			delete UserList[chatId]; 
 			WriteFileJson(FileUserList,UserList);
-			WriteLogFile(err+'По сроку давности удален пользователь "'+chatId+'":\n'+JSON.stringify(tmp,null,2));
+			WriteLogFile(err+'По сроку давности удален пользователь "'+chatId+'":\n'+JSON.stringify(tmp,null,2),'вчат');
 		}
 	}
 	if(!!UserList[chatId]) return true;//есть в юзерах
@@ -1936,7 +1936,7 @@ function validUser(chatId)
 	else if(validAdminBot(chatId)) return true;//есть в админах бота
 	else if(chatId==chat_coordinatorWhatsApp) return true;//координатор вотсап
 	else return false;//нету нигде
-}catch(err){WriteLogFile(err+'\nfrom validUser()');}
+}catch(err){WriteLogFile(err+'\nfrom validUser()','вчат');}
 }
 //====================================================================
 //проверка админа на валидность
@@ -1947,7 +1947,7 @@ try{
 	
 	if(keys.indexOf(''+chatId)+1 || chatId==chat_Supervisor) return true;//есть в разрешенных
 	else return false;//нет в разрешенных
-}catch(err){WriteLogFile(err+'\nfrom validAdmin()');}	
+}catch(err){WriteLogFile(err+'\nfrom validAdmin()','вчат');}	
 }
 //====================================================================
 //проверка админа бота на валидность
@@ -1959,7 +1959,7 @@ try{
 	if(keys.indexOf(''+chatId)+1) return true;//есть в разрешенных
 	else if(validAdmin(chatId)) return true;
 	else return false;//нет в разрешенных
-}catch(err){WriteLogFile(err+'\nfrom ValidAdminBot()');}	
+}catch(err){WriteLogFile(err+'\nfrom ValidAdminBot()','вчат');}	
 }
 //====================================================================
 //проверка банов
@@ -1970,7 +1970,7 @@ try{
 	
 	if(bans.indexOf(''+chatId)+1) return true;//есть в банах
 	else return false;//нет в банах
-}catch(err){WriteLogFile(err+'\nfrom banUser()');}	
+}catch(err){WriteLogFile(err+'\nfrom banUser()','вчат');}	
 }
 //====================================================================
 function welcome(chatId,name)
@@ -1979,7 +1979,7 @@ try{
 	let str='';
 	str+='Для загрузки текста или файла (картинка, видео, аудио, документ) просто нажми соответствующую кнопку и следуй моим подсказкам.';
 	sendMessage(chatId, str, klava(begin(chatId)));
-}catch(err){WriteLogFile(err+'\nfrom welcome()');}	
+}catch(err){WriteLogFile(err+'\nfrom welcome()','вчат');}	
 }
 //====================================================================
 async function sendMessage(chatId,str,option)
@@ -2013,7 +2013,7 @@ try{
 	return res;
 }catch(err)
 		{	/*if(!!res.chat.username) WriteLogFile(err+'\nfrom sendMessage("'+chatId+'", '+res.chat.username+')');
-			else*/ WriteLogFile(err+'\nfrom sendMessage("'+chatId+'")');
+			else*/ WriteLogFile(err+'\nfrom sendMessage("'+chatId+'")','вчат');
 		}
 }
 //====================================================================
@@ -2025,7 +2025,7 @@ try{
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
 	await LoaderBot.sendPhoto(chatId, path, opt);
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendPhoto()');return Promise.reject(false);}
+}catch(err){WriteLogFile(err+'\nfrom sendPhoto()','вчат');return Promise.reject(false);}
 }
 //====================================================================
 async function sendVideo(chatId, path, opt)
@@ -2036,7 +2036,7 @@ try{
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
 	await LoaderBot.sendVideo(chatId, path, opt);
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendVideo()');return Promise.reject(false);}
+}catch(err){WriteLogFile(err+'\nfrom sendVideo()','вчат');return Promise.reject(false);}
 }
 //====================================================================
 async function sendAudio(chatId, path, opt)
@@ -2047,7 +2047,7 @@ try{
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
 	await LoaderBot.sendAudio(chatId, path, opt);
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendAudio()');return Promise.reject(false);}
+}catch(err){WriteLogFile(err+'\nfrom sendAudio()','вчат');return Promise.reject(false);}
 }
 //====================================================================
 async function sendDocument(chatId, path, opt)
@@ -2058,7 +2058,7 @@ try{
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
 	await LoaderBot.sendDocument(chatId, path, opt);
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendDocument()');return Promise.reject(false);}
+}catch(err){WriteLogFile(err+'\nfrom sendDocument()','вчат');return Promise.reject(false);}
 }
 //====================================================================
 async function remove_buttons(str,messId,chatId,ent)
@@ -2084,7 +2084,7 @@ catch(err){
 {	process.on(event, async ()=>
 	{	fs.writeFileSync(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2));
 		clearInterval(timer);
-		await WriteLogFile('выход из процесса по '+event, 'непосылать');
+		await WriteLogFile('выход из процесса по '+event);
 		process.exit();
 	});
 });
@@ -2101,19 +2101,19 @@ async function readImagesList()
 		}
 		return 'OK';
 	}
-    catch (err) {WriteLogFile(err+'\nfrom readImagesList()'); return 'NO';}
+    catch (err) {WriteLogFile(err+'\nfrom readImagesList()','вчат'); return 'NO';}
 }
 //====================================================================
 function readModerImagesList()
 {   //список файлов
     try {ModerImagesList = shiftObject(JSON.parse(fs.readFileSync(FileModerImagesList)));}
-    catch (err) {WriteLogFile(err+'\nfrom readModerImagesList()');}
+    catch (err) {WriteLogFile(err+'\nfrom readModerImagesList()','вчат');}
 }
 //====================================================================
 async function readTextList()
 {   //список текстов
     try {TextList = shiftObject(JSON.parse(fs.readFileSync(FileTextList))); return 'OK';}
-    catch (err) {WriteLogFile(err+'\nfrom readTextList()'); return 'NO';}
+    catch (err) {WriteLogFile(err+'\nfrom readTextList()','вчат'); return 'NO';}
 }
 //====================================================================
 async function readPostList()
@@ -2129,13 +2129,13 @@ async function readPostList()
 	if(!!keys && keys.length > 0) for(i in keys) {obj[num.toString()] = ImagesList[keys[i]]; num +=1;}
 	
 	return obj;
-}catch(err){WriteLogFile(err+'\nfrom readPostList()');}
+}catch(err){WriteLogFile(err+'\nfrom readPostList()','вчат');}
 }
 //====================================================================
 function readModerTextList()
 {   //список текстов
     try {ModerTextList = shiftObject(JSON.parse(fs.readFileSync(FileModerTextList)));}
-    catch (err) {WriteLogFile(err+'\nfrom readModerTextList()');}
+    catch (err) {WriteLogFile(err+'\nfrom readModerTextList()','вчат');}
 }
 //====================================================================
 async function showTextList(chatId, flag)
@@ -2157,7 +2157,7 @@ try{
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
-}catch(err){WriteLogFile(err+'\nfrom showTextList()');}
+}catch(err){WriteLogFile(err+'\nfrom showTextList()','вчат');}
 }
 //====================================================================
 async function showPostList(chatId, flag)
@@ -2200,7 +2200,7 @@ try{
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
-}catch(err){WriteLogFile(err+'\nfrom showTextList()');}
+}catch(err){WriteLogFile(err+'\nfrom showTextList()','вчат');}
 }
 //====================================================================
 async function showModerTextList(chatId, flag)
@@ -2222,7 +2222,7 @@ try{
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
-}catch(err){WriteLogFile(err+'\nfrom showModerTextList()');}
+}catch(err){WriteLogFile(err+'\nfrom showModerTextList()','вчат');}
 }
 //====================================================================
 async function showImagesList(chatId, flag)
@@ -2252,7 +2252,7 @@ try{
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
-}catch(err){WriteLogFile(err+'\nfrom showImagesList()');}
+}catch(err){WriteLogFile(err+'\nfrom showImagesList()','вчат');}
 }
 //====================================================================
 async function showModerImagesList(chatId, flag)
@@ -2282,7 +2282,7 @@ try{
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
-}catch(err){WriteLogFile(err+'\nfrom showModerImagesList()');}
+}catch(err){WriteLogFile(err+'\nfrom showModerImagesList()','вчат');}
 }
 //====================================================================
 async function sendMessageToAdmin(str, opt)
@@ -2298,7 +2298,7 @@ function sendPhotoToAdmin(path, opt)
 try{
     let keys = Object.keys(AdminBot);
     for(let i in keys) sendPhoto(keys[i], path, opt);//пошлем картинку админу из списка
-}catch(err){WriteLogFile(err+'\nfrom sendPhotoToAdmin()');}
+}catch(err){WriteLogFile(err+'\nfrom sendPhotoToAdmin()','вчат');}
 }
 //====================================================================
 async function sendVideoToAdmin(path, opt)
@@ -2306,7 +2306,7 @@ async function sendVideoToAdmin(path, opt)
 try{
     let keys = Object.keys(AdminBot);
     for(let i in keys) await sendVideo(keys[i], path, opt);//пошлем ролик админу из списка
-}catch(err){WriteLogFile(err+'\nfrom sendVideoToAdmin()');}
+}catch(err){WriteLogFile(err+'\nfrom sendVideoToAdmin()','вчат');}
 }
 //====================================================================
 async function sendAudioToAdmin(path, opt)
@@ -2314,7 +2314,7 @@ async function sendAudioToAdmin(path, opt)
 try{
     let keys = Object.keys(AdminBot);
     for(let i in keys) await sendAudio(keys[i], path, opt);//пошлем аудио админу из списка
-}catch(err){WriteLogFile(err+'\nfrom sendAudioToAdmin()');}
+}catch(err){WriteLogFile(err+'\nfrom sendAudioToAdmin()','вчат');}
 }
 //====================================================================
 async function sendDocToAdmin(path, opt)
@@ -2322,7 +2322,7 @@ async function sendDocToAdmin(path, opt)
 try{
     let keys = Object.keys(AdminBot);
     for(let i in keys) await sendDocument(keys[i], path, opt);//пошлем файл админу из списка
-}catch(err){WriteLogFile(err+'\nfrom sendDocToAdmin()');}
+}catch(err){WriteLogFile(err+'\nfrom sendDocToAdmin()','вчат');}
 }
 //====================================================================
 //упорядочивает номера-ключи в объекте с 1го номера
@@ -2334,7 +2334,7 @@ function shiftObject(obj)
 	let n = 1;
 	for(let i in obj) {tmp[n] = obj[i]; n++;}
 	return tmp;
-}catch(err){WriteLogFile(err+'\nfrom shiftObject()');}
+}catch(err){WriteLogFile(err+'\nfrom shiftObject()','вчат');}
 }
 //====================================================================
 async function setToTextList(obj)
@@ -2350,7 +2350,7 @@ try{
 	TextList[len]=obj;//из временного объекта
 	TextList = shiftObject(TextList);//упорядочиваем номера-ключи в массиве
 	WriteFileJson(FileTextList,TextList);//сохраняем лист публикаций текста в файл
-}catch(err){WriteLogFile(err+'\nfrom setToTextList()');}
+}catch(err){WriteLogFile(err+'\nfrom setToTextList()','вчат');}
 }
 //====================================================================
 async function setToModerTextList(obj)
@@ -2366,7 +2366,7 @@ try{
 	ModerTextList[len]=obj;//из временного объекта
 	ModerTextList = shiftObject(ModerTextList);//упорядочиваем номера-ключи в массиве
 	WriteFileJson(FileModerTextList,ModerTextList);//сохраняем лист модераций текста в файл
-}catch(err){WriteLogFile(err+'\nfrom setToModerTextList()');}
+}catch(err){WriteLogFile(err+'\nfrom setToModerTextList()','вчат');}
 }
 //====================================================================
 //проверка на возможность немедленной публикации
@@ -2419,7 +2419,7 @@ try{
 		}
 	}
 	return flag;
-}catch(err){WriteLogFile(err+'\nfrom check_permissions()');}
+}catch(err){WriteLogFile(err+'\nfrom check_permissions()','вчат');}
 }
 //====================================================================
 async function publicText(obj)
@@ -2445,9 +2445,9 @@ try{
 			if(!!obj.parse_mode) opt.parse_mode = obj.parse_mode;
 			await NewsBot.sendMessage(chat_news[i], obj.text, opt);
 		  }
-		}catch(err){WriteLogFile(err+'\nfrom publicText()=>for()');}
+		}catch(err){WriteLogFile(err+'\nfrom publicText()=>for()','вчат');}
 	}
-}catch(err){WriteLogFile(err+'\nfrom publicText()');}
+}catch(err){WriteLogFile(err+'\nfrom publicText()','вчат');}
 }
 //====================================================================
 async function sendTextToWhatsup(list)
@@ -2468,7 +2468,7 @@ try{
 		}		
 	}
 	if(flag) return 'OK'; else return 'NO';
-}catch(err){WriteLogFile(err+'\nfrom sendTextToWhatsApp()'); return -1;}
+}catch(err){WriteLogFile(err+'\nfrom sendTextToWhatsApp()','вчат'); return -1;}
 }
 //====================================================================
 async function setToImagesList(newpath, obj)
@@ -2496,7 +2496,7 @@ try{
     ImagesList = shiftObject(ImagesList);//упорядочиваем номера-ключи в массиве
 	WriteFileJson(FileImagesList,ImagesList);//сохраним список в файл
 	return len;
-}catch(err){WriteLogFile(err+'\nfrom setToImagesList()'); return -1;}
+}catch(err){WriteLogFile(err+'\nfrom setToImagesList()','вчат'); return -1;}
 }
 //====================================================================
 async function setToModerImagesList(oldpath, newpath, obj)
@@ -2525,7 +2525,7 @@ try{
 	ModerImagesList = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
 	WriteFileJson(FileModerImagesList,ModerImagesList);//сохраним список в файл
 	return len;
-}catch(err){WriteLogFile(err+'\nfrom setToModerImagesList()'); return -1;}
+}catch(err){WriteLogFile(err+'\nfrom setToModerImagesList()','вчат'); return -1;}
 }
 //====================================================================
 async function publicImage(obj)
@@ -2554,10 +2554,10 @@ try{
 			}
 			else NewsBot.sendPhoto(chat_news[i], obj.path, opt);//без типа - картинка 
 		  }
-		}catch(err){WriteLogFile(err+'\nfrom publicImage()=>for()');}
+		}catch(err){WriteLogFile(err+'\nfrom publicImage()=>for()','вчат');}
 	 }
 	}
-}catch(err){WriteLogFile(err+'\nfrom publicImage()');}
+}catch(err){WriteLogFile(err+'\nfrom publicImage()','вчат');}
 }
 //====================================================================
 async function sendImageToWhatsup(list)
@@ -2582,14 +2582,14 @@ try{
 		}
 	}
 	if(flag) return 'OK'; else return 'NO';
-}catch(err){WriteLogFile(err+'\nfrom sendImageToWhatsup()'); return -1;}
+}catch(err){WriteLogFile(err+'\nfrom sendImageToWhatsup()','вчат'); return -1;}
 }
 //====================================================================
 function begin(chatId)
 {try{	
 	if(validAdmin(chatId) || validAdminBot(chatId)) return keyboard['adm1'];
 	else return keyboard['1'];
-}catch(err){WriteLogFile(err+'\nfrom begin()');}
+}catch(err){WriteLogFile(err+'\nfrom begin()','вчат');}
 }
 //====================================================================
 function get_keyb100()
@@ -2600,7 +2600,7 @@ function get_keyb100()
 	if(Object.keys(ModerImagesList).length > 0) mas[1][1].text = '❗️Публиковать Файлы❗️';
 	else mas[1][1].text = 'Публиковать Файлы';
 	return mas;
-}catch(err){WriteLogFile(err+'\nfrom get_keyb100()');}
+}catch(err){WriteLogFile(err+'\nfrom get_keyb100()','вчат');}
 }
 //====================================================================
 function isValidChatId(value) 
@@ -2612,7 +2612,7 @@ function isValidChatId(value)
 	}
 	else if(typeof(value)==='number') return true;
 	else return false;
-}catch(err){WriteLogFile(err+'\nfrom isValidChatId()');}
+}catch(err){WriteLogFile(err+'\nfrom isValidChatId()','вчат');}
 }
 //====================================================================
 async function WriteLogFile(arr, flag) 
@@ -2621,7 +2621,7 @@ async function WriteLogFile(arr, flag)
 	let str=moment().format('DD.MM.YY HH:mm:ss:ms')+' - '+arr+'\n';
     try{
 		await fs.appendFileSync(LogFile, str);
-		if(!!logBot && !flag) 
+		if(!!logBot && !!flag) 
 		{str='From @'+namebot+' '+area+'\n'+str;
 		 await logBot.sendMessage(chat_Supervisor, str);
 		}
@@ -2667,13 +2667,13 @@ function setContextFiles()
 			if(!!CONFIG_OBJ) 
 			{	let mas;
 				try{mas = JSON.parse(CONFIG_OBJ);}catch(err){console.log(err); mas = '';}
-				if(!mas) WriteLogFile('CONFIG_OBJ - не объект','непосылать');
+				if(!mas) WriteLogFile('CONFIG_OBJ - не объект');
 				else 
 				{try{	if(!!mas.area && !!mas.timePablic && !!mas.forDate && !!mas.lifeTime) 
-						{	if(typeof(mas.forDate) != 'object') {mas.forDate = [3,0]; WriteLogFile('Ошибка в объекте CONFIG_OBJ.forDate','непосылать');}
+						{	if(typeof(mas.forDate) != 'object') {mas.forDate = [3,0]; WriteLogFile('Ошибка в объекте CONFIG_OBJ.forDate');}
 							WriteFileJson(currentDir+'/config.json',mas);
 						}
-				 }catch(err){WriteLogFile('Ошибка в объекте CONFIG_OBJ','непосылать');}
+				 }catch(err){WriteLogFile('Ошибка в объекте CONFIG_OBJ');}
 				}
 			}
 		}
@@ -2687,14 +2687,14 @@ function setContextFiles()
 			if(!!BUTTONS_OBJ) 
 			{	let mas;
 				try{mas = JSON.parse(BUTTONS_OBJ);}catch(err){console.log(err); mas = '';}
-				if(!mas) WriteLogFile('BUTTONS_OBJ - не объект','непосылать');
+				if(!mas) WriteLogFile('BUTTONS_OBJ - не объект');
 				else 
 				{try{if(!!mas.reply_markup && !!mas.reply_markup.inline_keyboard &&
 					!!mas.reply_markup.inline_keyboard[0][0].text &&
 					!!mas.reply_markup.inline_keyboard[0][0].url
 					) 
 					{WriteFileJson(currentDir+'/buttons.txt',mas);}
-					}catch(err){WriteLogFile('Ошибка в объекте BUTTONS_OBJ','непосылать');}
+					}catch(err){WriteLogFile('Ошибка в объекте BUTTONS_OBJ');}
 				}
 			}
 		}
@@ -2713,7 +2713,7 @@ function setContextFiles()
 			if(!!RUN_OBJ) 
 			{	let mas;
 				try{mas = JSON.parse(RUN_OBJ);}catch(err){console.log(err); mas = '';}
-				if(!mas) WriteLogFile('RUN_OBJ - не объект','непосылать');
+				if(!mas) WriteLogFile('RUN_OBJ - не объект');
 				else 
 				{	if(Object.hasOwn(mas,'Text') && Object.hasOwn(mas,'Image') && Object.hasOwn(mas,'Eg') && Object.hasOwn(mas,'Raspis') && !!mas.FileEg && !!mas.FileRaspis)
 					WriteFileJson(currentDir+'/run.txt',mas);
@@ -2746,7 +2746,7 @@ function setContextFiles()
 			if(!!CHAT_NEWS_OBJ)
 			{	let mas;
 				try{mas = JSON.parse(CHAT_NEWS_OBJ);}catch(err){mas = '';}
-				if(!mas) WriteLogFile('Кривой объект в CHAT_NEWS_OBJ','непосылать');
+				if(!mas) WriteLogFile('Кривой объект в CHAT_NEWS_OBJ');
 				else {obj.chat_news = mas; WriteFileJson(TokenDir+'/chatId.json',obj);}
 			}
 		}

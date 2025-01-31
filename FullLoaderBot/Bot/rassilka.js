@@ -110,8 +110,8 @@ async function send_Images()
   {	if(fun['sendImages']) {clearTimeout(fun['sendImages']); fun['sendImages'] = null;}
 	let good = 0;
 	let interval = 60*1000*10;//10 мин
-    if(Object.keys(ImagesList).length == 0) return;
     WriteLogFile('Рассылка картинок:');
+	if(Object.keys(ImagesList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
 	let made = 0;
 	//читаем список
 	let now = moment().startOf('day');//текущий день
@@ -207,8 +207,8 @@ async function send_Text()
 	if(fun['sendText']) {clearTimeout(fun['sendText']); fun['sendText'] = null;}
 	let good = 0;
 	let interval = 60*1000*10;//10 мин
-	if(Object.keys(TextList).length == 0) return;
 	WriteLogFile('Рассылка текстов:');
+	if(Object.keys(TextList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
 	let made = 0;
 	//читаем список
 	let now = moment().startOf('day');//текущий день
