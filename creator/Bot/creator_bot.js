@@ -292,7 +292,7 @@ try
 		try
 		{   let path;
 			let str;
-			if(Object.hasOwn(Tree[index], 'path')) path = Tree[index].path;//путь из кнопки, если есть
+			if(Object.hasOwn(Tree[index], 'path')) path = currentDir + Tree[index].path;//путь из кнопки, если есть
 			else path = FileRaspis;//путь по-умолчанию
 			try{str = (await fs.promises.readFile(path)).toString();}catch(err){}
 			let obj = {};
@@ -314,7 +314,7 @@ try
 		let mode = 'markdown';
 		try
 		{   let path;
-			if(Object.hasOwn(Tree[index], 'path')) path = Tree[index].path;//путь из кнопки, если есть
+			if(Object.hasOwn(Tree[index], 'path')) path = currentDir + Tree[index].path;//путь из кнопки, если есть
 			else path = FileEg;//путь по-умолчанию
 			eg = (await fs.promises.readFile(path)).toString();
 		}
