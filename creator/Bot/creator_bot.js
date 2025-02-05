@@ -1097,7 +1097,7 @@ try{
 			let index = LastMessId[chatId].indexTen;
 			LastMessId[chatId].countTen = -1;
 			await sendMessage(chatId, 'Поздравляю!\nТы здорово поработал(а) сегодня!💪🏼 Забери файл своих ответов.', klava(index), index);
-			await fs.promises.unlink(currentDir+'/'+chatId+'.txt');//удаляем временный файл
+			if(fs.existsSync(currentDir+'/'+chatId+'.txt')) await fs.promises.unlink(currentDir+'/'+chatId+'.txt');//удаляем временный файл
 			//setTimeout(function() {await fs.promises.unlink(currentDir+'/'+chatId+'.txt');},1000);
 		}
 	}
