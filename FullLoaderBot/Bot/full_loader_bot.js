@@ -392,6 +392,8 @@ try{
 		if(Object.hasOwn(msg, 'caption')) TempPost[chatId].caption = msg.caption;//подпись
 		if(Object.hasOwn(msg, 'caption_entities')) TempPost[chatId].caption_entities = JSON.stringify(msg.caption_entities);//форматирование
 		TempPost[chatId].type = 'image';//тип - картинка
+		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
+		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
 		//если в подписи форматирования нет, то проверим на символы markdown
 		if(!TempPost[chatId].caption_entities && !!TempPost[chatId].caption)
 		{	let cnt1 = (TempPost[chatId].caption.match(/\*/g) || []).length;//символы *
@@ -484,6 +486,8 @@ try{
 		if(Object.hasOwn(msg, 'caption')) TempPost[chatId].caption = msg.caption;//подпись
 		if(Object.hasOwn(msg, 'caption_entities')) TempPost[chatId].caption_entities = JSON.stringify(msg.caption_entities);//форматирование
 		TempPost[chatId].type = 'video';//тип - видео
+		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
+		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
 		//переносим ролик и записываем в список файлов на модерацию
 		let len = await setToModerImagesList(path, newpath, TempPost[chatId]);//получаем последний индекс
             
@@ -563,6 +567,8 @@ try{
 		if(Object.hasOwn(msg, 'caption')) TempPost[chatId].caption = msg.caption;//подпись
 		if(Object.hasOwn(msg, 'caption_entities')) TempPost[chatId].caption_entities = JSON.stringify(msg.caption_entities);//форматирование
 		TempPost[chatId].type = 'audio';//тип - audio
+		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
+		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
 		//переносим ролик и записываем в список файлов на модерацию
 		let len = await setToModerImagesList(path, newpath, TempPost[chatId]);//получаем последний индекс
             
@@ -642,6 +648,8 @@ try{
 		if(Object.hasOwn(msg, 'caption')) TempPost[chatId].caption = msg.caption;//подпись
 		if(Object.hasOwn(msg, 'caption_entities')) TempPost[chatId].caption_entities = JSON.stringify(msg.caption_entities);//форматирование
 		TempPost[chatId].type = 'document';//тип - document
+		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
+		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
 		//переносим ролик и записываем в список файлов на модерацию
 		let len = await setToModerImagesList(path, newpath, TempPost[chatId]);//получаем последний индекс
             
@@ -1014,6 +1022,7 @@ try{
 			TempPost[chatId]=new Object();//создаем сразу временный объект для поста
 			TempPost[chatId].dayOfWeek=button;//запоминаем выбранную кнопку
 			TempPost[chatId].chatId=chatId;
+			TempPost[chatId].userName=user;
 			
 			if((masDay.indexOf(button)+1) && button!='Ежедневно')//для дней недели
 			{	str+="В этом режиме объявление будет выходить еженедельно в выбранный день, ";
@@ -2516,11 +2525,13 @@ try{
     ModerImagesList[len].path = newpath;//путь
     ModerImagesList[len].dayOfWeek = obj.dayOfWeek;//день недели или однократно или Дата
 	ModerImagesList[len].date = obj.date;//дата
-    ModerImagesList[len].chatId = obj.chatId;
+    //ModerImagesList[len].chatId = obj.chatId;
     if(!!obj && !!obj.caption) ModerImagesList[len].caption = obj.caption;//подпись
     if(Object.hasOwn(obj, 'caption_entities')) ModerImagesList[len].caption_entities = obj.caption_entities;//форматирование
 	if(Object.hasOwn(obj, 'parse_mode')) ModerImagesList[len].parse_mode = obj.parse_mode;
 	if(Object.hasOwn(obj, 'type')) ModerImagesList[len].type = obj.type;//тип файла
+	if(Object.hasOwn(obj, 'userName')) ModerImagesList[len].userName = obj.userName;
+	if(Object.hasOwn(obj, 'chatId')) ModerImagesList[len].chatId = obj.chatId;
 	
 	ModerImagesList = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
 	WriteFileJson(FileModerImagesList,ModerImagesList);//сохраним список в файл
