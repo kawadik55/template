@@ -630,7 +630,12 @@ try{
 				try {let info = await Bot.getChat(mas[i]);}//проверяем чат юзера
 				catch(err)
 				{	str += 'chatId='+mas[i]+':'+err+'\n';
-					if(String(err).indexOf('chat not found')+1) delete LastMessId[mas[i]];
+					if(String(err).indexOf('chat not found')+1) 
+					{	if(fs.existsSync(PathToQuestions+'/'+mas[i]+'.txt'))//если у этого юзера есть файл вопросов
+						{	await fs.promises.unlink(PathToQuestions+'/'+mas[i]+'.txt');//удаляем файл вопросов юзера
+						}
+						delete LastMessId[mas[i]];
+					}
 					//else if(String(err).indexOf('user is deactivated')+1) delete LastMessId[mas[i]];//удаляем ушедшего
 					//else if(String(err).indexOf('bot was blocked by the user')+1) delete LastMessId[mas[i]];//удаляем ушедшего
 				}
@@ -675,7 +680,7 @@ try{
 
 	//удаляем юзера из массива
 	if(Object.hasOwn(LastMessId, chatId)) delete LastMessId[chatId];
-	await sendMessage(chatId, 'Вы отписались от бота!\n\nНажми на любую кнопку, и подписка возобновится!');
+	await sendMessage(chatId, 'Вы отписались от бота!\n\nПришли мне любую букву, и подписка возобновится!');
 }catch(err){WriteLogFile(err+'\nfrom off()');}
 });
 //====================================================================
