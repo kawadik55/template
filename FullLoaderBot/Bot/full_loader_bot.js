@@ -722,6 +722,8 @@ try{
 		obj.link_preview_options=TempPost[chatId].link_preview_options;
 		if(TempPost[chatId].link_preview_options && TempPost[chatId].link_preview_options.is_disabled) obj.disable_web_page_preview = true;
 		if(!!TempPost[chatId].parse_mode) obj.parse_mode = TempPost[chatId].parse_mode;
+		if(!Object.hasOwn(obj[chatId], 'userName')) obj[chatId].userName = user;
+		if(!Object.hasOwn(obj[chatId], 'chatId')) obj[chatId].chatId = chatId;
 		await sendMessage(chatId, TempPost[chatId].text, obj);//показываем присланный текст
 		await sendMessage(chatId, '👆Вот что я получил.👆\nДата="'+date+' ('+day+')"\nВсе ли верно?', klava(keyboard['2']));
 	  }
@@ -2493,14 +2495,16 @@ try{
 	let len=Object.keys(ImagesList).length;
 	if(len===0) len=1;
 	else {let mas=Object.keys(ImagesList); len=mas[mas.length-1]; len++;}//последний ключ + 1
-    ImagesList[len]=new Object();
-    ImagesList[len].path = newpath;//путь
-    ImagesList[len].dayOfWeek = obj.dayOfWeek;//день недели
+    ImagesList[len]=obj;
+    ImagesList[len].path = newpath;//новый путь
+    /*ImagesList[len].dayOfWeek = obj.dayOfWeek;//день недели
 	ImagesList[len].date = obj.date;
     if(Object.hasOwn(obj, 'caption')) ImagesList[len].caption = obj.caption;//подпись
 	if(Object.hasOwn(obj, 'caption_entities')) ImagesList[len].caption_entities = obj.caption_entities;//форматирование
 	if(Object.hasOwn(obj, 'parse_mode')) ImagesList[len].parse_mode = obj.parse_mode;//режим
 	if(Object.hasOwn(obj, 'type')) ImagesList[len].type = obj.type;//тип файла
+	if(Object.hasOwn(obj, 'userName')) ImagesList[len].userName = obj.userName;
+	if(Object.hasOwn(obj, 'chatId')) ImagesList[len].chatId = obj.chatId;*/
 	
     ImagesList = shiftObject(ImagesList);//упорядочиваем номера-ключи в массиве
 	WriteFileJson(FileImagesList,ImagesList);//сохраним список в файл
