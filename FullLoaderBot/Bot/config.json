@@ -6,5 +6,8 @@
     0
   ],
   "lifeTime": 180,
-  "rassilka": true
+  "rassilka": true,
+  "hostingImg": false,
+  "pathHostingImg": "/../www/img",
+  "hostname":"https://vps.na-ufa.ru"
 }
