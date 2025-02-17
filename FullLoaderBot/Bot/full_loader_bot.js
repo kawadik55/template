@@ -21,6 +21,9 @@ const TokenDir=currentDir+"/Token";//путь к папке с токенами
 const smilik = '¯\\_(ツ)_/¯';
 const PathToLog = currentDir+'/../log';//путь к логам
 const LOGGING = true;//включение/выключение записи лога в файл
+let PathToHostImg = '';//путь к хостингу картинок
+let hostname = '';
+let hostingImg = false;//выключатель кнопки хостинга картинок
 let area = 'АН';//местность
 let timePablic = '06:00:00';//опорное машинное время выхода публикаций на текущие сутки по-умолчанию
 let forDate = [3,0];//массив дней по дате - 3й и 0й день, если меньше 2х недель
@@ -40,10 +43,13 @@ let config={};
 try{config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
 	if(!config.lifeTime) {config.lifeTime = lifeTime; WriteFileJson(currentDir+"/config.json",config);}
 }catch(err)
-{config = {"area":area, "timePablic":timePablic, "forDate":forDate, "lifeTime":lifeTime, "rassilka":rassilka};
+{config = {"area":area, "timePablic":timePablic, "forDate":forDate, "lifeTime":lifeTime, "rassilka":rassilka, "hostingImg":hostingImg, "pathHostingImg":"/../www/img", "hostname":"https://vps.na-ufa.ru"};
  WriteFileJson(currentDir+"/config.json",config);
 }
-area = config.area; timePablic = config.timePablic; forDate = config.forDate; lifeTime = config.lifeTime; rassilka = config.rassilka;
+area = config.area; timePablic = config.timePablic; forDate = config.forDate; lifeTime = config.lifeTime; rassilka = config.rassilka; 
+if(!!config.hostingImg) hostingImg = config.hostingImg;
+if(!!config.pathHostingImg) PathToHostImg = currentDir+config.pathHostingImg;
+if(!!config.hostname) hostname = config.hostname;
 
 const chat_Supervisor = require(TokenDir+"/chatId.json").Supervisor;//пользователь 'Supervisor'
 // выбор токена
@@ -105,6 +111,12 @@ try
 }
 //если файл отсутствует, то создадим его 
 catch (err) {fs.writeFileSync(currentDir+"/Url.txt",'https://t.me/ссылкаДляВопросов');}
+//добавим клавишу хостинга, если разрешено
+if(hostingImg && !!PathToHostImg)
+{	let obj = [{"text": "Хостинг картинок","callback_data": "1_Хостинг картинок"}];
+	keyboard['1'].push(obj);
+	keyboard['adm1'].push(obj);
+}
 
 const TmpPath = "/tmp";//путь для временных файлов
 let forDeleteList = [];//список файлов на удаление
@@ -342,7 +354,35 @@ try{
 	else //все в порядке
 	{	
 		//проверяем, действительно ли что-то ожидается
-		if(!TempPost[chatId] || !WaitFlag[chatId] || WaitFlag[chatId] != 1) 
+		if(WaitFlag[chatId] == 31)//ожидаем картинку для хостинга
+		{
+			//загружаем картинку
+			let path;
+			try {path = await LoaderBot.downloadFile(msg.photo[msg.photo.length-1].file_id, PathToHostImg);}
+			catch(err)
+			{	sendMessage(chatId, 'Эта картинка слишком велика, разрешено не более 20Мб', klava(begin(chatId)));
+				numOfDelete[chatId]='';
+				delete WaitFlag[chatId];
+				delete TempPost[chatId];
+				return;
+			}
+			let mas = path.split('/');
+			let fileName = chatId+'-'+moment().format('DD_MM_YYYY-HH_mm_ss')+'-'+mas[mas.length-1];//вытащим и изменим имя файла
+			let newpath = PathToHostImg+'/'+fileName;//новый путь и имя файла
+			//скопируем файл с новым именем в папку хостинга
+			fs.copyFileSync(path, newpath);
+			//сразу удалим временный файл
+			try {fs.unlinkSync(path);} catch (e) {console.log(e);}
+			//сформируем прямую ссылку
+			let str = hostname+'/'+fileName;
+			await sendMessage(chatId, 'Прямая ссылка на картинку:\n'+str);
+			await sendMessage(chatId, 'Чтобы вернуться, нажмите на кнопку', klava(keyboard['3']));//в Начало
+			numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
+			delete TempPost[chatId];
+			return;
+		}
+		else if(!TempPost[chatId] || !WaitFlag[chatId] || WaitFlag[chatId] != 1) 
 		{	sendMessage(chatId, '🤷🏻‍♂️');
 			return;
 		}
@@ -931,7 +971,7 @@ try{
 		let state = answer[0];//номер набора кнопок
 		let button = answer[1];//содержание
 		//Админские кнопки доступны только Админам
-		if(state>=10 && !(validAdmin(chatId) | validAdminBot(chatId))) return;
+		if(state>=100 && !(validAdmin(chatId) | validAdminBot(chatId))) return;
 		
 		//------------ набор '1' ----------------------------------------
 		if(state==1)
@@ -953,6 +993,18 @@ try{
 				}
                 else str += '*Упс... А список то пустой!*\n';
                 await sendMessage(chatId, str, klava(keyboard['3']));//В Начало
+			}
+			// кнопка Хостинг картинок
+			if(button=='Хостинг картинок')
+			{	if(!!PathToHostImg && fs.existsSync(PathToHostImg) && !!hostname)
+				{ 	str += 'Пришлите мне картинку и я верну Вам прямую ссылку.';
+					WaitFlag[chatId]=31;//взводим флаг ожидания картинки от юзера
+					await sendMessage(chatId, str, klava(keyboard['3']));//В Начало
+				}
+				else
+				{	str = 'Ошибка: Отсутствует папка или hostname!';
+					await sendMessage(chatId, str, klava(keyboard['3']));//В Начало
+				}
 			}
 			// кнопка Админ Бота
 			if(button=='Админ Бота')
@@ -2673,8 +2725,8 @@ function setContextFiles()
 		if(fs.existsSync(currentDir+'/config.json'))//если файл уже имеется
 		{	let obj;
 			try{obj = JSON.parse(fs.readFileSync(currentDir+'/config.json'));}catch(err){console.log(err);}
-			if(typeof(obj) != 'object')
-			{obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true;
+			if(typeof(obj) !== 'object')
+			{obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru";
 			 WriteFileJson(currentDir+'/config.json',obj);
 			}
 			if(!Object.hasOwn(obj,'rassilka')) {obj.rassilka = true; WriteFileJson(currentDir+'/config.json',obj);}
