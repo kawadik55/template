@@ -1150,6 +1150,17 @@ try{
 				await sendMessage(chatId, str, klava(keyboard['3']));
 				//теперь будем ждать или текст, или файл
 			}
+			else if(button == 'Сегодня')//для Сегодня
+			{	let date = moment().add(0,'day').format('DD.MM.YYYY');//дата на Сегодня в строке
+				TempPost[chatId].date = date;//запоминаем дату
+				str = 'Режим "Только Сегодня", на '+date+'\n';
+				str += 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ), который необходимо опубликовать. ';
+				str += 'Его можно просто скопировать-вставить из любого чата, или загрузить из хранилища. ';
+				str += 'Форматирование текста и подписи сохраняется.';
+				WaitFlag[chatId]=1;//взводим флаг ожидания текста или файла от юзера
+				await sendMessage(chatId, str, klava(keyboard['3']));
+				//теперь будем ждать или текст, или файл
+			}
 		}
 		//------------ набор 'Да + Нет' при удалении поста--------
 		else if(state==7 && numOfDelete[chatId]!='')
@@ -2459,9 +2470,11 @@ try{
 	let now = moment().startOf('day');//текущий день
 	let day;
 	if(Object.hasOwn(obj, 'dayOfWeek')) day=obj.dayOfWeek;
+	if(!Object.hasOwn(obj, 'date') || obj.date != moment(obj.date,'DD.MM.YYYY').format('DD.MM.YYYY')) return 0;
+	if(!day) return 0;
 	
-	//если по Дате и дата верна
-	if(obj.date == moment(obj.date,'DD.MM.YYYY').format('DD.MM.YYYY') && day=='Дата') 
+	//если по Дате
+	if(day=='Дата') 
 	{	let time = moment(obj.date,'DD.MM.YYYY');
 		let days = time.diff(now, 'days')+1;//плюс 1
 		if(days>0 && days%7==0) {flag++;}//кратно неделе
@@ -2479,16 +2492,10 @@ try{
 			if(forDate.indexOf(tmp)+1) flag++;
 		}
 	}
-	//если Однократно и дата верна
-	else if(obj.date == moment(obj.date,'DD.MM.YYYY').format('DD.MM.YYYY') && day=='Однократно')
-	{	let timet = moment(now,'DD.MM.YYYY').format('DD.MM.YYYY');
-        if(obj.date==timet) flag++;//прям сегодня
-	}
 	//если по Дням недели
 	else if(masDay.indexOf(day)+1)
 	{ 	//если дата окончания не наступила
-		if(obj.date == moment(obj.date,'DD.MM.YYYY').format('DD.MM.YYYY'))//правильная дата
-		{	let timet = moment(obj.date,'DD.MM.YYYY');//дата окончания
+			let timet = moment(obj.date,'DD.MM.YYYY');//дата окончания
 			if(timet.diff(now, 'days') >= 0);//разница в днях, 0 = сегодня
 			{	if(obj.dayOfWeek==masDay[8]) flag++;//ежедневно, публикуем однозначно
 				else
@@ -2497,8 +2504,13 @@ try{
 					if(dayWeek==masDay.indexOf(day)) flag++;//совпали дни, публикуем
 				}
 			}
-		}
 	}
+	//во всех остальных случаях
+	else
+	{	let timet = moment(now,'DD.MM.YYYY').format('DD.MM.YYYY');
+        if(obj.date==timet) flag++;//прям сегодня
+	}
+	
 	return flag;
 }catch(err){WriteLogFile(err+'\nfrom check_permissions()','вчат');}
 }
@@ -2939,6 +2951,12 @@ var keyList =
     ]
   ],
   "5": [
+	[
+      {
+        "text": "Только Сегодня",
+        "callback_data": "5_Сегодня"
+      }
+    ],
 	[
       {
         "text": "Завтра",
