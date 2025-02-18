@@ -13,7 +13,7 @@ const FileBlackList = currentDir+"/BlackList.txt";//имя файла черно
 const FileAdminList = currentDir+"/AdminList.txt";//имя файла списка админов
 const FileAdminBot = currentDir+"/AdminBot.txt";//имя файла списка админов бота
 const FileImagesList = currentDir+"/ImagesList.txt";//имя файла списка файлов.
-const FileTextList = currentDir+"/TextList.txt";//имя файла списка текстов
+const FileTextList = currentDir+"/TextList.txt";//имя файла списка текстов.
 const FileModerImagesList = currentDir+"/ModerImagesList.txt";//имя файла списка файлов на модерацию
 const FileModerTextList = currentDir+"/ModerTextList.txt";//имя файла списка текстов на модерацию
 const FileBackUpText = currentDir+"/BackUpText.txt";//имя файла бэкапа текстов
@@ -139,6 +139,24 @@ cron.schedule(timeCron, function()
 			if (err) WriteLogFile(err+'\nfrom cron()','вчат');
 			console.log(stdout);
 		});
+	}
+});
+//установим службу удаления старых картинок из хостинга
+cron.schedule('15 2 * * *', function()//ночью каждый день
+{	if(hostingImg && fs.existsSync(PathToHostImg))//если хостинг разрешен
+	{	//Удаляем старые файлы
+		const isFile = fileName => {return fs.lstatSync(fileName).isFile()};
+		//загружаем список файлов из PathToHostImg - полный путь
+		let FilesList = fs.readdirSync(PathToHostImg).map(fileName => {return path.join(PathToHostImg, fileName)}).filter(isFile);
+		for(let i in FilesList)
+		{	let mas = FilesList[i].split('/');
+			let filename = mas[mas.length-1];//чисто имя файла
+			mas = filename.split('-');
+			if(moment().diff(moment(mas[1],'DD_MM_YYYY'), 'days') > 365)//если совсем старый файл
+			{	try {fs.unlinkSync(FilesList[i]);} catch (e) {console.log(e);}
+				WriteLogFile('Файл '+FilesList[i]+' удален из папки хостинга картинок.');
+			}
+		}
 	}
 });
 //====================================================================
@@ -762,8 +780,8 @@ try{
 		obj.link_preview_options=TempPost[chatId].link_preview_options;
 		if(TempPost[chatId].link_preview_options && TempPost[chatId].link_preview_options.is_disabled) obj.disable_web_page_preview = true;
 		if(!!TempPost[chatId].parse_mode) obj.parse_mode = TempPost[chatId].parse_mode;
-		if(!Object.hasOwn(obj[chatId], 'userName')) obj[chatId].userName = user;
-		if(!Object.hasOwn(obj[chatId], 'chatId')) obj[chatId].chatId = chatId;
+		if(!Object.hasOwn(obj, 'userName')) obj.userName = user;
+		if(!Object.hasOwn(obj, 'chatId')) obj.chatId = chatId;
 		await sendMessage(chatId, TempPost[chatId].text, obj);//показываем присланный текст
 		await sendMessage(chatId, '👆Вот что я получил.👆\nДата="'+date+' ('+day+')"\nВсе ли верно?', klava(keyboard['2']));
 	  }
