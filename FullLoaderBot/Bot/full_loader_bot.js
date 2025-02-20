@@ -1015,7 +1015,7 @@ try{
 			// кнопка Хостинг картинок
 			if(button=='Хостинг картинок')
 			{	if(!!PathToHostImg && fs.existsSync(PathToHostImg) && !!hostname)
-				{ 	str += 'Пришлите мне картинку и я верну Вам прямую ссылку.';
+				{ 	str += 'Пришлите мне картинку и я верну прямую ссылку на нее.';
 					WaitFlag[chatId]=31;//взводим флаг ожидания картинки от юзера
 					await sendMessage(chatId, str, klava(keyboard['3']));//В Начало
 				}
