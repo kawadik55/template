@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#Скрипт циклической архивации каталога. Позволяет хранить архивы только за последние N дней. Количество дней можно задать.
+
+#Путь к каталогу, где будут храниться архивы. например: /home/pi/backup/nakazan
+mkdir -p /home/pi/backup
+BACKUP_FOLDERNAME="/home/pi/backup/nakazan"
+#Создаем папку, если ее нет
+mkdir -p $BACKUP_FOLDERNAME
+
+#Название файлов архивов. Например,если указа backup-nakazan. 
+#тогда имя файла архива после архивации в 25 апреля 2011 года в 00:00 будет таким: backup-nakazan-2011-04-25--00-00.tar.gz
+BACKUP_FILENAME="backup-nakazan"
+
+#Путь к архивируемому каталогу. Например: /home/pi/js/telegram/nakazan
+FOLDERNAME="/home/pi/js/telegram/nakazan"
+
+#Количество дней хранения архивов. Все архивы, которые хранятся большее количество дней будут удалены.
+DAYCOUNT=7
+
+#Создание архива
+tar czf $BACKUP_FOLDERNAME/$BACKUP_FILENAME-`date +%F--%H-%M`.tar.gz $FOLDERNAME
+
+#Удаление архивов, которые лежат дольше чем количество дней хранения архивов.
+find $BACKUP_FOLDERNAME/ -name '*gz' -type f -mtime +$DAYCOUNT -execdir rm {} +
+
+exit 0

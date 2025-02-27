@@ -1,0 +1,12 @@
+#!/bin/bash
+# Скрипт показывает пример копирования всей папки nakazan (по ssh с портом 12345) на удаленный сервер server.ddns.net
+D=$(date  +%d.%m.%Y)
+T=$(date +%H:%M:%S)
+echo  "$D" "$T"
+
+/home/pi/js/telegram/nakazan/Backup/targz.sh
+ssh pi@server.ddns.net -p 12345 "rm -rf /home/pi/Desktop/shara/ftp/backup/telegram/nakazan"
+scp -r -P 12345 /home/pi/backup/nakazan pi@server.ddns.net:/home/pi/Desktop/shara/ftp/backup/telegram
+
+
+exit 0

@@ -1,0 +1,72 @@
+#!/bin/bash
+#=====================================================================================
+#Скрипт циклической архивации каталога. Позволяет хранить архивы только за последние N дней. Количество дней можно задать.
+#Путь к каталогу, где будут храниться архивы. например: /home/pi/backup/nakazan
+D=$(date  +%d-%m-%y)
+T=$(date +%H:%M:%S)
+echo  "$D" "$T" "архивирование"
+mkdir -p /home/pi/backup
+BACKUP_FOLDERNAME="/home/pi/backup/nakazan"
+#Создаем папку, если ее нет
+mkdir -p $BACKUP_FOLDERNAME
+
+#Название файлов архивов. Например,если указа backup-nakazan. 
+#тогда имя файла архива после архивации в 25 апреля 2011 года в 00:00 будет таким: backup-nakazan-2011-04-25--00-00.tar.gz
+BACKUP_FILENAME="backup-nakazan"
+
+#Путь к архивируемому каталогу. Например: /home/pi/js/telegram/nakazan
+FOLDERNAME="/home/pi/js/telegram/nakazan"
+
+#Количество дней хранения архивов. Все архивы, которые хранятся большее количество дней будут удалены.
+DAYCOUNT=7
+
+#Создание архива
+tar czf $BACKUP_FOLDERNAME/$BACKUP_FILENAME-`date +%F--%H-%M`.tar.gz $FOLDERNAME
+
+#Удаление архивов, которые лежат дольше чем количество дней хранения архивов.
+find $BACKUP_FOLDERNAME/ -name '*gz' -type f -mtime +$DAYCOUNT -execdir rm {} +
+#=====================================================================================
+#Скрипт копирования на Облачный диск
+T=$(date +%H:%M:%S)
+echo  "$D" "$T" "Монтируем диск"
+mount -t davfs -o rw https://webdav.cloud.mail.ru:443 /home/pi/webdav
+
+D=$(date  +%d.%m.%Y)
+T=$(date +%H:%M:%S)
+echo  "$D" "$T" "бэкап всех скриптов на https://webdav.cloud.mail.ru:443"
+DirOut="/home/pi/webdav/backup/telegram/nakazan"
+#Создаем нужные папки в облаке, если их нет
+mkdir -p /home/pi/webdav/backup
+mkdir -p /home/pi/webdav/backup/telegram
+mkdir -p $DirOut
+
+for file in $DirOut/*; do
+    name=${file##*/}
+    #Если name действительно существует в облаке
+	#if [[ -f $DirOut/$name ]]; then
+		#Проверяем отсутствие такого файла в папке источнике
+		if ! [[ -f $BACKUP_FOLDERNAME/$name ]]; then
+			echo "Удаляем из облака старый файл $name"
+			rm $DirOut/$name
+		fi
+	#fi
+done
+#Копируем всю папку с заменой файлов
+cp -r $BACKUP_FOLDERNAME /home/pi/webdav/backup/telegram/
+
+T=$(date +%H:%M:%S)
+echo  "$D" "$T" "копируем отчеты"
+#Создаем папку, если ее нет
+mkdir -p /home/pi/webdav/backup/shara
+#if [ -d "/home/pi/webdav/shara/reports" ]; then
+#  sudo rm -rf /home/pi/webdav/shara/reports
+#fi
+#Копируем всю папку с заменой файлов
+cp -r /home/pi/js/telegram/nakazan/ArchBot/reports /home/pi/webdav/shara/
+
+T=$(date +%H:%M:%S)
+echo  "$D" "$T" "размонтируем диск"
+umount /home/pi/webdav
+
+
+exit 0

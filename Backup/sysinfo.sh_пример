@@ -1,0 +1,12 @@
+#!/bin/bash
+# Этот скрипт выводит состояние диска и памяти сервера
+D=$(date  +%d-%m-%y)
+T=$(date +%H:%M:%S)
+echo  "$D" "$T" 
+echo "Диск"
+df -h /dev/vda1
+echo
+echo "Память"
+free -h
+
+exit 0

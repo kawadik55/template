@@ -1,0 +1,32 @@
+﻿
+*************************************************************************
+Сначала инсталлируем davfs2:
+sudo apt install davfs2
+
+Добавьте себя в группу davfs2:
+sudo usermod -aG davfs2 pi
+
+Создадим нужные папки:
+mkdir ~/webdav
+
+Запишем в файл свой логин-пароль от диска:
+sudo nano /etc/davfs2/secrets
+https://webdav.cloud.mail.ru:443 user@mail.ru ТокенДоступаКдиску	//в конец
+или
+sudo echo "https://webdav.cloud.mail.ru:443 user@mail.ru ТокенДоступаКдиску" >> /etc/davfs2/secrets
+
+Монтируем диск:
+sudo mount -t davfs -o rw https://webdav.cloud.mail.ru:443 /home/pi/webdav
+sudo umount /home/pi/webdav
+
+Копируем папку:
+cp -r ~/js/telegram/nakazan ~/webdav/backup/telegram/
+cp -r ~/js/telegram/nakazan/ArchBot/reports ~/webdav/shara/reports
+
+Если вы используете davfs2, отключите использование метода LOCK. 
+Для этого выставьте опцию use_locks в 0 в конфигурационном 
+файле /etc/davfs2/davfs2.conf
+*************************************************************************
+
+
+
