@@ -166,6 +166,7 @@ async function send_Images()
 				 else if(ImagesList[key].type == 'video') res = await sendVideoToBot(chat_news[name[i]], ImagesList[key].path, opt);
 				 else if(ImagesList[key].type == 'audio') {res = await sendAudioToBot(chat_news[name[i]], ImagesList[key].path, opt);}
 				 else if(ImagesList[key].type == 'document') {res = await sendDocumentToBot(chat_news[name[i]], ImagesList[key].path, opt);}
+				 else if(ImagesList[key].type == 'album') {res = await sendAlbumToBot(chat_news[name[i]], ImagesList[key].media);}
 				}
 				else res = await sendPhotoToBot(chat_news[name[i]], ImagesList[key].path, opt);
 				if(res===false) WriteLogFile('Не смог послать файл "'+key+'"'+' в '+name[i]); 
@@ -516,6 +517,22 @@ async function sendDocumentToBot(chat, path, opt)
   { console.error(getTimeStr()+err);
     console.error('Не смог послать документ в '+chat);
 	WriteLogFile(err+'\nfrom sendDocumentToBot()','вчат');
+	res = err;
+  }
+  return res;
+}
+//====================================================================
+async function sendAlbumToBot(chat, media)
+{ let res;
+  try{
+	if(!isValidChatId(chat)) return false;//если не число, то не пускаем
+	if(media=='') return false;
+	for(let i=0;i<media.length;i++) {if(!fs.existsSync(media[i].media)) return false;}
+	res = await bot.sendMediaGroup(chat,media);
+  }catch(err)
+  { console.error(getTimeStr()+err);
+    console.error('Не смог послать альбом в '+chat);
+	WriteLogFile(err+'\nfrom sendAlbumToBot()','вчат');
 	res = err;
   }
   return res;

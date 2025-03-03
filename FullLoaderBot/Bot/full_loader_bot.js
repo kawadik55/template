@@ -92,6 +92,7 @@ let masDay=['пустота','Понедельник','Вторник','Сред
 let dayOfWeek=new Object();
 let numOfDelete=new Object();
 let timeCron='';//время для крона
+let MediaList=new Object();//массив группы медиа файлов
 
 //прочитаем сохраненный файл LastMessId.txt
 try 
@@ -362,6 +363,7 @@ try{
 	const user = '@'+msg.chat.username;
 	let ban = banUser(chatId);
 	let valid = validUser(chatId);
+	let media_group_id = msg.media_group_id;
 	
 	//проверим юзера
 	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
@@ -372,7 +374,7 @@ try{
 	else //все в порядке
 	{	
 		//проверяем, действительно ли что-то ожидается
-		if(WaitFlag[chatId] == 31)//ожидаем картинку для хостинга
+		if(!!WaitFlag[chatId] && WaitFlag[chatId] == 31)//ожидаем картинку для хостинга
 		{
 			//загружаем картинку
 			let path;
@@ -400,20 +402,20 @@ try{
 			delete TempPost[chatId];
 			return;
 		}
+		//если ничего не ожидается
 		else if(!TempPost[chatId] || !WaitFlag[chatId] || WaitFlag[chatId] != 1) 
 		{	sendMessage(chatId, '🤷🏻‍♂️');
 			return;
 		}
 		let date = '', day = '';
-		if(WaitFlag[chatId]==1)
-		{	if(!!TempPost[chatId] && !!TempPost[chatId].date) 		date = TempPost[chatId].date;//дата
-			if(!!TempPost[chatId] && !!TempPost[chatId].dayOfWeek) 	day = TempPost[chatId].dayOfWeek;//день
-			delete WaitFlag[chatId];
-		}
+		if(!!TempPost[chatId] && !!TempPost[chatId].date) 		date = TempPost[chatId].date;//дата
+		if(!!TempPost[chatId] && !!TempPost[chatId].dayOfWeek) 	day = TempPost[chatId].dayOfWeek;//день
+		
 		if(!day || !date)
 		{	numOfDelete[chatId]='';
 			delete WaitFlag[chatId];
 			delete TempPost[chatId];
+			if(media_group_id) delete MediaList[media_group_id];
 			sendMessage(chatId, 'Неожиданно... игнорирую.', klava(begin(chatId)));
 			return;
 		}
@@ -422,6 +424,8 @@ try{
 		{	sendMessage(chatId, '🤷‍♂️Сожалею, но подпись к файлу не может превышать 1000 символов!🤷‍♂️', klava(keyboard['3']));
 			delete TempPost[chatId];
 			numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
+			if(media_group_id) delete MediaList[media_group_id];
 			return;
 		}
 		//если дата корявая или нет периода, то уходим
@@ -429,9 +433,12 @@ try{
 		{	numOfDelete[chatId]='';
 			delete WaitFlag[chatId];
 			delete TempPost[chatId];
+			if(media_group_id) delete MediaList[media_group_id];
 			sendMessage(chatId, 'Неожиданная дата или период... игнорирую.', klava(begin(chatId)));
 			return;
 		}
+		//удаляем флаг, если не альбом
+		if(!media_group_id) delete WaitFlag[chatId];
 		
 		//загружаем картинку на модерацию
 		let path;
@@ -441,6 +448,7 @@ try{
 		 numOfDelete[chatId]='';
 		 delete WaitFlag[chatId];
 		 delete TempPost[chatId];
+		 if(media_group_id) delete MediaList[media_group_id];
 		 return;
 		}
 		
@@ -466,13 +474,42 @@ try{
 			}
 		}
 		//переносим картинку и записываем в список картинок на модерацию
-		let len = await setToModerImagesList(path, newpath, TempPost[chatId]);//получаем последний индекс
-            
-		//пошлем сообщение админам
-		sendMessageToAdmin('Юзер "'+name+'" ('+user+') просит добавить картинку '+'"'+date+' ('+day+')"');
-			
-		sendMessage(chatId, 'Поздравляю, '+name+'! Картинка "'+date+' ('+day+')" отправлена на модерацию!', klava(begin(chatId)));
-		delete TempPost[chatId];
+		let len = await setToModerImagesList(path, newpath, TempPost[chatId], media_group_id);//получаем последний индекс
+        //если одиночная картинка
+		if(!media_group_id)
+		{	//пошлем сообщение админам
+			sendMessageToAdmin('Юзер "'+name+'" ('+user+') просит добавить картинку '+'"'+date+' ('+day+')"');
+			sendMessage(chatId, 'Поздравляю, '+name+'! Картинка "'+date+' ('+day+')" отправлена на модерацию!', klava(begin(chatId)));
+			delete TempPost[chatId];
+		}
+		else if(!!MediaList[media_group_id].count)//если альбом
+		{	TempPost[chatId] = {};
+			TempPost[chatId].date = date;
+			TempPost[chatId].dayOfWeek = day;
+			//проверяем конец альбома
+			if(MediaList[media_group_id].media.length == MediaList[media_group_id].count.length)
+			{	let obj = {};
+				obj.media = MediaList[media_group_id].media;
+				obj.dayOfWeek = MediaList[media_group_id].dayOfWeek;
+				obj.date = MediaList[media_group_id].date;
+				obj.userName = MediaList[media_group_id].userName;
+				obj.chatId = MediaList[media_group_id].chatId;
+				obj.type = MediaList[media_group_id].type;
+				delete WaitFlag[obj.chatId];
+				delete TempPost[obj.chatId];
+				delete MediaList[media_group_id];
+				obj.media = sortMedia(obj.media);
+				let len = await setToModerImagesList(null, null, obj);
+				//пошлем сообщение админам
+				sendMessageToAdmin('Юзер "'+name+'" ('+user+') просит добавить альбом '+'"'+date+' ('+day+')"');
+				sendMessage(chatId, 'Поздравляю, '+name+'! Альбом "'+date+' ('+day+')" отправлен на модерацию!', klava(begin(chatId)));
+			}
+		}
+		else
+		{	delete WaitFlag[obj.chatId];
+			delete TempPost[obj.chatId];
+			delete MediaList[media_group_id];
+		}
 	}
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(photo)','вчат');}
 });
@@ -486,6 +523,7 @@ try{
 	const user = '@'+msg.chat.username;
 	let ban = banUser(chatId);
 	let valid = validUser(chatId);
+	let media_group_id = msg.media_group_id;
 	
 	//проверим юзера
 	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
@@ -501,15 +539,14 @@ try{
 			return;
 		}
 		let date = '', day = '';
-		if(WaitFlag[chatId]==1)
-		{	if(!!TempPost[chatId] && !!TempPost[chatId].date) 		date = TempPost[chatId].date;//дата
-			if(!!TempPost[chatId] && !!TempPost[chatId].dayOfWeek) 	day = TempPost[chatId].dayOfWeek;//день
-			delete WaitFlag[chatId];
-		}
+		if(!!TempPost[chatId] && !!TempPost[chatId].date) 		date = TempPost[chatId].date;//дата
+		if(!!TempPost[chatId] && !!TempPost[chatId].dayOfWeek) 	day = TempPost[chatId].dayOfWeek;//день
+		
 		if(!day || !date)
 		{	numOfDelete[chatId]='';
 			delete WaitFlag[chatId];
 			delete TempPost[chatId];
+			if(media_group_id) delete MediaList[media_group_id];
 			sendMessage(chatId, 'Неожиданно... игнорирую.', klava(begin(chatId)));
 			return;
 		}
@@ -518,15 +555,21 @@ try{
 		{	sendMessage(chatId, '🤷‍♂️Сожалею, но подпись к ролику не может превышать 1000 символов!🤷‍♂️', klava(keyboard['3']));
 			delete TempPost[chatId];
 			numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
+			if(media_group_id) delete MediaList[media_group_id];
 			return;
 		}
 		//если дата корявая или нет периода, то уходим
 		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') || !day) 
 		{	numOfDelete[chatId]='';
 			delete TempPost[chatId];
+			delete WaitFlag[chatId];
+			if(media_group_id) delete MediaList[media_group_id];
 			sendMessage(chatId, 'Неожиданная дата или период... игнорирую.', klava(begin(chatId)));
 			return;
 		}
+		//удаляем флаг, если не альбом
+		if(!media_group_id) delete WaitFlag[chatId];
 		
 		//загружаем ролик на модерацию
 		let path;
@@ -535,6 +578,8 @@ try{
 		{sendMessage(chatId, 'Этот ролик слишком велик, разрешено не более 20Мб', klava(begin(chatId)));
 		 numOfDelete[chatId]='';
 		 delete TempPost[chatId];
+		 delete WaitFlag[chatId];
+		 if(media_group_id) delete MediaList[media_group_id];
 		 return;
 		}
 		
@@ -547,13 +592,42 @@ try{
 		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
 		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
 		//переносим ролик и записываем в список файлов на модерацию
-		let len = await setToModerImagesList(path, newpath, TempPost[chatId]);//получаем последний индекс
-            
-		//пошлем сообщение админам
-		sendMessageToAdmin('Юзер "'+name+'" ('+user+') просит добавить ролик '+'"'+date+' ('+day+')"');
-			
-		sendMessage(chatId, 'Поздравляю, '+name+'! Ролик "'+date+' ('+day+')" отправлен на модерацию!', klava(begin(chatId)));
-		delete TempPost[chatId];
+		let len = await setToModerImagesList(path, newpath, TempPost[chatId], media_group_id);//получаем последний индекс
+        //если одиночная ролик
+		if(!media_group_id)
+		{	//пошлем сообщение админам
+			sendMessageToAdmin('Юзер "'+name+'" ('+user+') просит добавить ролик '+'"'+date+' ('+day+')"');
+			sendMessage(chatId, 'Поздравляю, '+name+'! Ролик "'+date+' ('+day+')" отправлен на модерацию!', klava(begin(chatId)));
+			delete TempPost[chatId];
+		}
+		else if(!!MediaList[media_group_id].count)//если альбом
+		{	TempPost[chatId] = {};
+			TempPost[chatId].date = date;
+			TempPost[chatId].dayOfWeek = day;
+			//проверяем конец альбома
+			if(MediaList[media_group_id].media.length == MediaList[media_group_id].count.length)
+			{	let obj = {};
+				obj.media = MediaList[media_group_id].media;
+				obj.dayOfWeek = MediaList[media_group_id].dayOfWeek;
+				obj.date = MediaList[media_group_id].date;
+				obj.userName = MediaList[media_group_id].userName;
+				obj.chatId = MediaList[media_group_id].chatId;
+				obj.type = MediaList[media_group_id].type;
+				delete WaitFlag[obj.chatId];
+				delete TempPost[obj.chatId];
+				delete MediaList[media_group_id];
+				obj.media = sortMedia(obj.media);
+				let len = await setToModerImagesList(null, null, obj);
+				//пошлем сообщение админам
+				sendMessageToAdmin('Юзер "'+name+'" ('+user+') просит добавить альбом '+'"'+date+' ('+day+')"');
+				sendMessage(chatId, 'Поздравляю, '+name+'! Альбом "'+date+' ('+day+')" отправлен на модерацию!', klava(begin(chatId)));
+			}
+		}
+		else
+		{	delete WaitFlag[obj.chatId];
+			delete TempPost[obj.chatId];
+			delete MediaList[media_group_id];
+		}
 	}
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(video)','вчат');}
 });
@@ -567,6 +641,7 @@ try{
 	const user = '@'+msg.chat.username;
 	let ban = banUser(chatId);
 	let valid = validUser(chatId);
+	let media_group_id = msg.media_group_id;
 	
 	//проверим юзера
 	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
@@ -576,17 +651,18 @@ try{
 	}
 	else //все в порядке
 	{	
+		if(media_group_id) return;//не пропускаем пока, если альбом
 		//проверяем, действительно ли что-то ожидается
 		if(!TempPost[chatId] || !WaitFlag[chatId] || WaitFlag[chatId] != 1) 
 		{	sendMessage(chatId, '🤷🏻‍♂️');
 			return;
 		}
 		let date = '', day = '';
-		if(WaitFlag[chatId]==1)
-		{	if(!!TempPost[chatId] && !!TempPost[chatId].date) 		date = TempPost[chatId].date;//дата
-			if(!!TempPost[chatId] && !!TempPost[chatId].dayOfWeek) 	day = TempPost[chatId].dayOfWeek;//день
-			delete WaitFlag[chatId];
-		}
+		
+		if(!!TempPost[chatId] && !!TempPost[chatId].date) 		date = TempPost[chatId].date;//дата
+		if(!!TempPost[chatId] && !!TempPost[chatId].dayOfWeek) 	day = TempPost[chatId].dayOfWeek;//день
+		//delete WaitFlag[chatId];
+		
 		if(!day || !date)
 		{	numOfDelete[chatId]='';
 			delete WaitFlag[chatId];
@@ -598,6 +674,7 @@ try{
 		if(Object.hasOwn(msg, 'caption') && msg.caption.length > 1000)
 		{	sendMessage(chatId, '🤷‍♂️Сожалею, но подпись к аудио не может превышать 1000 символов!🤷‍♂️', klava(keyboard['3']));
 			delete TempPost[chatId];
+			delete WaitFlag[chatId];
 			numOfDelete[chatId]='';
 			return;
 		}
@@ -605,9 +682,12 @@ try{
 		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') || !day)  
 		{	numOfDelete[chatId]='';
 			delete TempPost[chatId];
+			delete WaitFlag[chatId];
 			sendMessage(chatId, 'Неожиданная дата или период... игнорирую.', klava(begin(chatId)));
 			return;
 		}
+		//удаляем флаг, если не альбом
+		if(!media_group_id) delete WaitFlag[chatId];
 		
 		//загружаем трек на модерацию
 		let path;
@@ -648,6 +728,7 @@ try{
 	const user = '@'+msg.chat.username;
 	let ban = banUser(chatId);
 	let valid = validUser(chatId);
+	let media_group_id = msg.media_group_id;
 	
 	//проверим юзера
 	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
@@ -657,6 +738,7 @@ try{
 	}
 	else //все в порядке
 	{	
+		if(media_group_id) return;//не пропускаем пока, если альбом
 		//проверяем, действительно ли что-то ожидается
 		if(!TempPost[chatId] || !WaitFlag[chatId] || WaitFlag[chatId] != 1) 
 		{	sendMessage(chatId, '🤷🏻‍♂️');
@@ -724,14 +806,20 @@ try{
 LoaderBot.on('message', async (msg) => 
 {	
 try{	
-	if(!msg.text) {return;}//если текста нет
-	if(msg.text.slice(0,1)=='/') return;//если команда
-	
 	const chatId = msg.chat.id;
 	const name = ' '+msg.chat.first_name;
 	const user = '@'+msg.chat.username;
 	let ban = banUser(chatId);
 	let valid = validUser(chatId);
+	let media_group_id = msg.media_group_id;
+	
+	//if(!msg.text) {return;}//если текста нет
+	if(!msg.text && !media_group_id) {return;}//если текста нет и не альбом
+	if(!!msg.text && msg.text.slice(0,1)=='/') return;//если команда
+	/*if(media_group_id)
+	{	WriteLogFile('\nЛовим message\n'+JSON.stringify(msg,null,2),'вчат');
+		return;
+	}*/
 	
 	//проверим юзера
 	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
@@ -741,8 +829,27 @@ try{
 	}
 	else //все в порядке
 	{
-	  //проверяем текст
-		if(msg.text.length > 4050)
+		if(media_group_id)//если это альбом
+		{	if(Object.hasOwn(msg, 'photo') || Object.hasOwn(msg, 'video'))
+			{	if(!Object.hasOwn(MediaList, media_group_id))//если первый файл альбома
+				{	MediaList[media_group_id] = {};
+					MediaList[media_group_id].media = [];
+					MediaList[media_group_id].count = [];
+					MediaList[media_group_id].type = 'album';
+				}
+				if(Object.hasOwn(msg, 'photo'))
+				{	let mas = Object.keys(msg.photo);
+					MediaList[media_group_id].count.push(msg.photo[mas.length-1].file_id);
+				}
+				if(Object.hasOwn(msg, 'video'))
+				{	MediaList[media_group_id].count.push(msg.video.file_id);
+				}
+			}
+			return;
+		}
+		
+		//проверяем текст
+		if(!msg.text && msg.text.length > 4050)
 		{	sendMessage(chatId, '🤷‍♂️Сожалею, но длина текста не может превышать 4000 символов!🤷‍♂️', klava(keyboard['3']));
 			delete WaitFlag[chatId];//удаляем из листа ожиданий
 			delete TempPost[chatId];
@@ -801,7 +908,7 @@ try{
 		else if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY'))//если дата верна
 		{	
 			TempPost[chatId].date = date;//запоминаем дату
-			let str = 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ), который необходимо опубликовать. ';
+			let str = 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ, альбом), который необходимо опубликовать. ';
 			str += 'Его можно просто скопировать-вставить из любого чата, или загрузить из хранилища. ';
 			str += 'Форматирование текста и подписи сохраняется.';
 			WaitFlag[chatId]=1;//взводим флаг ожидания текста или файла от юзера
@@ -836,6 +943,7 @@ try{
 			  else if(List[num].type == 'video') {await sendVideo(chatId, List[num].path, opt);}
 			  else if(List[num].type == 'audio') {await sendAudio(chatId, List[num].path, opt);}
 			  else if(List[num].type == 'document') {await sendDocument(chatId, List[num].path, opt);}
+			  else if(List[num].type=='album') {await sendAlbum(chatId, List[num].media);}
 			 }
 			 else await sendPhoto(chatId, List[num].path, opt);
 			}
@@ -861,6 +969,7 @@ try{
 			 else if(ImagesList[num].type == 'video') {await sendVideo(chatId, ImagesList[num].path, opt);}
 			 else if(ImagesList[num].type == 'audio') {await sendAudio(chatId, ImagesList[num].path, opt);}
 			 else if(ImagesList[num].type == 'document') {await sendDocument(chatId, ImagesList[num].path, opt);}
+			 else if(ImagesList[num].type=='album') {await sendAlbum(chatId, ImagesList[num].media);}
 			}
 			else await sendPhoto(chatId, ImagesList[num].path, opt);
 			sendMessage(chatId, '👆 Удаляем этот файл? 👆', klava(keyboard['8']));
@@ -899,6 +1008,7 @@ try{
 			 else if(ModerImagesList[num].type == 'video') {await sendVideo(chatId, ModerImagesList[num].path, opt);}
 			 else if(ModerImagesList[num].type == 'audio') {await sendAudio(chatId, ModerImagesList[num].path, opt);}
 			 else if(ModerImagesList[num].type == 'document') {await sendDocument(chatId, ModerImagesList[num].path, opt);}
+			 else if(ModerImagesList[num].type=='album') {await sendAlbum(chatId, ModerImagesList[num].media);}
 			}
 			else await sendPhoto(chatId, ModerImagesList[num].path, opt);
 			sendMessage(chatId, '👆 Удаляем этот файл? 👆', klava(keyboard['103']));
@@ -937,12 +1047,21 @@ try{
 		  else if(ModerImagesList[numOfDelete[chatId]].type == 'video') {await sendVideo(ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
 		  else if(ModerImagesList[numOfDelete[chatId]].type == 'audio') {await sendAudio(ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
 		  else if(ModerImagesList[numOfDelete[chatId]].type == 'document') {await sendDocument(ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
+		  else if(ModerImagesList[numOfDelete[chatId]].type == 'album') {await sendAlbum(ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].media);}
 		 }
 		 else await sendPhoto(ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);
 		 await sendMessage(ModerImagesList[numOfDelete[chatId]].chatId, '😢 К сожалению этот файл не прошел модерацию и был удален по причине:\n'+msg.text);
 		}
 		try//удаляем сам файл
-		{	fs.unlinkSync(ModerImagesList[numOfDelete[chatId]].path);
+		{	if(!!ModerImagesList[numOfDelete[chatId]].path) fs.unlinkSync(ModerImagesList[numOfDelete[chatId]].path);
+			if(!!ModerImagesList[numOfDelete[chatId]].media)
+			{	let mas = Object.keys(ModerImagesList[numOfDelete[chatId]].media);
+				for(let i=0;i<mas.length;i++)
+				{	if(fs.existsSync(ModerImagesList[numOfDelete[chatId]].media[i].media))
+					{	fs.unlinkSync(ModerImagesList[numOfDelete[chatId]].media[i].media);
+					}
+				}
+			}
 		} catch (e) {console.log(e);}
 		delete ModerImagesList[numOfDelete[chatId]];//удаляем запись в списке
 		await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(get_keyb100()));
@@ -1143,7 +1262,7 @@ try{
 			{	let date = moment().add(1,'day').format('DD.MM.YYYY');//дата на завтра в строке
 				TempPost[chatId].date = date;//запоминаем дату
 				str = 'Режим Завтра, на '+date+'\n';
-				str += 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ), который необходимо опубликовать. ';
+				str += 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ, альбом), который необходимо опубликовать. ';
 				str += 'Его можно просто скопировать-вставить из любого чата, или загрузить из хранилища. ';
 				str += 'Форматирование текста и подписи сохраняется.';
 				WaitFlag[chatId]=1;//взводим флаг ожидания текста или файла от юзера
@@ -1154,7 +1273,7 @@ try{
 			{	let date = moment().add(0,'day').format('DD.MM.YYYY');//дата на Сегодня в строке
 				TempPost[chatId].date = date;//запоминаем дату
 				str = 'Режим "Только Сегодня", на '+date+'\n';
-				str += 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ), который необходимо опубликовать. ';
+				str += 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ, альбом), который необходимо опубликовать. ';
 				str += 'Его можно просто скопировать-вставить из любого чата, или загрузить из хранилища. ';
 				str += 'Форматирование текста и подписи сохраняется.';
 				WaitFlag[chatId]=1;//взводим флаг ожидания текста или файла от юзера
@@ -1203,7 +1322,31 @@ try{
 							break;
 						}
 					}
-				}					
+				}
+				//это альбом
+				if(Object.hasOwn(List[numOfDelete[chatId]], 'media'))
+				{	await readImagesList();//читаем файл ImagesList
+					let keys = Object.keys(ImagesList);
+					//ищем объект в ImagesList
+					for(i in keys) 
+					{	if(JSON.stringify(ImagesList[keys[i]]) === mask) 
+						{	try//удаляем сам файл
+							{	let mas = Object.keys(ImagesList[keys[i]].media);
+								for(let j=0;j<mas.length;j++)
+								{	if(fs.existsSync(ImagesList[keys[i]].media[j].media))
+									{	fs.unlinkSync(ImagesList[keys[i]].media[j].media);
+									}
+								}
+							} catch (e) {console.log(e);} 
+							delete ImagesList[keys[i]];//удаляем запись в списке
+							await sendMessage(chatId, 'Выбранный альбом успешно удален!', klava(begin(chatId)));
+							ImagesList = shiftObject(ImagesList);//упорядочиваем номера-ключи в массиве
+							WriteFileJson(FileImagesList,ImagesList);//сохраняем вычищенный список
+							sendMessageToAdmin('Юзер "'+name+'" ('+user+') удалил Альбом "'+date+'"');//Админам	
+							break;
+						}
+					}
+				}
 			}
 			else
 			{	await sendMessage(chatId, 'Вот и хорошо, торопиться не будем!', klava(begin(chatId)));
@@ -1215,8 +1358,15 @@ try{
 		{
 			if(button=='Да')//удаляем файл
 			{	await readImagesList();//читаем файл ImagesList
-				try//удаляем сам файл
-				{	fs.unlinkSync(ImagesList[numOfDelete[chatId]].path);
+				try//удаляем сам файл или альбом
+				{	if(!!ImagesList[numOfDelete[chatId]].path)
+					{	fs.unlinkSync(ImagesList[numOfDelete[chatId]].path);
+					}
+					else if(!!ImagesList[numOfDelete[chatId]].media)
+					{	for(let i=0; i<ImagesList[numOfDelete[chatId]].media.length; i++)
+						{	fs.unlinkSync(ImagesList[numOfDelete[chatId]].media[i].media);
+						}
+					}
 				} catch (e) {console.log(e);}
 				let date = ImagesList[numOfDelete[chatId]].date;//временно сохраняем дату для Админов
                 delete ImagesList[numOfDelete[chatId]];//удаляем запись в списке
@@ -1368,18 +1518,27 @@ try{
 					  else if(ModerImagesList[key].type == 'video') {await sendVideo(ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
 					  else if(ModerImagesList[key].type == 'audio') {await sendAudio(ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
 					  else if(ModerImagesList[key].type == 'document') {await sendDocument(ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
+					  else if(ModerImagesList[key].type == 'album') {await sendAlbum(ModerImagesList[key].chatId, ModerImagesList[key].media);}
 					 }
 					 else await sendPhoto(ModerImagesList[key].chatId, ModerImagesList[key].path, opt);
 					 await sendMessage(ModerImagesList[key].chatId, '👍🏻 Ура! Этот файл прошел модерацию и будет опубликован!!');
 					}
-					let path = ModerImagesList[key].path;
-					let mas = path.split('/');
-					let fileName = mas[mas.length-1];//вытащим имя файла
-					let newpath = PathToImages+'/'+fileName;//новый путь файла для модерации
-					//переносим файл и записываем в список файлов
-					let len = await setToImagesList(newpath, ModerImagesList[key]);//получаем последний индекс
-					//публикуем файл сразу первый раз, если по Дате, или день недели совпадает
-					await publicImage(ImagesList[len]);
+					if(!!ModerImagesList[key].path)//одиночный файл
+					{	let path = ModerImagesList[key].path;
+						let mas = path.split('/');
+						let fileName = mas[mas.length-1];//вытащим имя файла
+						let newpath = PathToImages+'/'+fileName;//новый путь файла для модерации
+						//переносим файл и записываем в список файлов
+						let len = await setToImagesList(newpath, ModerImagesList[key]);//получаем последний индекс
+						//публикуем файл сразу первый раз, если по Дате, или день недели совпадает
+						await publicImage(ImagesList[len]);
+					}
+					if(!!ModerImagesList[key].media)//альбом
+					{	//переносим альбом и записываем в список файлов
+						let len = await setToImagesList(null, ModerImagesList[key]);//получаем последний индекс
+						//публикуем альбом сразу первый раз, если по Дате, или день недели совпадает
+						await publicImage(ImagesList[len]);
+					}
 				}
 				//теперь очистим массив модерации
 				ModerImagesList = new Object();
@@ -1928,26 +2087,57 @@ try{
 		if(!isNaN(time))//только по дате
 		{let days = time.diff(now, 'days')+1;
 		 if(days<=0 || !time)//если вчерашняя и далее 
-		 {try{fs.unlinkSync(ImagesList[key].path);} catch(err){}//удаляем файл из папки
+		 {try{
+			 if(!!ImagesList[key].path) fs.unlinkSync(ImagesList[key].path);//удаляем файл из папки
+			 if(!!ImagesList[key].media)
+			 {	for(let i=0;i<ImagesList[key].media.length;i++) fs.unlinkSync(ImagesList[key].media[i].media);
+			 }
+			} catch(err){}
 		  delete ImagesList[key];//удаляем запись, если просрочена
 		  flag = 1;
 		 }
 		}
 		else if(ImagesList[key].date==='')//удаляем запись, как битую
-		{try{fs.unlinkSync(ImagesList[key].path);} catch(err){}//удаляем файл из папки
+		{try{if(!!ImagesList[key].path) fs.unlinkSync(ImagesList[key].path);//удаляем файл из папки
+			 if(!!ImagesList[key].media)
+			 {	for(let i=0;i<ImagesList[key].media.length;i++) fs.unlinkSync(ImagesList[key].media[i].media);
+			 }
+			} catch(err){}//удаляем файл из папки
 		 delete ImagesList[key]; 
 		 flag = 1;
 		}
 	}
 	if(flag) WriteFileJson(FileImagesList,ImagesList);//сохраняем вычищенный список
-	
+	//---------------------------------------------
 	//Удаляем старые файлы, потерянные
 	const isFile = fileName => {return fs.lstatSync(fileName).isFile()};
     //загружаем список файлов из Images - полный путь
     let FilesList = fs.readdirSync(PathToImages).map(fileName => {return path.join(PathToImages, fileName)}).filter(isFile);
     //сравниваем с файлами из рабочего списка и удаляем ненужные
     let key=[];
-	for(let i in ImagesList) key.push(ImagesList[i].path);//собираем массив рабочих путей из списка
+	for(let i in ImagesList) //собираем массив рабочих путей из списка
+	{	if(!!ImagesList[i].path) key.push(ImagesList[i].path);
+		if(!!ImagesList[i].media)
+		{	for(let j=0;j<ImagesList[i].media.length;j++) key.push(ImagesList[i].media[j].media);
+		}
+	}
+    for(let i in FilesList)
+    {	//если в папке есть файл, которого нет в рабочем списке
+		if(key.indexOf(FilesList[i])==-1)
+        {	fs.unlinkSync(FilesList[i]);
+		}
+    }
+	
+	//загружаем список файлов из Images - полный путь
+    FilesList = fs.readdirSync(PathToImagesModer).map(fileName => {return path.join(PathToImagesModer, fileName)}).filter(isFile);
+    //сравниваем с файлами из рабочего списка и удаляем ненужные
+    key=[];
+	for(let i in ModerImagesList) //собираем массив рабочих путей из списка
+	{	if(!!ModerImagesList[i].path) key.push(ModerImagesList[i].path);
+		if(!!ModerImagesList[i].media)
+		{	for(let j=0;j<ModerImagesList[i].media.length;j++) key.push(ModerImagesList[i].media[j].media);
+		}
+	}
     for(let i in FilesList)
     {	//если в папке есть файл, которого нет в рабочем списке
 		if(key.indexOf(FilesList[i])==-1)
@@ -2120,6 +2310,22 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom sendPhoto()','вчат');return Promise.reject(false);}
 }
 //====================================================================
+async function sendAlbum(chatId, media, opt)
+{
+try{
+	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
+	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	let mas = [...media];
+	if(!!opt && !!opt.caption)
+	{	if(!mas[0].caption) mas[0].caption = '';
+		mas[0].caption += opt.caption;
+	}
+	if(!!mas[0].caption && mas[0].caption.length > 1024) {mas[0].caption = mas[0].caption.substr(0,1023);}//обрезаем подпись
+	await LoaderBot.sendMediaGroup(chatId, mas);
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom sendPhoto()','вчат');return Promise.reject(false);}
+}
+//====================================================================
 async function sendVideo(chatId, path, opt)
 {
 try{
@@ -2187,7 +2393,7 @@ async function readImagesList()
 	{	ImagesList = shiftObject(JSON.parse(fs.readFileSync(FileImagesList))); 
 		let flag=0;
 		for(let key in ImagesList) 
-		{	if(!fs.existsSync(ImagesList[key].path)) 
+		{	if(!!ImagesList[key].path && !fs.existsSync(ImagesList[key].path)) 
 			{	await sendMessage(chat_Supervisor, 'Обнаружено отсутствие файла из списка '+ImagesList[key].path);
 			}
 		}
@@ -2270,7 +2476,7 @@ try{
 				if(!!List[mas[i]].parse_mode) opt.parse_mode = List[mas[i]].parse_mode;
 				await sendMessage(chatId, str, opt);
 			}
-			else if(Object.hasOwn(List[mas[i]], 'path'))//это файл
+			else if(Object.hasOwn(List[mas[i]], 'path'))//это одиночный файл
 			{	let opt = new Object();
 				if(Object.hasOwn(List[mas[i]], 'caption')) 
 				{	opt.caption = List[mas[i]].caption;
@@ -2288,6 +2494,19 @@ try{
 				 else if(List[mas[i]].type=='document') {await sendDocument(chatId, List[mas[i]].path, opt);}
 				}
 				else await sendPhoto(chatId, List[mas[i]].path, opt);
+			}
+			else if(Object.hasOwn(List[mas[i]], 'media'))//это альбом
+			{	let opt = new Object();
+				opt.caption = '';
+				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+")";
+				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+")";
+				if(Object.hasOwn(List[mas[i]], 'type'))
+				{if(List[mas[i]].type=='image') {await sendPhoto(chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='video') {await sendVideo(chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='audio') {await sendAudio(chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='document') {await sendDocument(chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='album') {await sendAlbum(chatId, List[mas[i]].media, opt);}
+				}
 			}
 		}
 	}
@@ -2369,6 +2588,7 @@ try{
 			 else if(ModerImagesList[key].type=='video') {await sendVideo(chatId, ModerImagesList[key].path, opt);}
 			 else if(ModerImagesList[key].type=='audio') {await sendAudio(chatId, ModerImagesList[key].path, opt);}
 			 else if(ModerImagesList[key].type=='document') {await sendDocument(chatId, ModerImagesList[key].path, opt);}
+			 else if(ModerImagesList[key].type=='album') {await sendAlbum(chatId, ModerImagesList[key].media, opt);}
 			}
 			else await sendPhoto(chatId, ModerImagesList[key].path, opt);
 		}
@@ -2567,26 +2787,33 @@ try{
 async function setToImagesList(newpath, obj)
 {
 try{
-	//скопируем файл с новым именем в основную папку Images
-	fs.copyFileSync(obj.path, newpath);
-	//сразу удалим временный файл
-	try {fs.unlinkSync(obj.path);} catch (e) {console.log(e);}
+	if(!!obj.path)
+	{	//скопируем файл с новым именем в основную папку Images
+		fs.copyFileSync(obj.path, newpath);
+		//сразу удалим временный файл
+		try {fs.unlinkSync(obj.path);} catch (e) {console.log(e);}
+		obj.path = newpath;//новый путь
+	}
+	else if(!!obj.media)//если альбом
+	{	for(let i in obj.media)
+		{	let mas = obj.media[i].media.split('/');
+			let fileName = mas[mas.length-1];//вытащим имя файла
+			newpath = PathToImages+'/'+fileName;//новый путь для файла
+			//скопируем файл с новым именем в основную папку Images
+			fs.copyFileSync(obj.media[i].media, newpath);
+			//сразу удалим временный файл
+			try {fs.unlinkSync(obj.media[i].media);} catch (e) {console.log(e);}
+			//заменим путь в объекте
+			obj.media[i].media = newpath;
+		}
+	}
 	await readImagesList();//читаем список из файла
 	ImagesList = shiftObject(ImagesList);//упорядочиваем номера-ключи
 	//определим длину массива
 	let len=Object.keys(ImagesList).length;
 	if(len===0) len=1;
 	else {let mas=Object.keys(ImagesList); len=mas[mas.length-1]; len++;}//последний ключ + 1
-    ImagesList[len]=obj;
-    ImagesList[len].path = newpath;//новый путь
-    /*ImagesList[len].dayOfWeek = obj.dayOfWeek;//день недели
-	ImagesList[len].date = obj.date;
-    if(Object.hasOwn(obj, 'caption')) ImagesList[len].caption = obj.caption;//подпись
-	if(Object.hasOwn(obj, 'caption_entities')) ImagesList[len].caption_entities = obj.caption_entities;//форматирование
-	if(Object.hasOwn(obj, 'parse_mode')) ImagesList[len].parse_mode = obj.parse_mode;//режим
-	if(Object.hasOwn(obj, 'type')) ImagesList[len].type = obj.type;//тип файла
-	if(Object.hasOwn(obj, 'userName')) ImagesList[len].userName = obj.userName;
-	if(Object.hasOwn(obj, 'chatId')) ImagesList[len].chatId = obj.chatId;*/
+    ImagesList[len]=obj;//переносим в новый список
 	
     ImagesList = shiftObject(ImagesList);//упорядочиваем номера-ключи в массиве
 	WriteFileJson(FileImagesList,ImagesList);//сохраним список в файл
@@ -2594,13 +2821,36 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom setToImagesList()','вчат'); return -1;}
 }
 //====================================================================
-async function setToModerImagesList(oldpath, newpath, obj)
+async function setToModerImagesList(oldpath, newpath, obj, media_group_id)
 {
 try{
-	//скопируем файл с новым именем в папку moder
-	fs.copyFileSync(oldpath, newpath);
-	//сразу удалим временный файл
-	try {fs.unlinkSync(oldpath);} catch (e) {console.log(e);}
+	if(!fs.existsSync(PathToImagesModer)) {fs.mkdirSync(PathToImagesModer);}//создадим папку, если ее нет
+	if(!!oldpath && !!newpath)
+	{	//скопируем файл с новым именем в папку moder
+		fs.copyFileSync(oldpath, newpath);
+		//сразу удалим временный файл
+		try {fs.unlinkSync(oldpath);} catch (e) {console.log(e);}
+	}
+	//если это часть альбома
+	if(!!media_group_id)
+	{	if(!Object.hasOwn(MediaList, media_group_id) || MediaList[media_group_id].media.length==0)//если первый файл альбома
+		{	if(!Object.hasOwn(MediaList, media_group_id)) MediaList[media_group_id] = {};
+			if(!Object.hasOwn(MediaList, 'media')) MediaList[media_group_id].media = [];
+			if(Object.hasOwn(obj, 'dayOfWeek')) MediaList[media_group_id].dayOfWeek = obj.dayOfWeek;//день недели или однократно или Дата
+			if(Object.hasOwn(obj, 'date')) MediaList[media_group_id].date = obj.date;//дата
+			if(Object.hasOwn(obj, 'userName')) MediaList[media_group_id].userName = obj.userName;
+			if(Object.hasOwn(obj, 'chatId')) MediaList[media_group_id].chatId = obj.chatId;
+			MediaList[media_group_id].type = 'album';
+		}
+		let mobj = {};
+		if(Object.hasOwn(obj, 'type')) {if(obj.type=='image') mobj.type = 'photo'; else mobj.type = obj.type;}//тип
+		if(Object.hasOwn(obj, 'caption')) mobj.caption = obj.caption;
+		if(Object.hasOwn(obj, 'caption_entities')) mobj.caption_entities = obj.caption_entities;
+		if(Object.hasOwn(obj, 'parse_mode')) mobj.parse_mode = obj.parse_mode;
+		mobj.media = newpath;//путь
+		MediaList[media_group_id].media.push(mobj);//пушим объект
+		return 0;
+	}
 	readModerImagesList();//читаем список из файла
 	ModerImagesList = shiftObject(ModerImagesList);//упорядочиваем номера-ключи
 	//определим длину массива
@@ -2608,12 +2858,13 @@ try{
 	if(len==0) len=1;
 	else {let mas=Object.keys(ModerImagesList); len=mas[mas.length-1]; len++;}//последний ключ + 1
     ModerImagesList[len]=new Object();
-    ModerImagesList[len].path = newpath;//путь
-    ModerImagesList[len].dayOfWeek = obj.dayOfWeek;//день недели или однократно или Дата
+	if(!obj.media) ModerImagesList[len].path = newpath;//путь
+	else ModerImagesList[len].media = obj.media;
+	ModerImagesList[len].dayOfWeek = obj.dayOfWeek;//день недели или однократно или Дата
 	ModerImagesList[len].date = obj.date;//дата
-    //ModerImagesList[len].chatId = obj.chatId;
-    if(!!obj && !!obj.caption) ModerImagesList[len].caption = obj.caption;//подпись
-    if(Object.hasOwn(obj, 'caption_entities')) ModerImagesList[len].caption_entities = obj.caption_entities;//форматирование
+	//ModerImagesList[len].chatId = obj.chatId;
+	if(!!obj && !!obj.caption) ModerImagesList[len].caption = obj.caption;//подпись
+	if(Object.hasOwn(obj, 'caption_entities')) ModerImagesList[len].caption_entities = obj.caption_entities;//форматирование
 	if(Object.hasOwn(obj, 'parse_mode')) ModerImagesList[len].parse_mode = obj.parse_mode;
 	if(Object.hasOwn(obj, 'type')) ModerImagesList[len].type = obj.type;//тип файла
 	if(Object.hasOwn(obj, 'userName')) ModerImagesList[len].userName = obj.userName;
@@ -2648,6 +2899,7 @@ try{
 				else if(obj.type=='video') {await NewsBot.sendVideo(chat_news[i], obj.path, opt);}//если видео
 				else if(obj.type=='audio') {await NewsBot.sendAudio(chat_news[i], obj.path, opt);}//если audio
 				else if(obj.type=='document') {await NewsBot.sendDocument(chat_news[i], obj.path, opt);}//если document
+				else if(obj.type=='album') {await NewsBot.sendMediaGroup(chat_news[i], obj.media);}
 			}
 			else NewsBot.sendPhoto(chat_news[i], obj.path, opt);//без типа - картинка 
 		  }
@@ -2745,6 +2997,8 @@ function setContextFiles()
 	let RUN_OBJ = (process.env.RUN_OBJ) ? process.env.RUN_OBJ : '';//объект с выбором нужных функций из ENV
 	if(!fs.existsSync(TokenDir)) {fs.mkdirSync(TokenDir);}//создадим папку, если ее нет
 	//if(!fs.existsSync(RassilkaDir)) {fs.mkdirSync(RassilkaDir);}//создадим папку, если ее нет
+	if(!fs.existsSync(PathToImages)) {fs.mkdirSync(PathToImages);}//создадим папку, если ее нет
+	if(!fs.existsSync(PathToImagesModer)) {fs.mkdirSync(PathToImagesModer);}//создадим папку, если ее нет
 	if(fs.existsSync(cBot))
 	{	//текстовые файлы переписываем принудительно
 		if(fs.existsSync(cBot+'/readme.txt')) {fs.copyFileSync(cBot+'/readme.txt',currentDir+'/readme.txt');}
@@ -2892,6 +3146,21 @@ function setContextFiles()
 			//если запрошено изменение имени бота в ENV
 			if(!!NAME_NEWS) {obj.name = NAME_NEWS; WriteFileJson(TokenDir+"/news_bot.json",obj);}
 		}
+}
+//====================================================================
+//сортируем массив медиа, если caption не в первом элементе
+function sortMedia(mas)
+{	if(!!mas[0].caption) return mas;
+	let media = [];
+	for(let i=0;i<mas.length;i++)
+	{	if(!!mas[i].caption)
+		{	media.push(mas[i]);//положим первым
+			mas.splice(i,1);
+			break;
+		}
+	}
+	for(let i=0;i<mas.length;i++) {media.push(mas[i]);}//остатки
+	return media;
 }
 //====================================================================
 function getKeyList()
