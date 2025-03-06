@@ -31,6 +31,7 @@ var FileRaspis = currentDir+'/../Rassilka/raspis.txt';//файл с распис
 const FileTen = currentDir+"/tenstep.txt";//файл вопросов к 10-му шагу
 const TokenDir=currentDir+"/Token";//путь к папке с токенами
 const LOGGING = true;//включение/выключение записи лога в файл
+const SPEEDLIMIT = 15;//ограничение скорости сообщений в сек
 //---------------------------------------------------
 //сразу проверяем или создаем необходимые папки и файлы
 setContextFiles();
@@ -67,6 +68,7 @@ let TenList = [];//массив вопросов к 10-му шагу
 let AnswerList = {};//массивы ответов от пользователей по 10-му шагу
 let PRIVAT = 1;//глобальная приватность, пускает только Админа и Юзера с разрешениями
 let DISTANCE = 1;//дистанция в днях о скором наступлении события
+let isPausing = false;//флаг временной остановки бота
 
 //проверим наличие файла дерева кнопок, если файл отсутствует, то создадим его 
 try {Tree = JSON.parse(fs.readFileSync(FileTree));} 
@@ -165,7 +167,7 @@ if(fs.existsSync(currentDir+'/answer.txt'))
 getDayCount();//загрузим счетчики текущего дня
 
 /*(async () => {
-	for(let i=0;i<5;i++)
+	for(let i=0;i<20;i++)
 	{
 		let res = await sendMessage(chat_Supervisor, i);
 		//await sendMessage(chat_Supervisor, JSON.stringify(res,null,2));
@@ -1478,9 +1480,10 @@ try{
 });
 //====================================================================
 async function sendMessage(chatId,str,option,index)
-{   
+{	
 try{
 	let res;
+	//if(isPausing) return res;//если бот на время забанен
 	if(!isValidChatId(chatId))//если не число, то не пускаем 
 	{	res = '\nfrom sendMessage("'+chatId+'")=>if(!isValidChatId(chatId))';
 		WriteLogFile(res,'непосылать');
@@ -1503,12 +1506,21 @@ try{
 	if(Object.hasOwn(option, 'link_preview_options')) option.link_preview_options = JSON.stringify(option.link_preview_options);
 	//посылаем сообщение
 	if(!!option.text) delete option.text;
+	sendMessage.count = (sendMessage.count || 0) + 1;//счетчик сообщений в секунду
+	if(sendMessage.count == 1) setTimeout(() => {sendMessage.count = 0;}, 1000);//на первом заряжаем таймер
+	if(sendMessage.count > SPEEDLIMIT)//достигли максимума
+	{	isPausing = true;
+		while(sendMessage.count != 0) await sleep(50);
+		sendMessage.count = 1; setTimeout(() => {sendMessage.count = 0;}, 1000);//на первом заряжаем таймер
+	}
+	isPausing = false;
 	try{res = await Bot.sendMessage(chatId, str, option);
 	}catch(err)
 	{	console.log(err+'\nfrom Bot.sendMessage("'+chatId+'")'); 
 		if(String(err).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
 		else if(String(err).indexOf('bot was blocked by the user')+1) delete LastMessId[chatId];//удаляем ушедшего
 		else if(String(err).indexOf('chat not found')+1) delete LastMessId[chatId];//удаляем ушедшего
+		else if(String(err).indexOf('Too Many Requests:')+1) WriteLogFile(err+'\nfrom Bot.sendMessage');
 		else WriteLogFile(err+'\nfrom Bot.sendMessage("'+chatId+'")'+'\nstr = '+str+'\noption = '+JSON.stringify(option,null,2));
 		return err;	
 	}
@@ -1530,7 +1542,6 @@ try{
 	return res;
 	
 }catch(err){
-	console.log(err+'\nfrom sendMessage("'+chatId+'")');
 	WriteLogFile(err+'\nfrom sendMessage("'+chatId+'")');
 	return err;	
 }
@@ -1935,6 +1946,7 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 async function sendDocument(chatId, path, option)
 {	
 try{	let res;
+		while(isPausing) await sleep(100);//если бот на время забанен
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendDocument("'+chatId+'")=>if(!isValidChatId(chatId))';
 			WriteLogFile(res,'непосылать');
@@ -1967,6 +1979,7 @@ try{	let res;
 async function sendAudio(chatId, path, option)
 {	
 try{	let res;
+		while(isPausing) await sleep(100);//если бот на время забанен
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendAudio("'+chatId+'")=>if(!isValidChatId(chatId))';
 			WriteLogFile(res,'непосылать');
@@ -1999,6 +2012,7 @@ try{	let res;
 async function sendVideo(chatId, path, option)
 {	
 try{	let res;
+		while(isPausing) await sleep(100);//если бот на время забанен
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendVideo("'+chatId+'")=>if(!isValidChatId(chatId))';
 			WriteLogFile(res,'непосылать');
@@ -2031,6 +2045,7 @@ try{	let res;
 async function sendPhoto(chatId, path, option)
 {	
 try{	let res;
+		while(isPausing) await sleep(100);//если бот на время забанен
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendPhoto("'+chatId+'")=>if(!isValidChatId(chatId))';
 			WriteLogFile(res,'непосылать');
