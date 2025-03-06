@@ -4120,6 +4120,8 @@ function setContextFiles()
 		{fs.copyFileSync(cBot+'/readme.txt',currentDir+'/readme.txt');}
 		if(fs.existsSync(cBot+'/tenstep.txt'))
 		{fs.copyFileSync(cBot+'/tenstep.txt',currentDir+'/tenstep.txt');}
+		if(fs.existsSync(cBot+'/CreatorUserGuid.txt'))
+		{fs.copyFileSync(cBot+'/CreatorUserGuid.txt',currentDir+'/CreatorUserGuid.txt');}
 		if(!fs.existsSync(currentDir+'/filename_bot.json'))
 		{	let tmp=currentDir.split('/'); let name=tmp[tmp.length-1]+'_bot.json';//вытащим чисто имя папки в конце
 			let obj = {};
