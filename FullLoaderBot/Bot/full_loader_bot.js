@@ -116,7 +116,9 @@ catch (err) {fs.writeFileSync(currentDir+"/Url.txt",'https://t.me/ссылкаД
 if(hostingImg && !!PathToHostImg)
 {	let obj = [{"text": "Хостинг картинок","callback_data": "1_Хостинг картинок"}];
 	keyboard['1'].push(obj);
-	keyboard['adm1'].push(obj);
+	let len = keyboard['adm1'].length;
+	if(keyboard['adm1'][len-1][0].text == 'Модерация Постов') keyboard['adm1'].splice(len-1,0,obj);
+	else keyboard['adm1'].push(obj);
 }
 
 const TmpPath = "/tmp";//путь для временных файлов
@@ -2259,7 +2261,7 @@ function welcome(chatId,name)
 {	
 try{
 	let str='';
-	str+='Для загрузки текста или файла (картинка, видео, аудио, документ) просто нажми соответствующую кнопку и следуй моим подсказкам.';
+	str+='Для загрузки текста или файла (картинка, видео, аудио, документ, альбом) просто нажми соответствующую кнопку и следуй моим подсказкам.';
 	sendMessage(chatId, str, klava(begin(chatId)));
 }catch(err){WriteLogFile(err+'\nfrom welcome()','вчат');}	
 }
