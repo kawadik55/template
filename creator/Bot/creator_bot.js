@@ -29,6 +29,7 @@ const FileGrandCount = currentDir+"/json/GrandCount.json";//имя файла с
 var FileEg = currentDir+'/../Rassilka/eg.txt';//файл с ежиком по-умолчанию
 var FileRaspis = currentDir+'/../Rassilka/raspis.txt';//файл с расписанием по-умолчанию
 const FileTen = currentDir+"/tenstep.txt";//файл вопросов к 10-му шагу
+const FileBarrels = currentDir+"/barrels.txt";//файл вопросов Бочонки
 const TokenDir=currentDir+"/Token";//путь к папке с токенами
 const LOGGING = true;//включение/выключение записи лога в файл
 const SPEEDLIMIT = 15;//ограничение скорости сообщений в сек
@@ -353,6 +354,7 @@ try
 			else //если файл историй пустой
 			{	await sendMessage(chatId, 'Извините, пока недоступно 🤷', klava(index), index);
 			}
+			console.log(JSON.stringify(klava(index),null,2));
 		}
 		catch(err) {console.error(err);}
 	}
@@ -365,6 +367,42 @@ try
 		LastMessId[chatId].countTen = -1;//всегда сначала
 		LastMessId[chatId].indexTen = index;
 		await sendTenStep(chatId);
+	}
+	
+	//кнопка Бочонки
+	else if(type=='barrels')
+	{	if(fs.existsSync(FileBarrels))
+		{	if(!LastMessId[chatId]) LastMessId[chatId]={};
+			LastMessId[chatId].indexTen = index;//будем использовать ключ от 10го шага
+			let Barrels = [];
+			fs.readFile(FileBarrels, 'utf8', async (err, data) => 
+			{	if(err) {WriteLogFile(err,'no'); data = 'Файл бочонков отсутствует!';}
+				Barrels = data.toString().split('\n');
+				//сгенерируем случайное число по длине массива строк
+				let min = 0;
+				let max = Barrels.length-1;
+				let rand = Math.floor(Math.random() * (max - min + 1)) + min;
+				if(rand > max) rand = max;
+				let str = Barrels[rand].replace(/\*/g,'').replace(/_/g,'');
+				str = '*'+(rand+1)+'.* '+str;
+				//сделаем кнопку Следующий
+				let option = {}; 
+				option.reply_markup = {};
+				option.reply_markup.inline_keyboard = [];
+				let i = option.reply_markup.inline_keyboard.length;//кол-во кнопок
+				option.reply_markup.inline_keyboard.push([new Object()]);
+				option.reply_markup.inline_keyboard[i][0].text = 'Следующий';//имя кнопки в последний индекс
+				option.reply_markup.inline_keyboard[i][0].callback_data = LastMessId[chatId].indexTen+'_barrels';//в колбек - номер той же кнопки
+				//добавим кнопку Назад
+				i = option.reply_markup.inline_keyboard.length;//кол-во кнопок
+				option.reply_markup.inline_keyboard.push([new Object()]);
+				option.reply_markup.inline_keyboard[i][0].text = Tree['Назад'].name;//имя кнопки в последний индекс
+				option.reply_markup.inline_keyboard[i][0].callback_data = Tree[LastMessId[chatId].indexTen].parent+'_'+Tree[Tree[LastMessId[chatId].indexTen].parent].type;//в колбек - номер кнопки родителя и тип
+				option.parse_mode = 'markdown';
+				await sendMessage(chatId, str, option, LastMessId[chatId].indexTen);
+			});
+		}
+		else {await sendMessage(chatId, 'Бочонков пока нет!', klava(index), index);}
 	}
 	
 	//кнопка Загрузить список вопросов 10го шага
@@ -487,6 +525,7 @@ try{
 		else if(msg.text.indexOf('/AddButtonTen')+1) {AddButtonTen(msg);}
 		else if(msg.text.indexOf('/AddButtonQuestions')+1) {AddButtonQuestions(msg);}
 		else if(msg.text.indexOf('/AddEvent')+1) {AddEvent(msg);}
+		else if(msg.text.indexOf('/AddButtonBarrels')+1) {AddButtonBarrels(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
 			Tree['Назад'].parent = LastKey[chatId];//место возврата
@@ -3035,6 +3074,35 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom AddButtonTen()'); return err;}
 }
 //====================================================================
+// Команда AddButtonBarrels
+async function AddButtonBarrels(msg)
+{
+try{
+	const chatId = msg.chat.id.toString();
+	let match = msg.text.match(/\/AddButtonBarrels (.+$)/);
+	if(!match || match.length<2) return false;
+	const key = match[1];//имя кнопки
+
+	if(validAdmin(chatId))
+	{	if(!LastKey[chatId]) LastKey[chatId]=0;
+		if(key=='')
+		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
+		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад'));//Отмена
+		 return true;
+		}
+		//сначала выберем номер новой кнопки
+		let mas = Object.keys(Tree), max = -1;
+		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
+		max++;//следующий по порядку
+		addNode(String(max),LastKey[chatId],key,'barrels');
+		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
+		await sendMessage(chatId, 'Готово!', klava('Назад'));//Отмена	
+	}
+	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0'));
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom AddButtonTen()'); return err;}
+}
+//====================================================================
 // Команда AddButtonQuestions
 async function AddButtonQuestions(msg)
 {
@@ -4135,6 +4203,8 @@ function setContextFiles()
 		{fs.copyFileSync(cBot+'/readme.txt',currentDir+'/readme.txt');}
 		if(fs.existsSync(cBot+'/tenstep.txt'))
 		{fs.copyFileSync(cBot+'/tenstep.txt',currentDir+'/tenstep.txt');}
+		if(fs.existsSync(cBot+'/barrels.txt'))
+		{fs.copyFileSync(cBot+'/barrels.txt',currentDir+'/barrels.txt');}
 		if(fs.existsSync(cBot+'/CreatorUserGuid.txt'))
 		{fs.copyFileSync(cBot+'/CreatorUserGuid.txt',currentDir+'/CreatorUserGuid.txt');}
 		if(!fs.existsSync(currentDir+'/filename_bot.json'))
