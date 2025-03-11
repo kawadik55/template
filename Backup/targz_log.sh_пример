@@ -18,11 +18,11 @@ FOLDERNAME=$BACKUP_FOLDERNAME
 DAYCOUNT=28
 
 #Создание архива, только из текстовых файлов
-tar czf $BACKUP_FOLDERNAME/$BACKUP_FILENAME-`date +%F--%H-%M`.tar.gz $FOLDERNAME/*.txt
+tar czf $BACKUP_FOLDERNAME/$BACKUP_FILENAME-`date +%F--%H-%M`.tar.gz $FOLDERNAME/*.log
 
 #Удаление архивов, которые лежат дольше чем количество дней хранения архивов.
 find $BACKUP_FOLDERNAME/ -name '*gz' -type f -mtime +$DAYCOUNT -execdir rm {} +
 #Удаление текстовых файлов.
-find $BACKUP_FOLDERNAME/ -name '*.txt' -type f -execdir rm {} +
+find $BACKUP_FOLDERNAME/ -name '*.log' -type f -execdir rm {} +
 
 exit 0
