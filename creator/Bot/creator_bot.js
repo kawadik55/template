@@ -383,8 +383,9 @@ try
 				let max = Barrels.length-1;
 				let rand = Math.floor(Math.random() * (max - min + 1)) + min;
 				if(rand > max) rand = max;
-				let str = Barrels[rand].replace(/\*/g,'').replace(/_/g,'');
-				str = '*'+(rand+1)+'.* '+str;
+				//сформируем текст вопроса
+				let str = Barrels[rand].replace(/\*/g,'').replace(/_/g,'');//удалим служебные символы, если есть
+				str = '*Бочонок №'+(rand+1)+':*\n'+str;
 				//сделаем кнопку Следующий
 				let option = {}; 
 				option.reply_markup = {};
