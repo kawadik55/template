@@ -33,6 +33,7 @@ const FileBarrels = currentDir+"/barrels.txt";//файл вопросов Боч
 const TokenDir=currentDir+"/Token";//путь к папке с токенами
 const LOGGING = true;//включение/выключение записи лога в файл
 const SPEEDLIMIT = 15;//ограничение скорости сообщений в сек
+const randomGenerator = createPseudoRandom(Date.now());//генератор случайных чисел
 //---------------------------------------------------
 //сразу проверяем или создаем необходимые папки и файлы
 setContextFiles();
@@ -381,7 +382,8 @@ try
 				//сгенерируем случайное число по длине массива строк
 				let min = 0;
 				let max = Barrels.length-1;
-				let rand = Math.floor(Math.random() * (max - min + 1)) + min;
+				//let rand = Math.floor(Math.random() * (max - min + 1)) + min;
+				let rand = randomGenerator.getRandomInt(min, max);
 				if(rand > max) rand = max;
 				//сформируем текст вопроса
 				let str = Barrels[rand].replace(/\*/g,'').replace(/_/g,'');//удалим служебные символы, если есть
@@ -4291,4 +4293,40 @@ function setContextFiles()
 		}
 	}
 }
+//====================================================================
+function createPseudoRandom(seed) 
+{
+    const a = 1664525;
+    const c = 1013904223;
+    const m = Math.pow(2, 32); // модуль
+
+    function next() {
+        // Генерация следующего числа
+        seed = (a * seed + c) % m;
+        return seed;
+    }
+	
+	function resetCount() {getRandomInt.arr = [];}
+
+    function getRandomInt(min, max) {
+        if(typeof getRandomInt.arr == 'undefined') resetCount();//в первом заходе 
+		const range = max - min + 1;//диапазон
+        let res, flag=true;
+		while(flag) 
+		{	res = min + (next() % range); // Вырезаем верхнюю границу
+			if(getRandomInt.arr.includes(res)==false)
+			{	getRandomInt.arr.push(res);
+				flag = false;
+				if(getRandomInt.arr.length >= range) resetCount();
+			}
+		}
+		return res;
+    }
+
+    return {
+		getRandomInt: getRandomInt, 
+		resetCount: resetCount
+	};
+}
+//====================================================================
 //====================================================================
