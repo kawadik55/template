@@ -936,6 +936,7 @@ try{
 			else if(Object.hasOwn(List[num], 'path'))
 			{let opt = new Object();
 			 opt.caption = List[num].caption;
+			 opt.caption_entities = List[num].caption_entities;
 			 if(Object.hasOwn(List[num], 'type'))
 			 {if(List[num].type == 'image') {await sendPhoto(chatId, List[num].path, opt);}
 			  else if(List[num].type == 'video') {await sendVideo(chatId, List[num].path, opt);}
@@ -962,6 +963,7 @@ try{
 			await sendMessage(chatId, 'Вы выбрали файл:\n** номер: '+num+' ** ('+ImagesList[num].date+')');
 			let opt = new Object();
 			opt.caption = ImagesList[num].caption;
+			opt.caption_entities = ImagesList[num].caption_entities;
 			if(Object.hasOwn(ImagesList[num], 'type'))
 			{if(ImagesList[num].type == 'image') {await sendPhoto(chatId, ImagesList[num].path, opt);}
 			 else if(ImagesList[num].type == 'video') {await sendVideo(chatId, ImagesList[num].path, opt);}
@@ -1001,6 +1003,7 @@ try{
 			await sendMessage(chatId, 'Вы выбрали файл:\n** номер: '+num+' ** ('+ModerImagesList[num].date+')');
 			let opt = new Object();
 			opt.caption = ModerImagesList[num].caption;
+			opt.caption_entities = ModerImagesList[num].caption_entities;
 			if(Object.hasOwn(ModerImagesList[num], 'type'))
 			{if(ModerImagesList[num].type == 'image') {await sendPhoto(chatId, ModerImagesList[num].path, opt);}
 			 else if(ModerImagesList[num].type == 'video') {await sendVideo(chatId, ModerImagesList[num].path, opt);}
@@ -1022,6 +1025,7 @@ try{
 		if(Object.hasOwn(ModerTextList[numOfDelete[chatId]], 'chatId'))
 		{let opt=new Object();
 		 opt.caption = ModerTextList[numOfDelete[chatId]].caption;
+		 opt.caption_entities = ModerTextList[numOfDelete[chatId]].caption_entities;
 		 await sendMessage(ModerTextList[numOfDelete[chatId]].chatId, ModerTextList[numOfDelete[chatId]].text, opt);
 		 await sendMessage(ModerTextList[numOfDelete[chatId]].chatId, '😢 К сожалению этот текст не прошел модерацию и был удален по причине:\n'+msg.text);
 		}
@@ -2318,6 +2322,9 @@ try{
 	{	if(!mas[0].caption) mas[0].caption = '';
 		mas[0].caption += opt.caption;
 	}
+	if(!!mas[0].caption_entities && typeof(mas[0].caption_entities) == 'string')
+	{	mas[0].caption_entities = JSON.parse(mas[0].caption_entities);
+	}
 	if(!!mas[0].caption && mas[0].caption.length > 1024) {mas[0].caption = mas[0].caption.substr(0,1023);}//обрезаем подпись
 	await LoaderBot.sendMediaGroup(chatId, mas);
 	return true;
@@ -2897,7 +2904,12 @@ try{
 				else if(obj.type=='video') {await NewsBot.sendVideo(chat_news[i], obj.path, opt);}//если видео
 				else if(obj.type=='audio') {await NewsBot.sendAudio(chat_news[i], obj.path, opt);}//если audio
 				else if(obj.type=='document') {await NewsBot.sendDocument(chat_news[i], obj.path, opt);}//если document
-				else if(obj.type=='album') {await NewsBot.sendMediaGroup(chat_news[i], obj.media);}
+				else if(obj.type=='album' && !!obj.media && obj.media.lengh>0) 
+				{	if(!!obj.media[0].caption_entities && typeof(obj.media[0].caption_entities) == 'string')
+					{	obj.media[0].caption_entities = JSON.parse(obj.media[0].caption_entities);
+					}
+					await NewsBot.sendMediaGroup(chat_news[i], obj.media);
+				}
 			}
 			else NewsBot.sendPhoto(chat_news[i], obj.path, opt);//без типа - картинка 
 		  }
