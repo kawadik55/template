@@ -818,10 +818,6 @@ try{
 	//if(!msg.text) {return;}//если текста нет
 	if(!msg.text && !media_group_id) {return;}//если текста нет и не альбом
 	if(!!msg.text && msg.text.slice(0,1)=='/') return;//если команда
-	/*if(media_group_id)
-	{	WriteLogFile('\nЛовим message\n'+JSON.stringify(msg,null,2),'вчат');
-		return;
-	}*/
 	
 	//проверим юзера
 	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
@@ -831,7 +827,7 @@ try{
 	}
 	else //все в порядке
 	{
-		if(media_group_id)//если это альбом
+		if(!!media_group_id)//если это альбом
 		{	if(Object.hasOwn(msg, 'photo') || Object.hasOwn(msg, 'video'))
 			{	if(!Object.hasOwn(MediaList, media_group_id))//если первый файл альбома
 				{	MediaList[media_group_id] = {};
