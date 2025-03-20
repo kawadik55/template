@@ -2328,7 +2328,7 @@ try{
 	if(!!mas[0].caption && mas[0].caption.length > 1024) {mas[0].caption = mas[0].caption.substr(0,1023);}//обрезаем подпись
 	await LoaderBot.sendMediaGroup(chatId, mas);
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendPhoto()','вчат');return Promise.reject(false);}
+}catch(err){WriteLogFile(err+'\nfrom sendAlbum()','вчат');return Promise.reject(false);}
 }
 //====================================================================
 async function sendVideo(chatId, path, opt)
