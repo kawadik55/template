@@ -71,6 +71,7 @@ let AnswerList = {};//массивы ответов от пользовател�
 let PRIVAT = 1;//глобальная приватность, пускает только Админа и Юзера с разрешениями
 let DISTANCE = 1;//дистанция в днях о скором наступлении события
 let isPausing = false;//флаг временной остановки бота
+let MediaList=new Object();//массив группы медиа файлов
 
 //проверим наличие файла дерева кнопок, если файл отсутствует, то создадим его 
 try {Tree = JSON.parse(fs.readFileSync(FileTree));} 
@@ -765,18 +766,37 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom help()');}
 });
 //====================================================================
-// ловим текст или файл
+// ловим текст
 Bot.on('message', async (msg) => 
 {		
 try{	
-	if(!msg.text) return;//выходим, т.к. текста нет
-	//если текст есть и это команда
-	else if(msg.text.slice(0,1)=='/') return;
-	
-	//если простой текст
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
+	let media_group_id = msg.media_group_id;
+	if(!msg.text && !media_group_id) {return;}//если текста нет и не альбом
+	else if(!!msg.text && msg.text.slice(0,1)=='/') return;//если текст есть и это команда
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
+	
+	//если это альбом
+	if(!!media_group_id)
+	{	if(Object.hasOwn(msg, 'photo') || Object.hasOwn(msg, 'video'))
+		{	if(!Object.hasOwn(MediaList, media_group_id))//если первый файл альбома
+			{	MediaList[media_group_id] = {};
+				MediaList[media_group_id].media = [];
+				MediaList[media_group_id].count = [];
+				MediaList[media_group_id].type = 'album';
+			}
+			if(Object.hasOwn(msg, 'photo'))
+			{	let mas = Object.keys(msg.photo);
+				MediaList[media_group_id].count.push(msg.photo[mas.length-1].file_id);
+			}
+			if(Object.hasOwn(msg, 'video'))
+			{	MediaList[media_group_id].count.push(msg.video.file_id);
+			}
+		}
+		return;
+	}
+	
 	//проверяем текст
 	if(msg.text.length > 4050)
 	{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
@@ -802,57 +822,40 @@ try{
 	else if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==12 && photos_key!='')
 	{	if(Number(msg.text)==0) return;
 		WaitEditText[chatId]=0;
-		let k = 1;
-		//загружаем список файлов из /photo - полный путь
-		const isFile = fileName => {return fs.lstatSync(fileName).isFile()};
-		let files = fs.readdirSync(PathToPhoto+'/'+photos_key).map(fileName => {return path.join(PathToPhoto+'/'+photos_key, fileName)}).filter(isFile);
-		//заполним объект FileList
-		let FileList = new Object();
-		for(let i in files) 
-		{	let tmp=files[i].split('/'); let name=tmp[tmp.length-1];//вытащим чисто имя файла в конце
-			if(name != 'FileCaption.json') {FileList[name]=files[i];} 
-		}
 		//загрузим подписи и fileId в opt
+		let num = Number(msg.text);//номер выбранного файла
 		let opt = new Object();
 		try {opt = JSON.parse(await fs.promises.readFile(PathToPhoto+'/'+photos_key+'/'+'FileCaption.json'));}//загрузим подписи 
 		catch (err) {}
-		//если FileList не пустой, то сортируем его в том порядке, как загружался в FileCaption.json
-		if(!!FileList && Object.keys(FileList).length && !!opt && Object.keys(opt).length)
-		{	let tobj = new Object();
-			for(let name in opt)
-			{if(Object.hasOwn(FileList, name)) {tobj[name]=FileList[name];}
+		let index;
+		for(let i in opt) if(!!opt[i].number && opt[i].number===num) {index = i; break;}
+		if(!!index)
+		{	if(!!opt[index].media)//если альбом
+			{	for(let j in opt[index].media) 
+				{	//удаляем file_id
+					let tmp=opt[index].media[j].media.split('/'); 
+					if(tmp.length>1)
+					{	let file=tmp[tmp.length-1];//вытащим чисто имя файла в конце
+						while(!!FileId[file]) delete FileId[file];
+					}
+					else
+					{	let file = getKeyByValue(FileId, opt[index].media[j].media)
+						while(!!FileId[file]) delete FileId[file];
+					}
+					//удаляем с диска
+					try{if(fs.existsSync(opt[index].media[j].media))  fs.unlinkSync(opt[index].media[j].media);}catch(err){console.log(err);}
+				}
 			}
-			FileList = tobj;
-		}
-		//теперь соберем список файлов воедино
-		let NewList = new Object();//новый список
-		//сначала полные пути из папки
-		k = 1;
-		for(let name in FileList) {NewList[k] = FileList[name]; k++;}
-		//если присланный номер файла уже находится в массиве, то удаляем файл сразу
-		if(!!NewList && Object.hasOwn(NewList, msg.text))
-		{	//вытащим чисто имя файла
-			let tmp=NewList[msg.text].split('/');
-			let filename=tmp[tmp.length-1];//имя файла в конце
-			await fs.promises.unlink(NewList[msg.text]);//удаляем файл из папки
-			while(Object.hasOwn(opt, filename)) delete opt[filename];//стираем подпись
+			else//одиночный файл
+			{	try{fs.unlinkSync(PathToPhoto+'/'+photos_key+'/'+index);}catch(err){console.log(err);}
+			}
+			delete opt[index];
 			WriteFileJson(PathToPhoto+'/'+photos_key+'/'+'FileCaption.json', opt);//сохраняем файл
-			WriteLogFile(NewList[msg.text]+' was Deleted','непосылать');
-			await sendMessage(chatId, 'Выбранная картинка успешно удалена!', klava(LastKey[chatId]));
+			await sendMessage(chatId, 'Выбранный пост успешно удален!', klava(LastKey[chatId]));
 		}
-		else //присланный номер не находится в папке, доступен только по fileId
-		{	//достаем из opt имена файлов, которых нет в папке, и кладем их в NewList
-			for(let name in opt) {if(!Object.hasOwn(FileList, name)) {NewList[k] = name; k++;}}
-			if(!!NewList && Object.hasOwn(NewList, msg.text))
-			{	while(Object.hasOwn(opt, NewList[msg.text])) delete opt[NewList[msg.text]];//стираем подпись
-				WriteFileJson(PathToPhoto+'/'+photos_key+'/'+'FileCaption.json', opt);//сохраняем файл
-				WriteLogFile(NewList[msg.text]+' was Deleted','непосылать');
-				await sendMessage(chatId, 'Выбранная картинка успешно удалена!', klava(LastKey[chatId]));
-			}
-			else
-			{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-				await sendMessage(chatId, 'Такого номера нет в списке!', klava('Назад'));//Отмена
-			}
+		else
+		{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
+			await sendMessage(chatId, 'Такого номера нет в списке!', klava('Назад'));//Отмена
 		}
 	}
 	//пришел номер файла для удаления из /doc
@@ -1197,42 +1200,94 @@ try{
 	const file_id = msg.photo[msg.photo.length-1].file_id;
 	const caption = msg.caption;//подпись
 	const caption_entities = JSON.stringify(msg.caption_entities);//форматирование
-	//проверяем подпись
-	if(Object.hasOwn(msg,'caption') && caption.length > 1000)
-	{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-		await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад'));
-		WaitEditText[chatId]=0;
-		photos_key='';
-		return;
-	}
+	let media_group_id = msg.media_group_id;
 	
 	//если фотка для /photo
 	if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==11 && photos_key!='')
-	{	WaitEditText[chatId]=0;
-		let key = photos_key;
-		let path;
-		try {path = await Bot.downloadFile(file_id, PathToPhoto+'/'+key);}//загружаем файл
-		catch(err)
-		{   Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-			await sendMessage(chatId, 'Не могу загрузить этот файл!\n'+smilik, klava('Назад'));
+	{	//проверяем подпись
+		if(Object.hasOwn(msg,'caption') && caption.length > 1000)
+		{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
+			await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад'));
+			WaitEditText[chatId]=0;
+			//если файлы уже были загружены, то нужно их удалить!
+			if(media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
 			photos_key='';
 			return;
 		}
-		//вытащим чисто имя файла
-		let tmp=path.split('/');
-		let name=tmp[tmp.length-1];//имя файла в конце
-		let opt = new Object();
-		try {opt = JSON.parse(await fs.promises.readFile(PathToPhoto+'/'+key+'/'+'FilesCaption.json'));} 
-		catch (err) {}
-		opt[name] = new Object();
-		opt[name].caption = caption;
-		opt[name].caption_entities = caption_entities;
-		WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', opt);//сохраняем подписи в файл
-		WriteLogFile("New photo was loaded to "+path+ " by "+firstname, 'не посылать');
-		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-		await sendMessage(chatId, 'Поздравляю! Фотка '+name+' загружена!', klava('Назад'));
-		photos_key='';
+		if(!media_group_id) WaitEditText[chatId]=0;
+		let key = photos_key;
+		let path;
+		//загружаем файл
+		try {path = await Bot.downloadFile(file_id, PathToPhoto+'/'+key);}
+		catch(err)
+		{   Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
+			await sendMessage(chatId, 'Не могу загрузить этот файл!\n'+smilik, klava('Назад'));
+			WaitEditText[chatId]=0;
+			//если файлы уже были загружены, то нужно их удалить!
+			if(media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
+			photos_key='';
+			return;
+		}
+		//если одиночная картинка
+		if(!media_group_id)
+		{	//вытащим чисто имя файла
+			let tmp=path.split('/');
+			let name=tmp[tmp.length-1];//имя файла в конце
+			let opt = new Object();
+			//загружаем подписи из файла
+			try {opt = JSON.parse(await fs.promises.readFile(PathToPhoto+'/'+key+'/'+'FileCaption.json'));} 
+			catch (err) {console.log('from photo\n'+err);}
+			opt[name] = new Object();
+			opt[name].caption = caption;
+			opt[name].caption_entities = caption_entities;
+			WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', opt);//сохраняем подписи в файл
+			WriteLogFile("New photo was loaded to "+path+ " by "+firstname, 'не посылать');
+			if(!LastKey[chatId]) LastKey[chatId] = '0';
+			Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
+			await sendMessage(chatId, 'Поздравляю! Фотка '+name+' загружена!', klava('Назад'));
+			photos_key='';
+		}
+		//если альбом
+		else if(!!MediaList[media_group_id].count)
+		{	if(!Object.hasOwn(MediaList, media_group_id) || MediaList[media_group_id].media.length==0)//если первый файл альбома
+			{	if(!Object.hasOwn(MediaList, media_group_id)) MediaList[media_group_id] = {};
+				if(!Object.hasOwn(MediaList, 'media')) MediaList[media_group_id].media = [];
+				MediaList[media_group_id].type = 'album';
+			}
+			let mobj = {};
+			mobj.type = 'photo';//тип
+			if(!!caption) mobj.caption = caption;
+			if(!!caption_entities) mobj.caption_entities = caption_entities;
+			if(!!file_id) mobj.file_id = file_id;
+			mobj.media = path;//путь
+			MediaList[media_group_id].media.push(mobj);//пушим объект
+			//проверяем конец альбома
+			if(MediaList[media_group_id].media.length == MediaList[media_group_id].count.length)
+			{	let opt = new Object();
+				//загружаем подписи из файла
+				if(!fs.existsSync(PathToPhoto+'/'+key+'/'+'FileCaption.json')) await WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', {});
+				try {opt = JSON.parse(await fs.promises.readFile(PathToPhoto+'/'+key+'/'+'FileCaption.json'));}
+				catch (err) {console.log('from photo\n'+err);}
+				opt[media_group_id] = {};
+				opt[media_group_id].media = MediaList[media_group_id].media;
+				opt[media_group_id].type = MediaList[media_group_id].type;
+				opt[media_group_id].media = sortMedia(opt[media_group_id].media);
+				WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', opt);//сохраняем подписи в файл
+				WriteLogFile("New album was loaded to "+PathToPhoto+'/'+key+ " by "+firstname, 'не посылать');
+				if(!LastKey[chatId]) LastKey[chatId] = '0';
+				Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
+				await sendMessage(chatId, 'Поздравляю! Альбом '+media_group_id+' загружен!', klava('Назад'));
+				photos_key='';
+				WaitEditText[chatId]=0;
+				delete MediaList[media_group_id];
+			}
+		}
+		else
+		{	WaitEditText[chatId]=0;
+			//если файлы уже были загружены, то нужно их удалить!
+			if(media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
+			console.log('Удаляю MediaList[media_group_id]');
+		}
 	}
 }catch(err){WriteLogFile(err+'\nfrom ловим ФОТО');}
 });
@@ -1248,6 +1303,7 @@ try{
 	const file_size = msg.document.file_size;
 	const caption = msg.caption;//подпись
 	const caption_entities = JSON.stringify(msg.caption_entities);//форматирование
+	let media_group_id = msg.media_group_id;
 	//проверяем подпись
 	if(Object.hasOwn(msg,'caption') && caption.length > 1000)
 	{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
@@ -1372,6 +1428,7 @@ try{
 	const file_size = msg.video.file_size;
 	const caption = msg.caption;//подпись
 	const caption_entities = JSON.stringify(msg.caption_entities);//форматирование
+	let media_group_id = msg.media_group_id;
 	//проверяем подпись
 	if(Object.hasOwn(msg,'caption') && caption.length > 1000)
 	{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
@@ -1390,7 +1447,59 @@ try{
 	}
 	else filename = msg.video.file_unique_id;//если имени нет, то короткий id
 	
-	if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==21 && video_key!='')//если ждем файл от админа или служенца
+	//если ждем альбом от админа или служенца
+	if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==11 && photos_key!='' && !!media_group_id)
+	{	let key = photos_key;
+		//именованные файлы заносим в общий список
+		if(msg.video.file_name)
+		{	while(Object.hasOwn(FileId, msg.video.file_name)) delete FileId[msg.video.file_name]; 
+			FileId[msg.video.file_name] = msg.video.file_id;
+		}
+		//загружаем файл
+        let path;
+		try {path = await Bot.downloadFile(file_id, PathToPhoto+'/'+key);}//загружаем файл
+        catch(err)
+		{   let str='Не могу записать этот файл '+filename+'!\n';
+			str += 'Длина файла = '+file_size+'\n';
+			str += 'Файл будет хранится на серверах Telegram и будет доступен для чтения';
+			Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
+			await sendMessage(chatId, str);
+		}
+		if(!Object.hasOwn(MediaList, media_group_id) || MediaList[media_group_id].media.length==0)//если первый файл альбома
+		{	if(!Object.hasOwn(MediaList, media_group_id)) MediaList[media_group_id] = {};
+			if(!Object.hasOwn(MediaList, 'media')) MediaList[media_group_id].media = [];
+			MediaList[media_group_id].type = 'album';
+		}
+		let mobj = {};
+		mobj.type = 'video';//тип
+		if(!!caption) mobj.caption = caption;
+		if(!!caption_entities) mobj.caption_entities = caption_entities;
+		if(!!path) mobj.media = path; else mobj.media = file_id;//путь
+		if(!!file_id) mobj.file_id = file_id;
+		MediaList[media_group_id].media.push(mobj);//пушим объект
+		//проверяем конец альбома
+		if(MediaList[media_group_id].media.length == MediaList[media_group_id].count.length)
+		{	let opt = new Object();
+			//загружаем подписи из файла
+			if(!fs.existsSync(PathToPhoto+'/'+key+'/'+'FileCaption.json')) await WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', {});
+			try {opt = JSON.parse(await fs.promises.readFile(PathToPhoto+'/'+key+'/'+'FileCaption.json'));}
+			catch (err) {console.log('from video\n'+err);}
+			opt[media_group_id] = {};
+			opt[media_group_id].media = MediaList[media_group_id].media;
+			opt[media_group_id].type = MediaList[media_group_id].type;
+			opt[media_group_id].media = sortMedia(opt[media_group_id].media);
+			WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', opt);//сохраняем подписи в файл
+			WriteLogFile("New album was loaded to "+PathToPhoto+'/'+key+ " by "+firstname, 'не посылать');
+			if(!LastKey[chatId]) LastKey[chatId] = '0';
+			Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
+			await sendMessage(chatId, 'Поздравляю! Альбом '+media_group_id+' загружен!', klava('Назад'));
+			photos_key='';
+			WaitEditText[chatId]=0;
+			delete MediaList[media_group_id];
+		}
+	}
+	//если ждем файл от админа или служенца
+	else if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==21 && video_key!='')
 	{	WaitEditText[chatId]=0;
 		let key = video_key;
 		//именованные файлы заносим в общий список
@@ -1452,6 +1561,7 @@ try{
 	const file_size = msg.audio.file_size;
 	const caption = msg.caption;//подпись
 	const caption_entities = JSON.stringify(msg.caption_entities);//форматирование
+	let media_group_id = msg.media_group_id;
 	//проверяем подпись
 	if(Object.hasOwn(msg,'caption') && caption.length > 1000)
 	{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
@@ -1921,39 +2031,112 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 	let opt = new Object();
 	try {opt = JSON.parse(await fs.promises.readFile(PathToPhoto+'/'+String(index)+'/'+'FileCaption.json'));}//загрузим подписи 
 	catch (err) {}
-    if(!Object.keys(FileList).length) await sendMessage(chatId, 'Тут пока ничего нет '+smilik, klava(index), index);
+    if(!Object.keys(FileList).length && !Object.keys(opt).length) await sendMessage(chatId, 'Тут пока ничего нет '+smilik, klava(index), index);
     else
-	{	//если FileList не пустой, то сортируем его в том порядке, как загружался в FileCaption.json
-		if(Object.keys(FileList).length && Object.keys(opt).length)
-		{	let tobj = new Object();
-			//let mas = Object.keys(opt);//ключи - это имена файлов в opt
-			for(let name in opt)
-			{if(Object.hasOwn(FileList, name)) {tobj[name]=new Object(); tobj[name].path=FileList[name].path;}
-			}
-			FileList = tobj;
-		}
-		//теперь отсылаем по списку файлов в папке
-		for(let name in FileList) 
-		{	//вытащим чисто имя файла
-			//let tmp=FileList[name].path.split('/');
-			//let name=tmp[tmp.length-1];//имя файла в конце
-			if(name.indexOf('FileCaption.json')==-1)//если файл не json
-			{	if(!Object.hasOwn(opt, name)) opt[name] = new Object;
-				if(flag==true) {opt[name].caption += "\n** "+k+" **";}//для удаления проставим номера
-				let path = FileList[name].path;//путь из папки
-				if(opt[name].fileId) path = opt[name].fileId;//если есть fileId, то замена пути на fileId
-				await sendPhoto(chatId,FileList[name].path, opt[name]);
+	{	//по списку из FileCaption.json
+		for(let key in opt)
+		{	//если key есть на диске, то это одиночный файл
+			if(Object.hasOwn(FileList, key))
+			{	let option = {}; option.caption = '';
+				if(!!opt[key].caption) option.caption = opt[key].caption;
+				if(!!opt[key].caption_entities) option.caption_entities = opt[key].caption_entities;
+				if(flag==true)//для удаления проставим номера 
+				{option.caption += "\n** "+k+" **";
+				 opt[key].number = k;//номер файла
+				}
+				let path = FileList[key].path;//путь из папки
+				//если есть fileId, то замена пути на fileId
+				if(!!opt[key].fileId) 
+				{	//проверяем наличие файла на сервере Телеграм из FileId[]
+					let info; 
+					try{info=await Bot.getFile(opt[key].fileId);} catch(err){if(String(err).indexOf('file is too big')+1) info = true;}
+					//если есть отклик, то замена пути на fileId
+					if(!!info) path = opt[key].fileId;
+				}
+				await sendPhoto(chatId, path, option);
+				delete FileList[key];//удаляем из списка
 				k++;
 			}
+			//если key нет на диске, то может это альбом
+			else if(!!opt[key].type && opt[key].type=='album')
+			{	let med = [];
+				for(let i in opt[key].media) med.push({...opt[key].media[i]});
+				if(!med[0].caption) med[0].caption = '';
+				if(flag==true)//для удаления проставим номера 
+				{med[0].caption += "\n** "+k+" **";
+				 opt[key].number = k;//номер файла
+				}
+				//подменим путь на file_id, если доступен
+				for(let i in med) 
+				{	if(!!med[i].file_id)
+					{	//проверяем наличие файла на сервере Телеграм из FileId[]
+						let info; 
+						try{info=await Bot.getFile(med[i].file_id);} catch(err){if(String(err).indexOf('file is too big')+1) info = true;}
+						//если есть отклик, то замена пути на fileId
+						if(!!info) med[i].media = med[i].file_id;
+					}
+				}
+				await sendAlbum(chatId,med);
+				med = opt[key].media;
+				for(let i in med) 
+				{	let tmp=med[i].media.split('/'); let name=tmp[tmp.length-1];//вытащим чисто имя файла в конце
+					delete FileList[name];//удаляем из текущего списка
+				}
+				k++;
+			}
+			//если нет на диске и не альбом, но есть file_id
+			else if(!!opt[key].fileId)
+			{	let option = {}; option.caption = '';
+				if(!!opt[key].caption) option.caption = opt[key].caption;
+				if(!!opt[key].caption_entities) option.caption_entities = opt[key].caption_entities;
+				if(flag==true)//для удаления проставим номера 
+				{option.caption += "\n** "+k+" **";
+				 opt[key].number = k;//номер файла
+				}
+				let path = opt[key].fileId;
+				await sendPhoto(chatId, path, option);
+				k++;
+			}
+			else//иначе это потерянная запись
+			{	delete opt[key];
+				WriteFileJson(PathToPhoto+'/'+String(index)+'/'+'FileCaption.json', opt);//сохраняем подписи в файл
+			}
 		}
+		//если в списке остались файлы, то это ничейные, и нужно удалить
+		for(let name in FileList) 
+		{	if(name.indexOf('FileCaption.json')==-1)//если файл не json
+			{	await fs.promises.unlink(FileList[name].path);//удаляем файл из папки
+			}
+		}
+		
 		if(flag)//если для удаления
 		{await sendMessage(chatId, 'Теперь пришлите мне *номер* Фотки, которую нужно удалить.\n', klava(index, {parse_mode:"markdown"}));
 		 WaitEditText[chatId]=12;//взводим флаг ожидания номера от юзера
+		 WriteFileJson(PathToPhoto+'/'+String(index)+'/'+'FileCaption.json', opt);//сохраняем номера в файл
 		}
 		else await sendMessage(chatId, '👆 '+Tree[index].name+' 👆', klava(index), index);
 	}
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendPhotos("'+chatId+'")'); return err;}
+}
+//====================================================================
+async function sendAlbum(chatId, media, opt)
+{
+try{
+	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
+	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	let mas = [...media];
+	if(!!opt && !!opt.caption)
+	{	if(!mas[0].caption) mas[0].caption = '';
+		mas[0].caption += opt.caption;//добавляем к подписи
+	}
+	if(!!mas[0].caption_entities && typeof(mas[0].caption_entities) == 'string')
+	{	mas[0].caption_entities = JSON.parse(mas[0].caption_entities);
+	}
+	if(!!mas[0].caption && mas[0].caption.length > 1024) {mas[0].caption = mas[0].caption.substr(0,1023);}//обрезаем подпись
+	await Bot.sendMediaGroup(chatId, mas);
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom sendAlbum()','вчат');return Promise.reject(false);}
 }
 //====================================================================
 async function sendEvents(chatId, flag)
@@ -2350,7 +2533,28 @@ async function delNode(num)
 async function delDir(num)
 { try{
 			//удаляем папку с фотками, если она есть
-			if(fs.existsSync(PathToPhoto+'/'+String(num))) fs.rmSync(PathToPhoto+'/'+String(num), { recursive: true });
+			if(fs.existsSync(PathToPhoto+'/'+String(num)))
+			{	let opt = new Object();
+				try {opt = JSON.parse(await fs.promises.readFile(PathToPhoto+'/'+String(num)+'/'+'FileCaption.json'));} catch (err) {}
+				//удаляем file_id
+				for(let name in opt) 
+				{	if(!!opt[name].media)//если альбом
+					{	for(let i in opt[name].media)
+						{	let tmp=opt[name].media[i].media.split('/'); 
+							if(tmp.length>1)
+							{	let file=tmp[tmp.length-1];//вытащим чисто имя файла в конце
+								while(!!FileId[file]) delete FileId[file];
+							}
+							else
+							{	let file = getKeyByValue(FileId, tmp[0])
+								while(!!FileId[file]) delete FileId[file];
+							}
+						}
+					}
+					else {while(FileId[name]) delete FileId[name];}//если одиночный файл
+				}
+				fs.rmSync(PathToPhoto+'/'+String(num), { recursive: true });
+			}
 			//удаляем папку с доками, если она есть
 			if(fs.existsSync(PathToDoc+'/'+String(num))) 
 			{	let opt = new Object();
@@ -2610,7 +2814,7 @@ try{
 			}
 			else photos_key = '';
 		}
-		if(i==dl) str = "В этом наборе нет кнопки '"+key+"' типа 'photo'!";
+		if(i==dl) await sendMessage(chatId, "В этом наборе нет кнопки '"+key+"' типа 'photo'!", klava('Назад'));
 		else {await sendPhotos(chatId, true, photos_key);}//показываем все фотки с номерами файлов
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0'));
@@ -2879,7 +3083,7 @@ try{
 		let str = '';
 		if(i==dl) str = "В этом наборе нет кнопки '"+key+"' типа 'photo'!";
 		else 
-		{str = 'Теперь пришлите мне одну фотку';
+		{str = 'Теперь пришлите мне фотку или альбом';
 		 WaitEditText[chatId]=11;//взводим флаг ожидания фотки от юзера
 		}
 		await sendMessage(chatId, str, klava('Назад'));//Назад
@@ -4329,4 +4533,45 @@ function createPseudoRandom(seed)
 	};
 }
 //====================================================================
+//сортируем массив медиа, если caption не в первом элементе
+function sortMedia(mas)
+{	if(!!mas[0].caption) return mas;
+	let media = [];
+	for(let i=0;i<mas.length;i++)
+	{	if(!!mas[i].caption)
+		{	media.push(mas[i]);//положим первым
+			mas.splice(i,1);
+			break;
+		}
+	}
+	for(let i=0;i<mas.length;i++) {media.push(mas[i]);}//остатки
+	return media;
+}
+//====================================================================
+function deleteMediaFiles(obj)
+{	
+try{
+	if(!!obj.media && obj.media.length>0)
+	{	for(let i in obj.media)
+		{	if(!!obj.media[i].media && fs.existsSync(obj.media[i].media)) 
+			{	//удаляем file_id
+				let tmp=obj.media[i].media.split('/'); 
+				if(tmp.length>1)
+				{	let file=tmp[tmp.length-1];//вытащим чисто имя файла в конце
+					while(!!FileId[file]) delete FileId[file];
+				}
+				else
+				{	let file = getKeyByValue(FileId, tmp[0])
+					while(!!FileId[file]) delete FileId[file];
+				}
+			}
+		}
+		return true;
+	}
+	return false;
+}catch(err){WriteLogFile(err+'\nfrom deleteMediaFiles()');}
+}
+//====================================================================
+function getKeyByValue(object, value) {return Object.keys(object).find(key => object[key] === value);
+}
 //====================================================================
