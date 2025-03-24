@@ -4556,9 +4556,10 @@ try{
 		{	if(!!obj.media[i].media && fs.existsSync(obj.media[i].media)) 
 			{	//удаляем file_id
 				let tmp=obj.media[i].media.split('/'); 
-				if(tmp.length>1)
+				if(tmp.length>1)//если есть путь
 				{	let file=tmp[tmp.length-1];//вытащим чисто имя файла в конце
 					while(!!FileId[file]) delete FileId[file];
+					try{fs.unlinkSync(obj.media[i].media);}catch(err){console.log(err);}//удаление с диска
 				}
 				else
 				{	let file = getKeyByValue(FileId, tmp[0])
