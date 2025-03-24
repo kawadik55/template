@@ -417,8 +417,17 @@ try{
 		{	numOfDelete[chatId]='';
 			delete WaitFlag[chatId];
 			delete TempPost[chatId];
-			if(media_group_id) delete MediaList[media_group_id];
 			sendMessage(chatId, 'Неожиданно... игнорирую.', klava(begin(chatId)));
+			return;
+		}
+		//если дата корявая, то уходим
+		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY')) 
+		{	numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
+			delete TempPost[chatId];
+			//если файлы уже были загружены, то нужно их удалить!
+			if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
+			sendMessage(chatId, 'Неожиданная дата или период... игнорирую.', klava(begin(chatId)));
 			return;
 		}
 		//проверяем подпись
@@ -427,16 +436,8 @@ try{
 			delete TempPost[chatId];
 			numOfDelete[chatId]='';
 			delete WaitFlag[chatId];
-			if(media_group_id) delete MediaList[media_group_id];
-			return;
-		}
-		//если дата корявая или нет периода, то уходим
-		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') || !day) 
-		{	numOfDelete[chatId]='';
-			delete WaitFlag[chatId];
-			delete TempPost[chatId];
-			if(media_group_id) delete MediaList[media_group_id];
-			sendMessage(chatId, 'Неожиданная дата или период... игнорирую.', klava(begin(chatId)));
+			//если файлы уже были загружены, то нужно их удалить!
+			if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
 			return;
 		}
 		//удаляем флаг, если не альбом
@@ -450,7 +451,8 @@ try{
 		 numOfDelete[chatId]='';
 		 delete WaitFlag[chatId];
 		 delete TempPost[chatId];
-		 if(media_group_id) delete MediaList[media_group_id];
+		 //если файлы уже были загружены, то нужно их удалить!
+		 if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
 		 return;
 		}
 		
@@ -548,8 +550,17 @@ try{
 		{	numOfDelete[chatId]='';
 			delete WaitFlag[chatId];
 			delete TempPost[chatId];
-			if(media_group_id) delete MediaList[media_group_id];
 			sendMessage(chatId, 'Неожиданно... игнорирую.', klava(begin(chatId)));
+			return;
+		}
+		//если дата корявая, то уходим
+		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY')) 
+		{	numOfDelete[chatId]='';
+			delete TempPost[chatId];
+			delete WaitFlag[chatId];
+			//если файлы уже были загружены, то нужно их удалить!
+			if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
+			sendMessage(chatId, 'Неожиданная дата или период... игнорирую.', klava(begin(chatId)));
 			return;
 		}
 		//проверяем подпись
@@ -558,16 +569,8 @@ try{
 			delete TempPost[chatId];
 			numOfDelete[chatId]='';
 			delete WaitFlag[chatId];
-			if(media_group_id) delete MediaList[media_group_id];
-			return;
-		}
-		//если дата корявая или нет периода, то уходим
-		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') || !day) 
-		{	numOfDelete[chatId]='';
-			delete TempPost[chatId];
-			delete WaitFlag[chatId];
-			if(media_group_id) delete MediaList[media_group_id];
-			sendMessage(chatId, 'Неожиданная дата или период... игнорирую.', klava(begin(chatId)));
+			//если файлы уже были загружены, то нужно их удалить!
+			if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
 			return;
 		}
 		//удаляем флаг, если не альбом
@@ -581,7 +584,8 @@ try{
 		 numOfDelete[chatId]='';
 		 delete TempPost[chatId];
 		 delete WaitFlag[chatId];
-		 if(media_group_id) delete MediaList[media_group_id];
+		 //если файлы уже были загружены, то нужно их удалить!
+		 if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
 		 return;
 		}
 		
@@ -3171,6 +3175,24 @@ function sortMedia(mas)
 	}
 	for(let i=0;i<mas.length;i++) {media.push(mas[i]);}//остатки
 	return media;
+}
+//====================================================================
+function deleteMediaFiles(obj)
+{	
+try{
+	if(!!obj.media && obj.media.length>0)
+	{	for(let i in obj.media)
+		{	if(!!obj.media[i].media && fs.existsSync(obj.media[i].media)) 
+			{	try{fs.unlinkSync(obj.media[i].media);}catch(err){console.log(err);}//удаление с диска
+			}
+		}
+		return true;
+	}
+	return false;
+}catch(err){WriteLogFile(err+'\nfrom deleteMediaFiles()');}
+}
+//====================================================================
+function getKeyByValue(object, value) {return Object.keys(object).find(key => object[key] === value);
 }
 //====================================================================
 function getKeyList()
