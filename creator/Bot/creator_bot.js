@@ -18,6 +18,7 @@ const PathToPhoto = currentDir+'/photo';//путь к фоткам
 const PathToVideo = currentDir+'/video';//путь к видео
 const PathToAudio = currentDir+'/audio';//путь к аудио
 const PathToGif = currentDir+'/gif';//путь к гифкам
+const PathToSticker = currentDir+'/sticker';//путь к стикерам
 const PathToLog = currentDir+'/../log';//путь к логам
 const PathToQuestions = currentDir+'/questions';//путь к папке вопросов 10го шага
 //проверим наличие папки json, если папки нет, то создадим ее
@@ -30,6 +31,7 @@ var FileEg = currentDir+'/../Rassilka/eg.txt';//файл с ежиком по-у
 var FileRaspis = currentDir+'/../Rassilka/raspis.txt';//файл с расписанием по-умолчанию
 const FileTen = currentDir+"/tenstep.txt";//файл вопросов к 10-му шагу
 const FileBarrels = currentDir+"/barrels.txt";//файл вопросов Бочонки
+const FileSticker = PathToSticker+"/sticker.json";//файл id стикеров
 const TokenDir=currentDir+"/Token";//путь к папке с токенами
 const LOGGING = true;//включение/выключение записи лога в файл
 const SPEEDLIMIT = 15;//ограничение скорости сообщений в сек
@@ -72,6 +74,7 @@ let PRIVAT = 1;//глобальная приватность, пускает т�
 let DISTANCE = 1;//дистанция в днях о скором наступлении события
 let isPausing = false;//флаг временной остановки бота
 let MediaList=new Object();//массив группы медиа файлов
+let Stickers=new Object();//объект стикеров
 
 //проверим наличие файла дерева кнопок, если файл отсутствует, то создадим его 
 try {Tree = JSON.parse(fs.readFileSync(FileTree));} 
@@ -147,6 +150,8 @@ if(!fs.existsSync(PathToVideo)) {fs.mkdirSync(PathToVideo);}
 if(!fs.existsSync(PathToAudio)) {fs.mkdirSync(PathToAudio);}
 //проверим наличие папки гифок, если папки нет, то создадим ее
 if(!fs.existsSync(PathToGif)) {fs.mkdirSync(PathToGif);}
+//проверим наличие папки стикеров, если папки нет, то создадим ее
+if(!fs.existsSync(PathToSticker)) {fs.mkdirSync(PathToSticker);}
 //проверим наличие папки вопросов, если папки нет, то создадим ее
 if(!fs.existsSync(PathToQuestions)) {fs.mkdirSync(PathToQuestions);}
 //проверим наличие файла приватности, если файл отсутствует, то создадим его 
@@ -166,6 +171,8 @@ if(fs.existsSync(currentDir+'/answer.txt'))
  } 
  catch (err) {console.log(err)}
 }
+//загрузим стикеры
+try {Stickers = JSON.parse(fs.readFileSync(FileSticker));} catch (err) {Stickers.ubik=[];}
 
 getDayCount();//загрузим счетчики текущего дня
 
@@ -4300,6 +4307,13 @@ try{
 							}
 						 }
 						}
+						if(!!Stickers.ubik && Stickers.ubik.length>0)//если есть стикеры
+						{	for(let k in Stickers.ubik)
+							{	let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
+								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_srok','непосылать');
+								else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_srok','непосылать');
+							}
+						}
 					}
 					let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
 					if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_srok','непосылать');
@@ -4338,6 +4352,13 @@ try{
 								await sleep(2000);
 							}
 						 }
+						}
+						if(!!Stickers.ubik && Stickers.ubik.length>0)//если есть стикеры
+						{	for(let k in Stickers.ubik)
+							{	let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
+								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_smoke','непосылать');
+								else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_smoke','непосылать');
+							}
 						}
 					}
 					let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
@@ -4453,6 +4474,11 @@ function setContextFiles()
 		{if(!fs.existsSync(currentDir+'/gif')) {fs.mkdirSync(currentDir+'/gif');}//создадим папку, если ее нет
 		 if(fs.readdirSync(currentDir+'/gif').length===0)//если папка пустая
 		 {fs.copyFileSync(cBot+'/gif/Salut.gif',currentDir+'/gif/Salut.gif');}
+		}
+		if(fs.existsSync(cBot+'/sticker/sticker.json'))
+		{if(!fs.existsSync(PathToSticker)) {fs.mkdirSync(PathToSticker);}//создадим папку, если ее нет
+		 if(fs.readdirSync(PathToSticker).length===0)//если папка пустая
+		 {fs.copyFileSync(cBot+'/sticker/sticker.json',FileSticker);}
 		}
 	}
 	if(fs.existsSync(cToken))
