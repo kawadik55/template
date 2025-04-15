@@ -33,6 +33,7 @@ const FileTen = currentDir+"/tenstep.txt";//файл вопросов к 10-му
 const FileBarrels = currentDir+"/barrels.txt";//файл вопросов Бочонки
 const FileSticker = PathToSticker+"/sticker.json";//файл id стикеров
 const TokenDir=currentDir+"/Token";//путь к папке с токенами
+const FileSignOff = currentDir+"/SignOff.txt";//файл с флагом запрета подписки
 const LOGGING = true;//включение/выключение записи лога в файл
 const SPEEDLIMIT = 15;//ограничение скорости сообщений в сек
 const randomGenerator = createPseudoRandom(Date.now());//генератор случайных чисел
@@ -75,6 +76,7 @@ let DISTANCE = 1;//дистанция в днях о скором наступл
 let isPausing = false;//флаг временной остановки бота
 let MediaList=new Object();//массив группы медиа файлов
 let Stickers=new Object();//объект стикеров
+let SignOff = 0;
 
 //проверим наличие файла дерева кнопок, если файл отсутствует, то создадим его 
 try {Tree = JSON.parse(fs.readFileSync(FileTree));} 
@@ -173,6 +175,8 @@ if(fs.existsSync(currentDir+'/answer.txt'))
 }
 //загрузим стикеры
 try {Stickers = JSON.parse(fs.readFileSync(FileSticker));} catch (err) {Stickers.ubik=[];}
+//проверим наличие файла FileSignOff, если файл отсутствует, то создадим его 
+try {let bl = fs.readFileSync(FileSignOff); SignOff=Number(bl);} catch (err) {WriteFileJson(FileSignOff,SignOff.toString());}
 
 getDayCount();//загрузим счетчики текущего дня
 
@@ -262,6 +266,7 @@ try
 	const type = answer[1];//тип кнопок
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) {photos_key = ''; file_key = '';}
+	if(SignOff != 0 && !Object.hasOwn(LastMessId, chatId)) return;//если ни разу не был
 	
 	//любая текстовая кнопка
 	if(type=='text')
@@ -709,6 +714,7 @@ try{
 	const firstname = msg.chat.first_name;
 	const user = '@'+msg.chat.username;
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
+	if(SignOff != 0) return;//если запрет подписки
 
 	let index='0';
 	if(!('text' in Tree[index]))
@@ -734,6 +740,30 @@ try{
 	if(Object.hasOwn(LastMessId, chatId)) delete LastMessId[chatId];
 	await sendMessage(chatId, 'Вы отписались от бота!\n\nПришли мне любую букву, и подписка возобновится!');
 }catch(err){WriteLogFile(err+'\nfrom off()');}
+});
+//====================================================================
+// Команда Закрыть подписку новых юзеров
+Bot.onText(/^\/SignOff.+$/, async (msg) => 
+{	
+try{
+	const chatId = msg.chat.id.toString();
+	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
+	
+	if(validAdmin(chatId))
+	{	let match = [];
+		match = msg.text.split('=');
+		if(match.length<2) return;
+		let num = Number(match[1]);
+		if(!isNaN(num))//если железно число
+		{	SignOff = num; 
+			WriteFileJson(FileSignOff,SignOff.toString());
+			await sendMessage(chatId, 'Принято!\nSignOff = '+SignOff);
+		}
+		else await sendMessage(chatId, 'Ошибка! Знаки после равно не являются числом.');
+		delete CutList[chatId];//очищаем вырезание кнопки
+	}
+	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0'));
+}catch(err){WriteLogFile(err+'\nfrom callback_Public()');}
 });
 //====================================================================
 // Команда help
@@ -1185,6 +1215,7 @@ try{
 	}
 	else
 	{	//если пришел текст 'от фонаря'
+		if(SignOff != 0 && !Object.hasOwn(LastMessId, chatId)) return;//если ни разу не был
 		await sendMessage(chatId, 'Привет, '+firstname+'!');
 		let index='0';
 		if(!Object.hasOwn(Tree[index], 'text'))
@@ -1689,7 +1720,8 @@ try{
 	}
 	
 	//сохраняем mess_id, если с кнопками
-	if(Object.hasOwn(res, 'reply_markup') && Object.hasOwn(res.reply_markup, 'inline_keyboard'))
+	let off = (SignOff != 0 && !Object.hasOwn(LastMessId, chatId));//если ни разу не был, и подписка запрещена
+	if(Object.hasOwn(res, 'reply_markup') && Object.hasOwn(res.reply_markup, 'inline_keyboard') && !off)
 	{if(!Object.hasOwn(LastMessId, chatId)) LastMessId[chatId]=new Object();
 	 if(res.message_id) LastMessId[chatId].messId=res.message_id;
 	 if(res.chat.username) LastMessId[chatId].username=res.chat.username;
