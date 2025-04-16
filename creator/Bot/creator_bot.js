@@ -714,7 +714,10 @@ try{
 	const firstname = msg.chat.first_name;
 	const user = '@'+msg.chat.username;
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
-	if(SignOff != 0) return;//если запрет подписки
+	if(SignOff != 0)//если запрет подписки 
+	{	await sendMessage(chatId, 'Извините, подписка временно остановлена!');
+		return;
+	}
 
 	let index='0';
 	if(!('text' in Tree[index]))
