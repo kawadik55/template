@@ -63,7 +63,7 @@ logs_bot.json - бот для важных системных сообщений
 
 2. Теперь запустим контейнер с ботом, и он сам развернет в созданных папках все необходимые для своей работы файлы:
 
-docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=ДОМ/РЕГИОН/LoaderBot" kawadiyk/fullloaderbot:latest ./full_loader_bot
+docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/LoaderBot" kawadiyk/fullloaderbot:latest ./full_loader_bot
 и следом остановить контейнер командой:
 docker stop name_bot
 
@@ -89,7 +89,7 @@ docker restart name_bot
 
 1.
 docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d \
--e "CURRENT_DIR=ДОМ/РЕГИОН/БОТ" \
+-e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" \
 -e "SUPERVISOR=chatId_Супервизора" \
 -e "TOKEN_BOT=токен основного бота как есть" \
 -e "NAME_BOT=это_мой_bot или как хотите" \
@@ -107,7 +107,7 @@ kawadiyk/fullloaderbot:latest ./full_loader_bot
 docker stop name_bot && docker rm name_bot
 
 3.
-docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=ДОМ/РЕГИОН/БОТ" kawadiyk/fullloaderbot:latest ./full_loader_bot
+docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" kawadiyk/fullloaderbot:latest ./full_loader_bot
 
 Если не сделать перезагрузку контейнера после первой команды с настройками, то все последующие рестарты контейнера
 будут перезаписывать эти параметры вновь и вновь, а это не есть хорошо.

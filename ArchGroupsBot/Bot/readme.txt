@@ -58,7 +58,7 @@ arch_groups_bot.js - основной скрипт бота.
 
 2. Теперь запустим контейнер с ботом, и он сам развернет в созданных папках все необходимые для своей работы файлы:
 
-docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=ДОМ/РЕГИОН/БОТ" kawadiyk/archgroupsbot:latest ./arch_groups_bot
+docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" kawadiyk/archgroupsbot:latest ./arch_groups_bot
 и следом остановить контейнер командой:
 docker stop name_bot
 
@@ -84,7 +84,7 @@ docker restart name_bot
 
 1.
 docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d \
--e "CURRENT_DIR=ДОМ/РЕГИОН/БОТ" \
+-e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" \
 -e "SUPERVISOR=1234567890" \
 -e "REGION=Название вашей местности" \
 -e "TOKEN_BOT=токен основного бота как есть" \
@@ -97,7 +97,7 @@ kawadiyk/archbot:latest ./arch_bot
 docker stop name_bot && docker rm name_bot
 
 3.
-docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=ДОМ/РЕГИОН/БОТ" kawadiyk/archbot:latest ./arch_bot
+docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" kawadiyk/archbot:latest ./arch_bot
 
 Если не сделать перезагрузку контейнера после первой команды с настройками, то все последующие рестарты контейнера
 будут перезаписывать эти параметры вновь и вновь, а это не есть хорошо.

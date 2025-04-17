@@ -34,7 +34,7 @@ chat_id группы/канала, где этот бот дежурит.
 Готовый образ для Докера "kawadiyk/rassilka:latest" можно загрузить из DockerHub.
 Запускать контейнер можно из crontab по нужному расписанию, с помощью команды:
 
-00 06 * * * docker run --rm --name rassilka -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw -t -e "CURRENT_DIR=ДОМ/РЕГИОН/БОТ" kawadiyk/rassilka:latest ./rassilka >> ДОМ/РЕГИОН/log/cronlog.txt  2>&1
+00 06 * * * docker run --rm --name rassilka -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw -t -e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" kawadiyk/rassilka:latest ./rassilka >> ДОМ/РЕГИОН/log/cronlog.txt  2>&1
 
 Этот пример будет запускать рассылку ежедневно в 06:00
 ДОМ - домашний каталог пользователя, например: /home/anton
