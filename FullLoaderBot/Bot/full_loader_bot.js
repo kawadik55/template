@@ -1601,7 +1601,11 @@ try{
 	{	try {UserList = JSON.parse(fs.readFileSync(FileUserList));} catch(err){console.log(err);}
 		let str = 'Список авторизованных пользователей:\n';
 		let keys = Object.keys(UserList);
-        for(let i in keys) str += keys[i]+' : '+UserList[keys[i]][0]+' ('+UserList[keys[i]][1]+')\n';
+        for(let i in keys) 
+		{str += keys[i]+' : '+UserList[keys[i]][0]+' ('+UserList[keys[i]][1]+') ';
+		 if(!!keys[i][2]) str += UserList[keys[i]][2];
+		 str += '\n';
+		}
 		sendMessage(chatId, str);
 	}
 	else sendMessage(chatId, smilik);
@@ -1717,6 +1721,7 @@ LoaderBot.onText(/\/AddUser/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
+	const username = '@'+msg.chat.username;
 	let valid = validAdmin(chatId) | validAdminBot(chatId);
 	if(valid)
     {   
@@ -1740,11 +1745,12 @@ try{
 		let mas = [];
 		mas.push(name+", гр.<"+group+">");//добавляем новичка
 		mas.push(moment().format('DD.MM.YYYY'));//дата регистрации в [1]
+		mas.push(username);//username в [2]
 		UserList[id] = mas;//добавляем новичка
 		WriteFileJson(FileUserList,UserList);//записываем файл
 
 		str = 'Новый Пользователь бота:\n'
-        str += UserList[id][0]+'('+UserList[id][1]+')';
+        str += UserList[id][0]+'('+UserList[id][1]+') '+UserList[id][2];
         sendMessage(chatId, str);
     }
 	else sendMessage(chatId, smilik);
@@ -2216,7 +2222,7 @@ function validUser(chatId)
 		{	let tmp = UserList[chatId];
 			delete UserList[chatId]; 
 			WriteFileJson(FileUserList,UserList);
-			WriteLogFile(err+'По сроку давности удален пользователь "'+chatId+'":\n'+JSON.stringify(tmp,null,2),'вчат');
+			WriteLogFile('По сроку давности удален пользователь "'+chatId+'":\n'+JSON.stringify(tmp,null,2),'вчат');
 		}
 	}
 	if(!!UserList[chatId]) return true;//есть в юзерах
@@ -2454,8 +2460,8 @@ try{
 	if(mas.length > 0)
 	{	for(let i in mas)
 		{	let str = '';
-			if(flag!=0) str = TextList[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+TextList[mas[i]].date+' - '+TextList[mas[i]].dayOfWeek+')';//с номером
-			else str = TextList[mas[i]].text + '\n\n('+TextList[mas[i]].date+' - '+TextList[mas[i]].dayOfWeek+')';//без номера
+			if(flag!=0) str = TextList[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+TextList[mas[i]].date+' - '+TextList[mas[i]].dayOfWeek+') - '+TextList[mas[i]].userName;//с номером
+			else str = TextList[mas[i]].text + '\n\n('+TextList[mas[i]].date+' - '+TextList[mas[i]].dayOfWeek+') - '+TextList[mas[i]].userName;//без номера
 			let opt = {};
 			opt.entities = TextList[mas[i]].entities; 
 			opt.link_preview_options=TextList[mas[i]].link_preview_options;
@@ -2477,8 +2483,8 @@ try{
 	{	for(let i in mas)
 		{	if(Object.hasOwn(List[mas[i]], 'text'))//это текст
 			{	let str = '';
-				if(flag!=0) str = List[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+')';//с номером
-				else str = List[mas[i]].text + '\n\n('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+')';//без номера
+				if(flag!=0) str = List[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+') - '+List[mas[i]].userName;//с номером
+				else str = List[mas[i]].text + '\n\n('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+') - '+List[mas[i]].userName;//без номера
 				let opt = {};
 				opt.entities = List[mas[i]].entities; 
 				opt.link_preview_options=List[mas[i]].link_preview_options;
@@ -2493,8 +2499,8 @@ try{
 				}
 				else opt.caption = '';
 				if(Object.hasOwn(List[mas[i]], 'parse_mode')) opt.parse_mode = List[mas[i]].parse_mode;
-				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+")";
-				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+")";
+				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+") - "+List[mas[i]].userName;
+				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+") - "+List[mas[i]].userName;
 				if(!!List[mas[i]].parse_mode) opt.parse_mode = List[mas[i]].parse_mode;
 				if(Object.hasOwn(List[mas[i]], 'type'))
 				{if(List[mas[i]].type=='image') {await sendPhoto(chatId, List[mas[i]].path, opt);}
@@ -2507,8 +2513,8 @@ try{
 			else if(Object.hasOwn(List[mas[i]], 'media'))//это альбом
 			{	let opt = new Object();
 				opt.caption = '';
-				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+")";
-				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+")";
+				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+") - "+List[mas[i]].userName;
+				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+") - "+List[mas[i]].userName;
 				if(Object.hasOwn(List[mas[i]], 'type'))
 				{if(List[mas[i]].type=='image') {await sendPhoto(chatId, List[mas[i]].path, opt);}
 				 else if(List[mas[i]].type=='video') {await sendVideo(chatId, List[mas[i]].path, opt);}
@@ -2532,8 +2538,8 @@ try{
 	if(mas.length > 0)
 	{	for(let i in mas)
 		{	let str = '';
-			if(flag!=0) str = ModerTextList[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+ModerTextList[mas[i]].date+' - '+ModerTextList[mas[i]].dayOfWeek+')';//с номером
-			else str = ModerTextList[mas[i]].text + '\n\n('+ModerTextList[mas[i]].date+' - '+ModerTextList[mas[i]].dayOfWeek+')';//без номера
+			if(flag!=0) str = ModerTextList[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+ModerTextList[mas[i]].date+' - '+ModerTextList[mas[i]].dayOfWeek+') - '+ModerTextList[mas[i]].userName;//с номером
+			else str = ModerTextList[mas[i]].text + '\n\n('+ModerTextList[mas[i]].date+' - '+ModerTextList[mas[i]].dayOfWeek+') - '+ModerTextList[mas[i]].userName;//без номера
 			let opt = {};
 			opt.entities = ModerTextList[mas[i]].entities;
 			opt.link_preview_options=ModerTextList[mas[i]].link_preview_options;
@@ -2559,8 +2565,8 @@ try{
 			}
 			else opt.caption = '';
 			if(Object.hasOwn(ImagesList[key], 'parse_mode')) opt.parse_mode = ImagesList[key].parse_mode;
-			if(flag!=0) opt.caption += "\n\n** номер: "+key+" ** ("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+")";
-			else opt.caption += "\n\n("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+")";
+			if(flag!=0) opt.caption += "\n\n** номер: "+key+" ** ("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+") - "+ImagesList[key].userName;
+			else opt.caption += "\n\n("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+") - "+ImagesList[key].userName;
 			if(!!ImagesList[key].parse_mode) opt.parse_mode = ImagesList[key].parse_mode;
 			if(Object.hasOwn(ImagesList[key], 'type'))
 			{if(ImagesList[key].type=='image') {await sendPhoto(chatId, ImagesList[key].path, opt);}
@@ -2589,8 +2595,8 @@ try{
 			}
 			else opt.caption = '';
 			if(Object.hasOwn(ModerImagesList[key], 'parse_mode')) opt.parse_mode = ModerImagesList[key].parse_mode;
-			if(flag!=0) opt.caption += "\n\n** номер: "+key+" ** ("+ModerImagesList[key].date+" - "+ModerImagesList[key].dayOfWeek+")";
-			else opt.caption += "\n\n("+ModerImagesList[key].date+" - "+ModerImagesList[key].dayOfWeek+")";
+			if(flag!=0) opt.caption += "\n\n** номер: "+key+" ** ("+ModerImagesList[key].date+" - "+ModerImagesList[key].dayOfWeek+") - "+ModerImagesList[key].userName;
+			else opt.caption += "\n\n("+ModerImagesList[key].date+" - "+ModerImagesList[key].dayOfWeek+") - "+ModerImagesList[key].userName;
 			if(!!ModerImagesList[key].parse_mode) opt.parse_mode = ModerImagesList[key].parse_mode;
 			if(Object.hasOwn(ModerImagesList[key], 'type'))
 			{if(ModerImagesList[key].type=='image') {await sendPhoto(chatId, ModerImagesList[key].path, opt);}
