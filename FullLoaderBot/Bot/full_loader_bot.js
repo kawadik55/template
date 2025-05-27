@@ -476,6 +476,8 @@ try{
 			{	if(cnt2%2==0 && cnt1%2==0) TempPost[chatId].parse_mode = 'markdown';
 				else if(!!TempPost[chatId].parse_mode) delete TempPost[chatId].parse_mode;
 			}
+			//удалим принудительно markdown, ошибается
+			if(!!TempPost[chatId].parse_mode) delete TempPost[chatId].parse_mode;
 		}
 		//переносим картинку и записываем в список картинок на модерацию
 		let len = await setToModerImagesList(path, newpath, TempPost[chatId], media_group_id);//получаем последний индекс
