@@ -36,7 +36,7 @@ if(!fs.existsSync(RassilkaDir)) {fs.mkdirSync(RassilkaDir);}
 
 //====================================================================
 //парсер ежика
-async function parser_eg()
+/*async function parser_eg()
 { var URL = 'https://na-russia.org/eg';
   try
   {
@@ -112,6 +112,65 @@ async function parser_eg()
   return await promise;
   
   } catch(err) {console.log('Ошибка в parser_eg()\n'+err.message);}
+}*/
+//====================================================================
+//парсер ежика, на выходе текст в markdown
+async function parser_eg()
+{ //var URL = 'https://na-russia.org/eg';
+	var URL = 'https://na-russia.org/api/daily-meditation/?format=json';
+	let mas = ['','Января','Февраля','Марта','Апреля','Мая','Июня','Июля','Августа','Сентября','Октября','Ноября','Декабря'];
+	try
+	{
+		let promise = new Promise((resolve, reject) => 
+		{
+			needle.get(URL, async function(err, response) 
+			{ 	if(response.statusCode==200)
+				{
+					let EgObj = response.body[0]; // Получаем json
+					fs.writeFileSync(currentDir+'/page_eg.txt', JSON.stringify(EgObj,null,2));// Запись полученного результата
+					//собираем текст ежика для Телеги
+					let message='';//текст в телегу
+					message += '🔷*ЕЖЕДНЕВНИК*🔷\n';//zagol;
+					message += 'http://na-russia.org/\n\n';
+					message += EgObj.day + ' ' + mas[EgObj.month] + '\n\n';//дата
+					
+					message += '*' + replaseHtml(EgObj.title) + '*' + '\n\n';//тема жирно
+					
+					message += '_' + replaseHtml(EgObj.quote) + '_' + '\n';//аннотация курсивом
+					message += '_' + EgObj.quote_from + '_' + '\n\n';//страница БТ курсивом
+					
+					message += replaseHtml(EgObj.body) + '\n\n';//сам текст
+					
+					message += '*ТОЛЬКО СЕГОДНЯ:* ' + replaseHtml(EgObj.jft) + '\n\n';
+					//в конце добавляем ссылки на аудио треки в markdown
+					message += '[Аудио версия "Только сегодня"](https://t.me/BookForNA)\n\n';
+					message += '["Духовные принципы на каждый день"](https://t.me/+a8HO46bHu8MwZjZk)\n\n';
+					
+					//запишем готовый текст в файл utf8
+					//fs.writeFileSync(FileEg, "\ufeff" + message);
+					//fs.writeFileSync(FileEgRassilka, "\ufeff" + message);
+					fs.writeFileSync(FileEg, message);
+					fs.writeFileSync(FileEgRassilka, message);
+     
+					console.log(moment().format('DD-MM-YY HH:mm:ss:ms')+' - Парсер Ежик - OK!');
+					resolve ('OK');
+					
+					function replaseHtml(str)
+					{	str = str.replace(/&laquo;/g, '«');
+						str = str.replace(/&raquo;/g, '»');
+						str = str.replace(/&mdash;/g, '—');
+						str = str.replace(/<br>/g, '\n  ');
+						str = str.replace(/<\/br>/g, '\n  ');
+						str = str.replace(/_/g, '\\_');//экранируем нижнее подчеркивание
+						return str;
+					}
+				}
+				else {console.log('Страница Ежика не распарсилась!'); reject('NO');} 
+			});
+  
+		});//конец промиса
+		return await promise;
+	} catch(err) {console.log('Ошибка в parser_eg()\n'+err.message);}//
 }
 //====================================================================
 //парсер расписания закрытых собраний
