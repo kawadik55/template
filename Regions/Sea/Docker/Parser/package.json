@@ -4,6 +4,7 @@
 	"js-beautify": "^1.15.1",
     "jsdom": "^20.0.3",
 	"moment": "^2.29.4",
+	"html-to-text": "^9.0.5",
     "node-telegram-bot-api": "latest"
   }
 }

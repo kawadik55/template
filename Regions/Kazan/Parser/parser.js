@@ -5,6 +5,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const needle = require('needle');
 const jsdom = require("jsdom"); // Подключение модуля jsdom для работы с DOM-деревом (1)
 const { JSDOM } = jsdom; // Подключение модуля jsdom для работы с DOM-деревом (2)
+const {htmlToText} = require('html-to-text');//преобразователь html в текст
 
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const RassilkaDir = currentDir+"/../Rassilka";
@@ -131,14 +132,14 @@ async function parser_eg()
 					message += 'http://na-russia.org/\n\n';
 					message += EgObj.day + ' ' + mas[EgObj.month] + '\n\n';//дата
 					
-					message += '*' + replaseHtml(EgObj.title) + '*' + '\n\n';//тема жирно
+					message += '*' + replaceHtml(EgObj.title) + '*' + '\n\n';//тема жирно
 					
-					message += '_' + replaseHtml(EgObj.quote) + '_' + '\n';//аннотация курсивом
+					message += '_' + replaceHtml(EgObj.quote) + '_' + '\n';//аннотация курсивом
 					message += '_' + EgObj.quote_from + '_' + '\n\n';//страница БТ курсивом
 					
-					message += replaseHtml(EgObj.body) + '\n\n';//сам текст
+					message += replaceHtml(EgObj.body) + '\n\n';//сам текст
 					
-					message += '*ТОЛЬКО СЕГОДНЯ:* ' + replaseHtml(EgObj.jft) + '\n\n';
+					message += '*ТОЛЬКО СЕГОДНЯ:* ' + replaceHtml(EgObj.jft) + '\n\n';
 					//в конце добавляем ссылки на аудио треки в markdown
 					message += '[Аудио версия "Только сегодня"](https://t.me/BookForNA)\n\n';
 					
@@ -151,12 +152,15 @@ async function parser_eg()
 					console.log(moment().format('DD-MM-YY HH:mm:ss:ms')+' - Парсер Ежик - OK!');
 					resolve ('OK');
 					
-					function replaseHtml(str)
-					{	str = str.replace(/&laquo;/g, '«');
+					function replaceHtml(str)
+					{	/*str = str.replace(/&laquo;/g, '«');
 						str = str.replace(/&raquo;/g, '»');
 						str = str.replace(/&mdash;/g, '—');
+						str = str.replace(/&hellip;/g, '…');
 						str = str.replace(/<br>/g, '\n  ');
-						str = str.replace(/<\/br>/g, '\n  ');
+						str = str.replace(/<\/br>/g, '\n  ');*/
+						const options = {wordwrap: false};
+						str = htmlToText(str, options);
 						str = str.replace(/_/g, '\\_');//экранируем нижнее подчеркивание
 						return str;
 					}
