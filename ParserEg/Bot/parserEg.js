@@ -55,9 +55,9 @@ async function parser_eg()
 					message += '[Аудио версия "Только сегодня"](https://t.me/BookForNA)\n\n';
 					
 					//запишем готовый текст в файлы
-					fs.writeFileSync(currentDir+'/'+PathsList.FileEgMD, "\ufeff" + message);//в корень
+					fs.writeFileSync(currentDir+'/'+PathsList.FileEgMD, /*"\ufeff" +*/ message);//в корень
 					if(!!PathsList.DirEg && PathsList.DirEg.length>0)
-					{for(let i=0;i<PathsList.DirEg.length;i++) fs.writeFileSync(currentDir+PathsList.DirEg[i]+'/'+PathsList.FileEgMD, "\ufeff" + message);
+					{for(let i=0;i<PathsList.DirEg.length;i++) fs.writeFileSync(currentDir+PathsList.DirEg[i]+'/'+PathsList.FileEgMD, /*"\ufeff" +*/ message);
 					}
 					
 					//-------------------------------------------------------------
@@ -89,7 +89,8 @@ async function parser_eg()
 					resolve ('OK');
 					
 					function replaceHtml(str)
-					{	str = htmlToText(str);
+					{	const options = {wordwrap: false};
+						str = htmlToText(str, options);
 						str = str.replace(/_/g, '\\_');//экранируем нижнее подчеркивание
 						return str;
 					}
