@@ -22,6 +22,16 @@ try
 if(!!PathsList.DirEg && PathsList.DirEg.length>0)
 {for(let i=0;i<PathsList.DirEg.length;i++) if(!fs.existsSync(currentDir+PathsList.DirEg[i])) {fs.mkdirSync(currentDir+PathsList.DirEg[i]);}
 }
+//текстовые файлы переписываем из образа принудительно
+try{
+let cBot = '/home/pi/context/Bot';
+if(fs.existsSync(cBot))
+{	if(fs.existsSync(cBot+'/readme.txt'))
+	{fs.copyFileSync(cBot+'/readme.txt',currentDir+'/readme.txt');}
+	if(fs.existsSync(cBot+'/parserEg.js'))
+	{fs.copyFileSync(cBot+'/parserEg.js',currentDir+'/parserEg.js');}
+}
+} catch (err){console.log(err);}
 
 //====================================================================
 //парсер ежика, на выходе текст в markdown и html
