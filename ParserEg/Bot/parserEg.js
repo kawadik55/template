@@ -13,6 +13,7 @@ try
 } catch (err) 
 {console.log('Ошибка парсинга PathsList\n'+err);
  PathsList.DirEg = [];
+ PathsList.Links = [];
  PathsList.FileEgHtml = 'eg.html';
  PathsList.FileEgMD = 'eg.txt';
  fs.writeFileSync(FilePaths, JSON.stringify(PathsList,null,2));
@@ -61,8 +62,15 @@ async function parser_eg()
 					message += replaceHtml(EgObj.body) + '\n\n';//сам текст
 					
 					message += '*ТОЛЬКО СЕГОДНЯ:* ' + replaceHtml(EgObj.jft) + '\n\n';
-					//в конце добавляем ссылки на аудио треки в markdown
-					message += '[Аудио версия "Только сегодня"](https://t.me/BookForNA)\n\n';
+					
+					//в конце добавляем ссылки на аудио треки в markdown, если есть
+					try{
+					if(!!PathsList.Links && PathsList.Links.length>0)
+					{	for(let i=0;i<PathsList.Links.length;i++)
+						{message += '['+String(PathsList.Links[i][0])+']('+String(PathsList.Links[i][1])+')\n\n';
+						}
+					}
+					}catch(err){console.log('Ошибка в "Links":\n'+err);}
 					
 					//запишем готовый текст в файлы
 					fs.writeFileSync(currentDir+'/'+PathsList.FileEgMD, /*"\ufeff" +*/ message);//в корень
@@ -85,8 +93,15 @@ async function parser_eg()
 					message += EgObj.body + '<br><br>';//сам текст
 					
 					message += '<b>ТОЛЬКО СЕГОДНЯ:</b> ' + EgObj.jft + '<br><br>';
-					//в конце добавляем ссылки на аудио треки
-					message += '<a href="https://t.me/BookForNA">Аудио версия "Только сегодня"</a><br><br>';
+					
+					//в конце добавляем ссылки на аудио треки в html, если есть
+					try{
+					if(!!PathsList.Links && PathsList.Links.length>0)
+					{	for(let i=0;i<PathsList.Links.length;i++)
+						{message += '<a href="'+String(PathsList.Links[i][1])+'">'+String(PathsList.Links[i][0])+'</a><br><br>';
+						}
+					}
+					}catch(err){console.log('Ошибка в "Links":\n'+err);}
 					
 					//запишем готовый текст в файлы
 					fs.writeFileSync(currentDir+'/'+PathsList.FileEgHtml, "\ufeff" + message);//в корень
