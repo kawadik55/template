@@ -16,6 +16,7 @@ try
  PathsList.Links = [];
  PathsList.FileEgHtml = 'eg.html';
  PathsList.FileEgMD = 'eg.txt';
+ PathsList.TimeZoneMinutes = '';
  fs.writeFileSync(FilePaths, JSON.stringify(PathsList,null,2));
 }
 
@@ -33,11 +34,29 @@ if(fs.existsSync(cBot))
 	{fs.copyFileSync(cBot+'/parserEg.js',currentDir+'/parserEg.js');}
 }
 } catch (err){console.log(err);}
+//добавим таймзону, если ее нет
+if(!!PathsList && !PathsList.TimeZoneMinutes)
+{	PathsList.TimeZoneMinutes = '';
+	fs.writeFileSync(FilePaths, JSON.stringify(PathsList,null,2));
+}
 
 //====================================================================
 //парсер ежика, на выходе текст в markdown и html
 async function parser_eg()
-{	var URL = 'https://na-russia.org/api/daily-meditation/?format=json';
+{	let offset= '';
+	if(!!PathsList.TimeZoneMinutes)//если есть таймзона
+	{	if(PathsList.TimeZoneMinutes.indexOf('-')==0)//если отрицательное
+		{	let str = PathsList.TimeZoneMinutes.replace('-','');
+			if(!isNaN(Number(str))) offset += '&&timezone_offset=' + String(Math.floor(Number(str)));
+			else console.log('Ошибка формата отрицательного числа таймзоны');
+		}
+		else
+		{	let str = PathsList.TimeZoneMinutes.replace('+','');
+			if(!isNaN(Number(str))) offset += '&&timezone_offset=-' + String(Math.floor(Number(str)));
+			else console.log('Ошибка формата положительного числа таймзоны');
+		}
+	}
+	let URL = 'https://na-russia.org/api/daily-meditation/?format=json'+offset;
 	let mas = ['','Января','Февраля','Марта','Апреля','Мая','Июня','Июля','Августа','Сентября','Октября','Ноября','Декабря'];
 	try
 	{
