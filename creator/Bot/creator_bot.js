@@ -277,18 +277,38 @@ try
 	{	if(!Object.hasOwn(Tree[index], 'text'))
 		{	Tree[index].text = 'Тут пока ничего нет\nДобавь текст командой /EditText';
 		}
-		let str = Tree[index].text;
-		let ubik_true = ubik(chatId,'srok');
-		if(index==0 && !!LastMessId[chatId] && Object.hasOwn(LastMessId[chatId], 'srok') && ubik_true==false)
-		{	let name = '';
-			if(!!firstname) name = firstname;
-			else if(!!user) name = '@'+user;
-			//заменяем строку текста на срок чистоты
-			str = 'Привет, '+name+'!\n';
-			str += get_srok(chatId);
-			await sendMessage(chatId, str, klava(index, {parse_mode:"markdown"}, chatId), index);
+		//если есть текст, то чисто текстовая кнопка
+		if(!!Tree[index].text)
+		{	let str = Tree[index].text;
+			let ubik_true = ubik(chatId,'srok');
+			if(index==0 && !!LastMessId[chatId] && Object.hasOwn(LastMessId[chatId], 'srok') && ubik_true==false)
+			{	let name = '';
+				if(!!firstname) name = firstname;
+				else if(!!user) name = '@'+user;
+				//заменяем строку текста на срок чистоты
+				str = 'Привет, '+name+'!\n';
+				str += get_srok(chatId);
+				await sendMessage(chatId, str, klava(index, {parse_mode:"markdown"}, chatId), index);
+			}
+			else await sendMessage(chatId, str, klava(index, Tree[index].entities, chatId), index);
 		}
-		else await sendMessage(chatId, str, klava(index, Tree[index].entities, chatId), index);
+		//если есть имя файла, то кнопка с картинкой
+		else if(!!Tree[index].filename)
+		{	let filename = Tree[index].filename;
+			let path = PathToPhoto+'/'+index+'/'+filename;
+			//если есть fileId, то замена пути на fileId
+			if(!!FileId[filename]) 
+			{	//проверяем наличие файла на сервере Телеграм из FileId[]
+				let info; 
+				try{info=await Bot.getFile(FileId[filename]);} catch(err){if(String(err).indexOf('file is too big')+1) info = true;}
+				//если есть отклик, то замена пути на fileId
+				if(!!info) path = FileId[filename];
+			}
+			let option = klava(index, null, chatId);//получим чайлд-кнопки
+			if(!!Tree[index].caption) option.caption = Tree[index].caption;
+			if(!!Tree[index].caption_entities) option.caption_entities = Tree[index].caption_entities;
+			await sendMessageImage(chatId,path,option,index);
+		}
 	}
 	//кнопка Фотки
 	else if(type=='photo')
@@ -857,6 +877,18 @@ try{
 		{	Tree[LastKey[chatId]].text = msg.text;
 			Tree[LastKey[chatId]].entities = msg.entities;
 			if(msg.link_preview_options) Tree[LastKey[chatId]].link_preview_options = msg.link_preview_options;
+			//удаляем папку с картинкой и форматирование
+			if(fs.existsSync(PathToPhoto+'/'+LastKey[chatId])) {await delDir(LastKey[chatId]);}
+			if(!!Tree[LastKey[chatId]].filename) 
+			{	while(Object.hasOwn(FileId, Tree[LastKey[chatId]].filename)) {delete FileId[Tree[LastKey[chatId]].filename];}
+				delete Tree[LastKey[chatId]].filename;
+			}
+			if(!!Tree[LastKey[chatId]].caption) delete Tree[LastKey[chatId]].caption;
+			if(!!Tree[LastKey[chatId]].caption_entities) delete Tree[LastKey[chatId]].caption_entities;
+			if(!!Tree[LastKey[chatId]].filename) 
+				{	while(Object.hasOwn(FileId, Tree[LastKey[chatId]].filename)) {delete FileId[Tree[LastKey[chatId]].filename];}
+					delete Tree[LastKey[chatId]].filename;
+				}
 			WriteFileJson(FileTree,Tree);
 			await sendMessage(chatId, 'Принято! Можно проверять.', klava(LastKey[chatId],null, chatId));
 		}
@@ -1335,6 +1367,65 @@ try{
 			console.log('Удаляю MediaList[media_group_id]');
 		}
 	}
+	//если картинка для кнопки text
+	else if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==1)
+	{	//проверяем подпись
+		if(Object.hasOwn(msg,'caption') && caption.length > 1000)
+		{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
+			await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад',null, chatId));
+			WaitEditText[chatId]=0;
+			return;
+		}
+		WaitEditText[chatId]=0;
+		let key = '';
+		if(!!LastKey[chatId] && Object.hasOwn(Tree, LastKey[chatId])) key = LastKey[chatId];
+		//console.log('LastKey[chatId]='+LastKey[chatId]);
+		LastKey[chatId] = null;
+		let path;
+		//если одиночная картинка
+		if(!media_group_id && !!key)
+		{	//загружаем файл
+			try 
+			{	//сначала очистим старое
+				if(fs.existsSync(PathToPhoto+'/'+key)) {await delDir(key);}//удаляем папку с картинкой
+				if(!!Tree[key].filename) 
+				{	while(Object.hasOwn(FileId, Tree[key].filename)) {delete FileId[Tree[key].filename];}
+					delete Tree[key].filename;
+				}
+				if(!!Tree[key].caption) delete Tree[key].caption;
+				if(!!Tree[key].caption_entities) delete Tree[key].caption_entities;
+				Tree[key].text = 'начальный текст';
+				//создадим папку для картинки
+				if(!fs.existsSync(PathToPhoto+'/'+key)) {fs.mkdirSync(PathToPhoto+'/'+key);}
+				path = await Bot.downloadFile(file_id, PathToPhoto+'/'+key);
+			}
+			catch(err)
+			{   if(!key) key = '0';
+				Tree['Назад'].parent = key;//Кнопка Назад с возвратом
+				await sendMessage(chatId, 'Не могу загрузить этот файл!\n'+smilik, klava('Назад',null, chatId));
+				WaitEditText[chatId]=0;
+				return;
+			}
+			//вытащим чисто имя файла
+			let tmp=path.split('/');
+			let name=tmp[tmp.length-1];//имя файла в конце
+			while(Object.hasOwn(FileId, name)) {delete FileId[name];}
+			FileId[name] = file_id;
+			WriteFileJson(currentDir+'/FileId.txt',FileId);
+			Tree[key].filename = name;//в кнопку имя файла
+			if(!!caption) Tree[key].caption = caption;//в кнопку подпись
+			if(!!caption_entities) Tree[key].caption_entities = caption_entities;//в кнопку форматирование
+			if(!!Tree[key].text) Tree[key].text = '';//очищаем
+			if(!!Tree[key].entities) delete Tree[key].entities;//очищаем
+			WriteFileJson(FileTree,Tree);
+			await sendMessage(chatId, 'Принято! Можно проверять.', klava(key, null, chatId));
+		}
+	}
+	else 
+	{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
+		await sendMessage(chatId, 'Что-то пошло не так!\n'+smilik, klava('Назад',null, chatId));
+		WaitEditText[chatId]=0;
+	}
 }catch(err){WriteLogFile(err+'\nfrom ловим ФОТО');}
 });
 //====================================================================
@@ -1681,7 +1772,6 @@ async function sendMessage(chatId,str,option,index)
 {	
 try{
 	let res;
-	//if(isPausing) return res;//если бот на время забанен
 	if(!isValidChatId(chatId))//если не число, то не пускаем 
 	{	res = '\nfrom sendMessage("'+chatId+'")=>if(!isValidChatId(chatId))';
 		WriteLogFile(res,'непосылать');
@@ -1742,6 +1832,72 @@ try{
 	
 }catch(err){
 	WriteLogFile(err+'\nfrom sendMessage("'+chatId+'")');
+	return err;	
+}
+}
+//====================================================================
+async function sendMessageImage(chatId,path,option,index)
+{	
+try{
+	let res;
+	if(!isValidChatId(chatId))//если не число, то не пускаем 
+	{	res = '\nfrom sendMessageImage("'+chatId+'")=>if(!isValidChatId(chatId))';
+		WriteLogFile(res,'непосылать');
+		return res;
+	}
+	if(Number(chatId)<0)//отрицательные chatId не пускаем
+	{	res = '\nfrom sendMessageImage("'+chatId+'")=>if(Number(chatId)<0)';
+		WriteLogFile(res,'непосылать');
+		return res;
+	}
+	
+	//сохраняем для посл.удаления
+	let chat_id='', mess_id='';
+	if(!!LastMessId[chatId]) {chat_id=chatId; mess_id=LastMessId[chatId].messId;}
+	if(!option) option = new Object();
+	let err='';
+	
+	//посылаем сообщение
+	if(!!option.text) delete option.text;
+	sendMessage.count = (sendMessage.count || 0) + 1;//счетчик сообщений в секунду
+	if(sendMessage.count == 1) setTimeout(() => {sendMessage.count = 0;}, 1000);//на первом заряжаем таймер
+	if(sendMessage.count > SPEEDLIMIT)//достигли максимума
+	{	isPausing = true;
+		while(sendMessage.count != 0) await sleep(50);
+		sendMessage.count = 1; setTimeout(() => {sendMessage.count = 0;}, 1000);//на первом заряжаем таймер
+	}
+	isPausing = false;
+	
+	try{res = await sendPhoto(chatId, path, option);
+	}catch(err)
+	{	console.log(err+'\nfrom Bot.sendMessageImage("'+chatId+'")'); 
+		if(String(err).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
+		else if(String(err).indexOf('bot was blocked by the user')+1) delete LastMessId[chatId];//удаляем ушедшего
+		else if(String(err).indexOf('chat not found')+1) delete LastMessId[chatId];//удаляем ушедшего
+		else if(String(err).indexOf('Too Many Requests:')+1) WriteLogFile(err+'\nfrom Bot.sendMessage');
+		else WriteLogFile(err+'\nfrom Bot.sendMessageImage("'+chatId+'")'+'\nstr = '+path+'\noption = '+JSON.stringify(option,null,2));
+		return err;	
+	}
+	
+	if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId] != 1)//для Админа сохраним ключ строки 
+	{	if(index != null) LastKey[chatId]=index;
+	}
+	
+	//сохраняем mess_id, если с кнопками
+	let off = (SignOff != 0 && !Object.hasOwn(LastMessId, chatId));//если ни разу не был, и подписка запрещена
+	if(Object.hasOwn(res, 'reply_markup') && Object.hasOwn(res.reply_markup, 'inline_keyboard') && !off)
+	{if(!Object.hasOwn(LastMessId, chatId)) LastMessId[chatId]=new Object();
+	 if(res.message_id) LastMessId[chatId].messId=res.message_id;
+	 if(res.chat.username) LastMessId[chatId].username=res.chat.username;
+     if(res.chat.first_name) LastMessId[chatId].first_name=res.chat.first_name;
+     //удаляем предыдущее сообщение с кнопками, если оно было
+	 if(!!mess_id) {await remove_message(chat_id, mess_id);}
+	}
+	
+	return res;
+	
+}catch(err){
+	WriteLogFile(err+'\nfrom sendMessageImage("'+chatId+'")');
 	return err;	
 }
 }
@@ -2523,7 +2679,7 @@ async function addNode(num,parent,name,type,url)
 { try{	
 	if(Object.hasOwn(Tree, num)) return false;//если такой уже есть
 	Tree[num] = new Object();
-	Tree[num].parent = parent;//родитель
+	Tree[num].parent = String(parent);//родитель
 	Tree[num].name = name;//текст на кнопке
 	Tree[num].child = [];//детей пока нет
 	Tree[num].type = type;//тип кнопки
@@ -2565,6 +2721,8 @@ async function delNode(num)
 	if(index+1) Tree[Tree[num].parent].child.splice(index,1);
 	//удаляем папку с контентом
 	await delDir(num);
+	//удаляем из FileId
+	if(!!Tree[num].filename && !!FileId[Tree[num].filename]) delete FileId[Tree[num].filename];
 	//в конце удалим сам узел из дерева
 	delete Tree[num];
 	await WriteFileJson(FileTree,Tree);
@@ -2637,10 +2795,28 @@ try{
 		{await sendMessage(chatId, 'Нет подходящего текста для редактирования', klava('0',null, chatId));}
 		else
 		{	WaitEditText[chatId]=1;
-			if(Object.hasOwn(Tree[LastKey[chatId]], 'text'))//если есть текст у кнопки
-			 {await sendMessage(chatId, Tree[LastKey[chatId]].text, {entities:Tree[LastKey[chatId]].entities});}//текст, который редактируется
+			if(Object.hasOwn(Tree[LastKey[chatId]], 'text') && !!Tree[LastKey[chatId]].text)//если есть текст у кнопки
+			{await sendMessage(chatId, Tree[LastKey[chatId]].text, {entities:Tree[LastKey[chatId]].entities});//текст, который редактируется
+			}
+			else if(!!Tree[LastKey[chatId]].filename)//если картинка вместо текста
+			{	let option = {};
+				let index = LastKey[chatId];
+				let filename = Tree[index].filename;
+				let path = PathToPhoto+'/'+index+'/'+filename;
+				//если есть fileId, то замена пути на fileId
+				if(!!FileId[filename]) 
+				{	//проверяем наличие файла на сервере Телеграм из FileId[]
+					let info; 
+					try{info=await Bot.getFile(FileId[filename]);} catch(err){if(String(err).indexOf('file is too big')+1) info = true;}
+					//если есть отклик, то замена пути на fileId
+					if(!!info) path = FileId[filename];
+				}
+				if(!!Tree[index].caption) option.caption = Tree[index].caption;
+				if(!!Tree[index].caption_entities) option.caption_entities = Tree[index].caption_entities;
+				await sendMessageImage(chatId,path,option);
+			}
 			Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-			await sendMessage(chatId, 'Пришлите мне исправленный текст', klava('Назад',null, chatId));
+			await sendMessage(chatId, 'Пришлите мне исправленный текст или картинку', klava('Назад',null, chatId));
 			//теперь ловим текст
 		} 
 	}
