@@ -473,6 +473,7 @@ try{
 	
 	if(validAdmin(chatId) /*|| validUser(chatId)*/)
 	{	if(msg.text=='/PublicText') {PublicText(msg);}
+		else if(msg.text=='/PublicTextAdmin') {PublicTextAdmin(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
 			Tree['Назад'].parent = LastKey[chatId];//место возврата
@@ -1127,10 +1128,17 @@ try{
 		WriteFileJson(FileEventList,EventList);//сохраняем файл событий
 		sendEvents(chatId, false);
 	}
-	//пришел текст для рассылки
+	//пришел текст для общей рассылки
 	else if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==6)
 	{	WaitEditText[chatId]=0;
 		sendPublicText(msg);//функция рассылки с задержкой
+		Tree['Назад'].parent = LastKey[chatId];
+		await sendMessage(chatId, 'Процесс пошел!', klava('Назад',null, chatId));
+	}
+	//пришел текст для рассылки Админам
+	else if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]=='public2admins')
+	{	WaitEditText[chatId]=0;
+		sendPublicTextAdmin(msg);//функция рассылки с задержкой
 		Tree['Назад'].parent = LastKey[chatId];
 		await sendMessage(chatId, 'Процесс пошел!', klava('Назад',null, chatId));
 	}
@@ -4225,8 +4233,24 @@ try{
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId]) LastKey[chatId] = '0';
 		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Теперь пришлите мне текст.  для рассылки', klava('Назад',null, chatId));//Отмена
-		WaitEditText[chatId]=6;//взводим флаг ожидания картинки от юзера	
+		await sendMessage(chatId, 'Теперь пришлите мне текст  для рассылки', klava('Назад',null, chatId));//Отмена
+		WaitEditText[chatId]=6;//взводим флаг ожидания текста от юзера	
+	}
+	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom PublicText()'); return err;}
+}
+//====================================================================
+// Команда PublicTextAdmin
+async function PublicTextAdmin(msg)
+{
+try{
+	const chatId = msg.chat.id.toString();
+	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
+	{	if(!LastKey[chatId]) LastKey[chatId] = '0';
+		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
+		await sendMessage(chatId, 'Теперь пришлите мне текст  для рассылки', klava('Назад',null, chatId));//Отмена
+		WaitEditText[chatId]='public2admins';//взводим флаг ожидания текста от юзера	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -4252,6 +4276,28 @@ try{//загрузим массив chatId подписчиков
 	}
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendPublicText()'); return err;}
+}
+//====================================================================
+async function sendPublicTextAdmin(obj) 
+{	
+try{//загрузим массив chatId Админов
+	let mas = [];
+	if(Object.keys(AdminList).length>0) mas = mas.concat(Object.keys(AdminList));
+	if(Object.keys(UserList).length>0) mas = mas.concat(Object.keys(UserList));
+	if(!!chat_Supervisor) mas.push(chat_Supervisor);
+	let option = new Object();
+	if(!obj) {WriteLogFile('\nfrom sendPublicTextAdmin()\nПустой объект на входе'); return false;}
+	if(!obj.text) {WriteLogFile('\nfrom sendPublicTextAdmin()\nНет текста на входе'); return false;}
+	if(Object.hasOwn(obj, 'entities')) option.entities = obj.entities;
+	if(Object.hasOwn(obj, 'link_preview_options') && Object.hasOwn(obj.link_preview_options, 'is_disabled'))
+	{	if(obj.link_preview_options.is_disabled) option.disable_web_page_preview = true;
+	}
+	for(let i=0;i<mas.length;i++)
+	{	try{await sleep(500);} catch(err){WriteLogFile(err+'\nfrom sendPublicTextAdmin()=>sleep()');}
+		await sendMessage(mas[i], obj.text, option);
+	}
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom sendPublicTextAdmin()'); return err;}
 }
 //====================================================================
 async function srok(chatId,index)
