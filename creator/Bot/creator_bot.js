@@ -285,9 +285,12 @@ try
 			{	let name = '';
 				if(!!firstname) name = firstname;
 				else if(!!user) name = '@'+user;
+				name = name.replace(/_/g, '\\_');//экранируем нижнее подчеркивание
+				name = name.replace(/\*/g, '\\*');//экранируем звездочку
 				//заменяем строку текста на срок чистоты
 				str = 'Привет, '+name+'!\n';
 				str += get_srok(chatId);
+				
 				await sendMessage(chatId, str, klava(index, {parse_mode:"markdown"}, chatId), index);
 			}
 			else await sendMessage(chatId, str, klava(index, Tree[index].entities, chatId), index);
