@@ -3777,7 +3777,12 @@ try{
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
-		addNode(String(max),LastKey[chatId],key,'time');
+		addNode(String(max),LastKey[chatId],key,'time');//создаем основную кнопку
+		let parent = String(max);//сохраняем номер основной кнопки
+		max++;//следующий по порядку
+		addNode(String(max),parent,'Справка','text');//создаем кнопку Справка
+		Tree[String(max)].text = "В любое время, в любом месте можно прислать боту дату начала срока чистоты, отправив ему команду (обязательно с маленькой буквы!)\n\nначало=ДД.ММ.ГГГГ\n\nи бот запомнит эту новую дату. Менять ее можно сколь угодно раз.\nТочно также можно прислать боту дату начала жизни Без Никотина, просто добавив в конце буквы БН\n\nначало=ДД.ММ.ГГГГБН\n\nСтереть все даты сразу тоже можно, послав боту команду\n\n/off\n\nУдачи!";
+		Tree[String(max)].entities = [{"offset": 131,"length": 19,"type": "bold"},{"offset": 312,"length": 21,"type": "bold"},{"offset": 389,"length": 4,"type": "bot_command"},{"offset": 389,"length": 4,"type": "bold"}];
 		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
 		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
 	}
