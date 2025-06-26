@@ -1857,7 +1857,8 @@ LoaderBot.onText(/\/DelAdmin/, async (msg) =>
 {	
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId);//только для СуперАдминов
+	//let valid = validAdmin(chatId);//только для СуперАдминов
+	let valid = validAdmin(chatId) | validAdminBot(chatId);
 	if(valid)
 	{	let match = msg.text.match(/\/DelAdmin (.+$)/);
 		if(match.length<2) return;
