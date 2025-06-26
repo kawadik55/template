@@ -1654,7 +1654,8 @@ LoaderBot.onText(/\/AddAdmin/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId);//только для СуперАдминов
+	//let valid = validAdmin(chatId);//только для СуперАдминов
+	let valid = validAdmin(chatId) | validAdminBot(chatId);
 	if(valid)
     {   let match = msg.text.match(/\/AddAdmin (.+$)/);
 		if(match===null) return;
