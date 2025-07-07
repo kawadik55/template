@@ -139,7 +139,7 @@ async function parser_eg()
 						return str;
 					}
 				}
-				else {console.log(moment().format('DD-MM-YY HH:mm:ss:ms')+'Страница Ежика не распарсилась!'); reject('NO');} 
+				else {console.log(moment().format('DD-MM-YY HH:mm:ss:ms ')+'Страница Ежика не распарсилась!'); resolve('NO');} 
 			});
   
 		});//конец промиса
@@ -147,10 +147,28 @@ async function parser_eg()
 	} catch(err) {console.log('Ошибка в parser_eg()\n'+err.message);}//
 }
 //====================================================================
+let repeate = 12;//счетчик повторений запросов в случае ошибок
+let minutes = 15;//период перезапуска, мин
+let mess = 'Парсер не смог отработать в течение '+(repeate*minutes)+' минут';
+async function main() 
+{
+  console.log();//пустая строка-разделитель
+  let res = await parser_eg();
+  if(res !== 'OK')//если страница не распарсилась
+  {	
+	repeate--;
+	if(repeate >= 0)
+	{
+		console.log(moment().format('DD-MM-YY HH:mm:ss:ms ')+'Будем делать повторный запуск через '+minutes+'мин');
+		setTimeout(main,(minutes*60*1000));
+	}
+	else console.log(moment().format('DD-MM-YY HH:mm:ss:ms ')+mess);
+  }
+};
+//====================================================================
 //запускаем функции
 (async () => 
 {
-  console.log();//пустая строка-разделитель
-  await parser_eg();
+  await main();
 })();
 
