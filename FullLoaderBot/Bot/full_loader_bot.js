@@ -196,6 +196,7 @@ try
    UserList[keys[i]] = mas;
    flag=1;
   }
+  validUser(keys[i]);//там удаляются старые юзеры
  }
  if(flag) WriteFileJson(FileUserList,UserList);//записываем файл
 }
