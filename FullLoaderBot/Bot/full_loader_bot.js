@@ -1749,7 +1749,7 @@ try{
 		let mas = [];
 		mas.push(name+", гр.<"+group+">");//добавляем новичка
 		mas.push(moment().format('DD.MM.YYYY'));//дата регистрации в [1]
-		mas.push(username);//username в [2]
+		mas.push('add by '+username);//username в [2]
 		UserList[id] = mas;//добавляем новичка
 		WriteFileJson(FileUserList,UserList);//записываем файл
 
