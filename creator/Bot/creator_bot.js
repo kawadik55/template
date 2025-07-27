@@ -3607,26 +3607,30 @@ async function AddButtonUrl(msg)
 {
 try{
 	const chatId = msg.chat.id.toString();
-	let match = msg.text.match(/\/AddButtonUrl (.+)=(.+\b)/);
-	if(!match || match.length<2) return false;
-	const key = match[1];//имя кнопки
-	const url = match[2];// url кнопки
-	if(url.indexOf('http')!=0) return false;
-
 	if(validAdmin(chatId))
-	{	if(!LastKey[chatId]) LastKey[chatId]=0;
+	{	let match = msg.text.replace('/AddButtonUrl','').trim().split('=');
+		if(!match || match.length!=2) return false;
+		const key = match[0].trim();//имя кнопки
+		const url = match[1].trim();// url кнопки
+		Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
+		//проверяем url
+		let ret = await isValidUrl(url);
+		if(!ret)
+		{	await sendMessage(chatId, url+'\nЧто-то не так со ссылкой...', klava('Назад',null, chatId));
+			return true;
+		}
+		if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
-		addNode(String(max),LastKey[chatId],key,'url',url);
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		let res = addNode(String(max),LastKey[chatId],key,'url',url);
+		if(res) await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));
+		else await sendMessage(chatId, smilik+'\nЧто-то пошло не так...', klava('Назад',null, chatId));		
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0'));
 	return true;
@@ -4690,6 +4694,23 @@ function isValidChatId(value)
 	}
 	else if(typeof(value)==='number') return true;
 	else return false;
+}
+//====================================================================
+async function isValidUrl(url) 
+{	
+	const controller = new AbortController();
+	const timeout = setTimeout(() => {controller.abort();}, 2000); // will time out after 1000ms
+	try {
+        const response = await fetch(url, 
+		{method: 'HEAD', // Используем HEAD вместо GET, чтобы не загружать тело
+         redirect: 'follow',
+		 signal: controller.signal
+        });
+		// Возвращаем статус (200-399 обычно означает успех)
+        return response.ok;
+    } 
+	catch(e) {return false;}
+	finally {clearTimeout(timeout);}
 }
 //====================================================================
 function checkPathFile(path)
