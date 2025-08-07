@@ -1581,7 +1581,7 @@ try{
 		str += '/AddAdmin chatID=Имя - добавить Админа Бота\n';
 		str += '/AddWhatsApp chatID=Имя - добавить Координатора Вотсап\n';
 		//str += '/AddBan chatID=Имя - добавить в Черный список\n';
-		str += '/DeleteFiles - удаление старых картинок\n';
+		//str += '/DeleteFiles - удаление старых картинок\n';
 		str += '/DelAdmin chatID - удалить Админа Бота\n';
 		str += '/DelWhatsApp - удалить Координатора Вотсап\n';
 		str += '/DelUser chatID - удалить Юзера\n';
@@ -1954,7 +1954,7 @@ try{
 });
 //====================================================================
 // Очистка папки картинок от старых файлов
-LoaderBot.onText(/\/DeleteFiles/, async (msg) => 
+/*LoaderBot.onText(/\/DeleteFiles/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -1989,7 +1989,7 @@ try{
 		
 	}
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DeleteFiles/)','вчат');}	
-});
+});*/
 //====================================================================
 // Изменить ссылку в кнопке Вопросы
 LoaderBot.onText(/\/EditUrl/, async (msg) => 
@@ -2120,7 +2120,7 @@ try{
 			 {	for(let i=0;i<ImagesList[key].media.length;i++) fs.unlinkSync(ImagesList[key].media[i].media);
 			 }
 			} catch(err){}//удаляем файл из папки
-		 delete ImagesList[key]; 
+		 delete ImagesList[key];//удаляем запись 
 		 flag = 1;
 		}
 	}
@@ -2145,7 +2145,7 @@ try{
 		}
     }
 	
-	//загружаем список файлов из Images - полный путь
+	//загружаем список файлов из ModerImages - полный путь
     FilesList = fs.readdirSync(PathToImagesModer).map(fileName => {return path.join(PathToImagesModer, fileName)}).filter(isFile);
     //сравниваем с файлами из рабочего списка и удаляем ненужные
     key=[];
@@ -2183,7 +2183,7 @@ try{
 	//заодно тут же сохраняем файл LastMessId
 	fs.writeFile(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2), (err) => {if(err) console.log(err);});
 }catch(err){WriteLogFile(err+'\nfrom SetInterval()','вчат');}		
-},2*3600000);
+},2*3600000);//раз в час
 //====================================================================
 async function send_instruction(chatId,user,pass)
 {try{	
@@ -2289,7 +2289,7 @@ try{
 	//сохраняем для посл.удаления
 	let chat_id='', mess_id='';
 	if(LastMessId[chatId]) {chat_id=chatId; mess_id=LastMessId[chatId].messId;}
-	if(str.length > 4097) {str = str.substr(0,4096);}//обрезаем строку
+	if(str.length > 4097) {str = str.substr(0,4090);str+='\n...обрезка';}//обрезаем строку
 	
 	let res = new Object();
     if(option)
@@ -2414,8 +2414,26 @@ async function readImagesList()
 		let flag=0;
 		for(let key in ImagesList) 
 		{	if(!!ImagesList[key].path && !fs.existsSync(ImagesList[key].path)) 
-			{	await sendMessage(chat_Supervisor, 'Обнаружено отсутствие файла из списка '+ImagesList[key].path);
+			{	await sendMessage(chat_Supervisor, 'Обнаружено отсутствие файла из списка:\n'+JSON.stringify(ImagesList[key],null,2));
+				WriteLogFile('Обнаружено отсутствие файла из списка:\n'+JSON.stringify(ImagesList[key],null,2));
+				delete ImagesList[key];//удаляем запись
+				flag++;
 			}
+			if(!!ImagesList[key].media)//альбом
+			{	for(let i in ImagesList[key].media)
+				{	if(!fs.existsSync(ImagesList[key].media[i].media))
+					{	await sendMessage(chat_Supervisor, 'Обнаружено отсутствие файла из списка:\n'+JSON.stringify(ImagesList[key],null,2));
+						WriteLogFile('Обнаружено отсутствие файла из списка:\n'+JSON.stringify(ImagesList[key],null,2));
+						delete ImagesList[key].media[i];//удаляем запись
+						flag++;
+					}
+				}
+				if(ImagesList[key].media.lengh==0) {delete ImagesList[key]; flag++;}//удаляем запись
+			}
+		}
+		if(flag>0) 
+		{	ImagesList = shiftObject(ImagesList);//упорядочиваем номера-ключи в массиве
+			WriteFileJson(FileImagesList,ImagesList);
 		}
 		return 'OK';
 	}
@@ -2578,6 +2596,7 @@ try{
 			 else if(ImagesList[key].type=='video') {await sendVideo(chatId, ImagesList[key].path, opt);}
 			 else if(ImagesList[key].type=='audio') {await sendAudio(chatId, ImagesList[key].path, opt);}
 			 else if(ImagesList[key].type=='document') {await sendDocument(chatId, ImagesList[key].path, opt);}
+			 else if(ImagesList[key].type=='album') {await sendAlbum(chatId, ImagesList[key].media, opt);}
 			}
 			else await sendPhoto(chatId, ImagesList[key].path, opt);
 		}
