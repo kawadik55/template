@@ -73,6 +73,7 @@ let TenList = [];//массив вопросов к 10-му шагу
 let AnswerList = {};//массивы ответов от пользователей по 10-му шагу
 let PRIVAT = 1;//глобальная приватность, пускает только Админа и Юзера с разрешениями
 let DISTANCE = 1;//дистанция в днях о скором наступлении события
+let COMMUNITY_TEXT = '';//текст для счетчика чистого времени (трезвости, брака, развода и т.д.)
 let isPausing = false;//флаг временной остановки бота
 let MediaList=new Object();//массив группы медиа файлов
 let Stickers=new Object();//объект стикеров
@@ -163,6 +164,11 @@ try
  if(!DISTANCE) {DISTANCE=1; WriteFileJson(currentDir+'/privat.json',{"privat":PRIVAT, "distance":DISTANCE});}
 } 
 catch (err) {WriteFileJson(currentDir+'/privat.json',{"privat":PRIVAT, "distance":DISTANCE});}
+//проверим наличие файла конфига, если файл отсутствует, то создадим его 
+try 
+{COMMUNITY_TEXT = JSON.parse(fs.readFileSync(currentDir+'/config.json')).community_text;
+} 
+catch (err) {WriteFileJson(currentDir+'/config.json',{"community_text":"чистого времени"});}
 //загрузим вопросы из файла tenstep.txt
 try {TenList = fs.readFileSync(FileTen).toString().split('\n');} catch (err) {WriteLogFile(err,'no'); TenList.push('Файл вопросов отсутствует!');}
 if(TenList.length==0) WriteLogFile('Список TenList пуст!');
@@ -4320,7 +4326,7 @@ try{
 	
 	//сначала по чистому времени ----------------------------------------------------------------------
 	if(!Object.hasOwn(LastMessId[chatId], 'srok'))//если еще не регистрировался
-	{	let str = 'Вы еще не присылали мне дату начала срока ЧВ.\n';
+	{	let str = 'Вы еще не присылали мне дату начала срока '+COMMUNITY_TEXT+'.\n';
 		str += 'Вы можете в любой момент прислать мне новую дату в формате команды:\n\n';
 		str += '*начало=ДД.ММ.ГГГГ*\n\n';
 		str += 'и я ее запомню!😎 (обязательно с маленькой буквы!😉)';
@@ -4352,7 +4358,7 @@ try{
 		if(!!LastMessId[chatId] && !!LastMessId[chatId].srok) begin = LastMessId[chatId].srok;//начало
 		if(!begin) {return mess;}
 		if(begin != moment(begin,'DD.MM.YYYY').format('DD.MM.YYYY'))
-		{	mess = 'Дата ЧВ не соответствует шаблону, или символы введены некорректно!\nПопробуйте еще разок сначала\n';
+		{	mess = 'Дата '+COMMUNITY_TEXT+' не соответствует шаблону, или символы введены некорректно!\nПопробуйте еще разок сначала\n';
 			return mess;
 		}
 		let now = moment().startOf('day');//сегодня в формате дней
@@ -4373,9 +4379,9 @@ try{
 		//проверяем на юбик
 		if(days==10 || days==20 || days==30 || days==60 || days==90 || (days%100 == 0 && days>0))//по дням
 		{	mess += 'Поздравляем с Юбилеем!!!\n';
-			mess += 'Сегодня у Вас:\n*' + days + ' дн.*\nчистого времени!!!\n';
+			mess += 'Сегодня у Вас:\n*' + days + ' дн.*\n'+COMMUNITY_TEXT+'!!!\n';
 			if(days==30 || days==90) 
-			{mess += 'Приходите на собрание АН, там Вас ждет Медалька!!!\n';
+			{mess += 'Приходите на собрание, там Вас ждет Медалька!!!\n';
 			}
 			mess += '👏🏻👏🏻👏🏻🫂💐';
 		}
@@ -4383,7 +4389,7 @@ try{
 		{	mess += 'Поздравляем с Большим Юбилеем!!!\n';
 			mess += 'Сегодня у Вас:\n*';
 			mess += y + god;
-			mess += '*\nчистого времени!!!\n';
+			mess += '*\n'+COMMUNITY_TEXT+'!!!\n';
 			mess += '👏🏻👏🏻👏🏻🫂💐';
 		}
 		else if(d==0 && months > 0)//месяцы и годы
@@ -4394,9 +4400,9 @@ try{
 			{	mess += y + god;
 				if(m>0) mess += m + 'мес. ';
 			}
-			mess += '*\nчистого времени!!!\n';
+			mess += '*\n'+COMMUNITY_TEXT+'!!!\n';
 			if(months==1 || months==3 || months==6 || months==9) 
-			{mess += 'Приходите на собрание АН, там Вас ждет Медалька!!!\n';
+			{mess += 'Приходите на собрание, там Вас ждет Медалька!!!\n';
 			}
 			mess += '👏🏻👏🏻👏🏻🫂💐';
 		}
@@ -4406,7 +4412,7 @@ try{
 			if(m>0) mess += m + 'мес. ' + '(' + months + 'мес.) ';
 			if(d>0) mess += d + 'дн. ';
 			if(y>0 || m>0) mess += '\nили '+days+'дн. ';//общее дней
-			mess += '*\nчистого времени!!!';
+			mess += '*\n'+COMMUNITY_TEXT+'!!!';
 		}
 		return mess;
 	
@@ -4738,6 +4744,7 @@ function setContextFiles()
 	let NAME_LOG = (process.env.NAME_LOG) ? process.env.NAME_LOG : '';//имя лог-бота из ENV
 	let PATHEG = (process.env.PATHEG) ? process.env.PATHEG : '';//путь к файлу Ежика из ENV
 	let PATHRASPIS = (process.env.PATHRASPIS) ? process.env.PATHRASPIS : '';//путь к файлу Расписания из ENV
+	let COMMUNITY_TEXT_QW = (process.env.COMMUNITY_TEXT) ? process.env.COMMUNITY_TEXT : '';//путь к файлу Расписания из ENV
 	if(!fs.existsSync(TokenDir)) {fs.mkdirSync(TokenDir);}//создадим папку, если ее нет
 	if(fs.existsSync(cBot))
 	{	//текстовые файлы переписываем принудительно
@@ -4789,6 +4796,16 @@ function setContextFiles()
 			if(!!PRIVAT) {obj.privat = PRIVAT;}
 			if(!!DISTANCE) {obj.distance = DISTANCE;}
 			WriteFileJson(currentDir+'/privat.json',obj);
+		}
+		if(!fs.existsSync(currentDir+'/config.json') && fs.existsSync(cBot+'/config.json'))
+		{fs.copyFileSync(cBot+'/config.json',currentDir+'/config.json');}
+		//если запрошено изменение текста сообщества
+		if(!!COMMUNITY_TEXT_QW)
+		{	let obj;
+			try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
+			if(typeof(obj) != 'object') {obj={}; obj.community_text='чистого времени';}
+			obj.community_text = COMMUNITY_TEXT_QW;
+			WriteFileJson(currentDir+'/config.json',obj);
 		}
 		if(fs.existsSync(cBot+'/gif/Salut.gif'))
 		{if(!fs.existsSync(currentDir+'/gif')) {fs.mkdirSync(currentDir+'/gif');}//создадим папку, если ее нет
