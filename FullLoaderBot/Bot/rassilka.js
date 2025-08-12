@@ -27,16 +27,13 @@ try{nameBot = require(TokenDir+"/news_bot.json").comment;}catch(err){}
 
 const bot = new TelegramBot(token, {polling: false});
 var ServiceChat = require(TokenDir+"/chatId.json").Supervisor;//пользователь 'Supervisor'
-var chat_news={};
+var chat_news=[];
 //Загрузим ID новостных каналов
 (async () => 
 {try{
- let mas = require(TokenDir+"/chatId.json");
- if(Object.hasOwn(mas, 'chat_news')) chat_news = mas.chat_news;
- /*{let key = Object.keys(mas.chat_news);
-  for(let i=0;i<key.length;i++) {chat_news[i] = mas.chat_news[key[i]];}
- }*/
- else {chat_news = {'отсутствует':'-12345'}}
+ let obj = require(TokenDir+"/chatId.json");
+ if(Object.hasOwn(obj, 'chat_news') && obj.chat_news.constructor === Array) chat_news = [...obj.chat_news];
+ else {chat_news.push({'отсутствует':'-12345','message_thread_id':''});}
  }catch(err) {console.log(err);}	
 })();
 let tokenLog;
@@ -158,18 +155,27 @@ async function send_Images()
             if(Object.hasOwn(ImagesList[key], 'parse_mode')) opt.parse_mode = ImagesList[key].parse_mode;
 			//основной канал новостей
             //console.log(getTimeStr()+'Файлы в каналы:');
-            let name = Object.keys(chat_news);
-			for(let i=0;i<name.length;i++) 
-			{	let res;
+			for(let i=0;i<chat_news.length;i++) 
+			{	let chatId = '', threadId = '';
+				let name = Object.keys(chat_news[i]);
+				if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+				if(!chatId) continue;//пропускаем цикл, если нет chatId
+				if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+				if(!!threadId) opt.message_thread_id = threadId;
+				let res;
 				if(!!ImagesList[key].type)
-				{if(ImagesList[key].type == 'image') res = await sendPhotoToBot(chat_news[name[i]], ImagesList[key].path, opt);
-				 else if(ImagesList[key].type == 'video') res = await sendVideoToBot(chat_news[name[i]], ImagesList[key].path, opt);
-				 else if(ImagesList[key].type == 'audio') {res = await sendAudioToBot(chat_news[name[i]], ImagesList[key].path, opt);}
-				 else if(ImagesList[key].type == 'document') {res = await sendDocumentToBot(chat_news[name[i]], ImagesList[key].path, opt);}
-				 else if(ImagesList[key].type == 'album') {res = await sendAlbumToBot(chat_news[name[i]], ImagesList[key].media);}
+				{if(ImagesList[key].type == 'image') res = await sendPhotoToBot(chatId, ImagesList[key].path, opt);
+				 else if(ImagesList[key].type == 'video') res = await sendVideoToBot(chatId, ImagesList[key].path, opt);
+				 else if(ImagesList[key].type == 'audio') {res = await sendAudioToBot(chatId, ImagesList[key].path, opt);}
+				 else if(ImagesList[key].type == 'document') {res = await sendDocumentToBot(chatId, ImagesList[key].path, opt);}
+				 else if(ImagesList[key].type == 'album') 
+				 {	let tmp = [...ImagesList[key].media];
+					if(!!threadId) tmp.message_thread_id = threadId;
+					res = await sendAlbumToBot(chatId, tmp);
+				 }
 				}
-				else res = await sendPhotoToBot(chat_news[name[i]], ImagesList[key].path, opt);
-				if(res===false) WriteLogFile('Не смог послать файл "'+key+'"'+' в '+name[i]); 
+				else res = await sendPhotoToBot(chatId, ImagesList[key].path, opt);
+				if(res===false) WriteLogFile('Не смог послать файл "'+key+'"'+' в '+name[0]); 
 				else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 				{	
 					if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
@@ -189,7 +195,7 @@ async function send_Images()
 				}
 				else 
 				{	good++;//если без ошибок
-					WriteLogFile('"'+key+'"'+' в '+name[i]+' = ОК');
+					WriteLogFile('"'+key+'"'+' в '+name[0]+' = ОК');
 				}
 			}
           }
@@ -259,10 +265,15 @@ async function send_Text()
 			if(!!TextList[key].parse_mode) opt.parse_mode = TextList[key].parse_mode;
             //основной канал новостей
             //console.log(getTimeStr()+'Текст в каналы:');
-            let name = Object.keys(chat_news);
-			for(let i=0;i<name.length;i++) 
-			{	let res = await sendTextToBot(chat_news[name[i]], TextList[key].text, opt);
-				if(res===false) WriteLogFile('Не смог послать текст "'+key+'"'+' в '+name[i]);
+			for(let i=0;i<chat_news.length;i++) 
+			{	let chatId = '', threadId = '';
+				let name = Object.keys(chat_news[i]);
+				if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+				if(!chatId) continue;//пропускаем цикл, если нет chatId
+				if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+				if(!!threadId) opt.message_thread_id = threadId;
+				let res = await sendTextToBot(chatId, TextList[key].text, opt);
+				if(res===false) WriteLogFile('Не смог послать текст "'+key+'"'+' в '+name[0]);
 				else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 				{	
 					if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
@@ -282,7 +293,7 @@ async function send_Text()
 				}
 				else 
 				{	good++;//если без ошибок
-					WriteLogFile('"'+key+'"'+' в '+name[i]+' = ОК');
+					WriteLogFile('"'+key+'"'+' в '+name[0]+' = ОК');
 				}
 			}
           }
@@ -305,11 +316,17 @@ async function send_Eg()
 		let good = 0;
 		let interval = 60*1000*10;//10 мин
 		WriteLogFile('Рассылка Ежика в каналы:');
-		let name = Object.keys(chat_news);
-		for(let i=0;i<name.length;i++) 
+		for(let i=0;i<chat_news.length;i++) 
 		{  try{	
-			let res = await bot.sendMessage(chat_news[name[i]],eg,{parse_mode:"markdown",disable_web_page_preview:true});
-			if(res===false) WriteLogFile('Не смог послать Ежик "'+' в '+name[i]);
+			let chatId = '', threadId = '', opt = {};
+			let name = Object.keys(chat_news[i]);
+			if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+			if(!chatId) continue;//пропускаем цикл, если нет chatId
+			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+			if(!!threadId) opt.message_thread_id = threadId;
+			opt.parse_mode = "markdown"; opt.disable_web_page_preview = true;
+			let res = await bot.sendMessage(chatId,eg,opt);
+			if(res===false) WriteLogFile('Не смог послать Ежик "'+' в '+name[0]);
 			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 			{	
 				if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
@@ -329,7 +346,7 @@ async function send_Eg()
 			}
 			else 
 			{	good++;//если без ошибок
-				WriteLogFile('в '+name[i]+' = ОК');
+				WriteLogFile('в '+name[0]+' = ОК');
 			}
 		  }catch(err){WriteLogFile(err+'\nfrom send_Eg()=>for()','вчат');}
 		}
@@ -359,12 +376,17 @@ async function send_Raspis()
 		}
 		
 		WriteLogFile('Рассылка Расписания в каналы:');
-		const keyboard = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
-		let name = Object.keys(chat_news);
-		for(let i=0;i<name.length;i++) 
+		let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
+		for(let i=0;i<chat_news.length;i++) 
 		{  try{
-			let res = await sendTextToBot(chat_news[name[i]],raspis,keyboard);
-			if(res===false) WriteLogFile('Не смог послать Расписание "'+' в '+name[i]);
+			let chatId = '', threadId = '';
+			let name = Object.keys(chat_news[i]);
+			if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+			if(!chatId) continue;//пропускаем цикл, если нет chatId
+			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+			if(!!threadId) opt.message_thread_id = threadId;
+			let res = await sendTextToBot(chatId,raspis,opt);
+			if(res===false) WriteLogFile('Не смог послать Расписание "'+' в '+name[0]);
 			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 			{	
 				if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
@@ -384,7 +406,7 @@ async function send_Raspis()
 			}
 			else 
 			{	good++;//если без ошибок
-				WriteLogFile('в '+name[i]+' = ОК');
+				WriteLogFile('в '+name[0]+' = ОК');
 			}
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis()=>for()','вчат');}
 		}
@@ -422,7 +444,7 @@ try{
 //====================================================================
 //запускаем функции
 (async () => 
-{
+{	
 try{
   WriteLogFile('\nНачинаем Рассылку:'); 
   

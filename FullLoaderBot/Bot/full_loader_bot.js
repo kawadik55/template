@@ -61,13 +61,24 @@ tokenNews = require(TokenDir+"/news_bot.json").token;
 //Загрузим ID новостных каналов
 (async () => 
 {try{
- let mas = require(TokenDir+"/chatId.json");
- if(Object.hasOwn(mas, 'chat_news'))
- {let key = Object.keys(mas.chat_news);
-  for(let i=0;i<key.length;i++) {chat_news[i] = mas.chat_news[key[i]];}
+ let obj = require(TokenDir+"/chatId.json");
+ if(Object.hasOwn(obj, 'chat_news'))
+ {	if(obj.chat_news.constructor === Object)//если это объект по старому, то переделаем в массив объектов
+	{	let key = Object.keys(obj.chat_news);
+		let mas = [];
+		for(let i=0;i<key.length;i++) 
+		{	let obj2={}; obj2[key[i]]=obj.chat_news[key[i]]; obj2.message_thread_id="";
+			mas.push(obj2);
+		}
+		obj.chat_news = mas;
+		chat_news = [...obj.chat_news];
+		WriteFileJson(TokenDir+"/chatId.json",obj);
+	}
+	else if(obj.chat_news.constructor === Array) chat_news = [...obj.chat_news];//если уже по новому
+	else chat_news[0]={'имяГруппы':'-12345','message_thread_id':''};
  }
- else chat_news[0]='-12345';
- }catch(err) {console.log(err);}	
+ else chat_news[0]={'имяГруппы':'-12345','message_thread_id':''}; 
+ }catch(err) {console.log(err);} 
 })();
 
 const LoaderBot = new TelegramBot(tokenLoader, {polling: true});
@@ -311,7 +322,7 @@ try{
 	let ban = banUser(chatId);
 	let valid = validUser(chatId);
 	
-	let str='Привет, '+name+'! Это чат-бот сообщества '+area+'! ';
+	let str='Привет, '+name+'! Это чат-бот '+area+'! ';
 	str+='С моей помощью Вы сможете опубликовать в NAших Телеграм-каналах свои файлы и текстовые объявления. ';
 	
 	//проверим юзера
@@ -2411,13 +2422,12 @@ async function readImagesList()
 {   //список файлов
     try 
 	{	ImagesList = shiftObject(JSON.parse(fs.readFileSync(FileImagesList))); 
-		let flag=0;
+		let mas=[];
 		for(let key in ImagesList) 
 		{	if(!!ImagesList[key].path && !fs.existsSync(ImagesList[key].path)) 
 			{	await sendMessage(chat_Supervisor, 'Обнаружено отсутствие файла из списка:\n'+JSON.stringify(ImagesList[key],null,2));
 				WriteLogFile('Обнаружено отсутствие файла из списка:\n'+JSON.stringify(ImagesList[key],null,2));
-				delete ImagesList[key];//удаляем запись
-				flag++;
+				mas.push(key);
 			}
 			if(!!ImagesList[key].media)//альбом
 			{	for(let i in ImagesList[key].media)
@@ -2425,14 +2435,14 @@ async function readImagesList()
 					{	await sendMessage(chat_Supervisor, 'Обнаружено отсутствие файла из списка:\n'+JSON.stringify(ImagesList[key],null,2));
 						WriteLogFile('Обнаружено отсутствие файла из списка:\n'+JSON.stringify(ImagesList[key],null,2));
 						delete ImagesList[key].media[i];//удаляем запись
-						flag++;
 					}
 				}
-				if(ImagesList[key].media.lengh==0) {delete ImagesList[key]; flag++;}//удаляем запись
+				if(ImagesList[key].media.lengh==0) {mas.push(key);}
 			}
 		}
-		if(flag>0) 
-		{	ImagesList = shiftObject(ImagesList);//упорядочиваем номера-ключи в массиве
+		if(mas.length>0) 
+		{	for(let i in mas) delete ImagesList[mas[i]];//удаляем запись
+			ImagesList = shiftObject(ImagesList);//упорядочиваем номера-ключи в массиве
 			WriteFileJson(FileImagesList,ImagesList);
 		}
 		return 'OK';
@@ -2789,13 +2799,18 @@ try{
 		try{
 		  if(!!chat_news[i])
 		  {	let opt = {};
+			let chatId = '', threadId = '';
+			let key = Object.keys(chat_news[i]);
+			if(!!chat_news[i][key[0]]) chatId = chat_news[i][key[0]];
+			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
 			opt.entities = obj.entities;
+			if(!!threadId) opt.message_thread_id = threadId;
 			if(Object.hasOwn(obj, 'link_preview_options'))
 			{opt.link_preview_options=JSON.stringify(obj.link_preview_options);
 			 if(Object.hasOwn(obj.link_preview_options, 'is_disabled')) opt.disable_web_page_preview = true;
 			}
 			if(!!obj.parse_mode) opt.parse_mode = obj.parse_mode;
-			await NewsBot.sendMessage(chat_news[i], obj.text, opt);
+			if(!!chatId) await NewsBot.sendMessage(chatId, obj.text, opt);
 		  }
 		}catch(err){WriteLogFile(err+'\nfrom publicText()=>for()','вчат');}
 	}
@@ -2932,20 +2947,28 @@ try{
 	if(flag && sec>0)//если после времени утренней публикации 
     {for(let i=0;i<chat_news.length;i++) 
 	 {	try{
-		  if(chat_news[i]!=='') 
-		  {	if(Object.hasOwn(obj, 'type')) 
-			{	if(obj.type=='image') {await NewsBot.sendPhoto(chat_news[i], obj.path, opt);}//если картинка
-				else if(obj.type=='video') {await NewsBot.sendVideo(chat_news[i], obj.path, opt);}//если видео
-				else if(obj.type=='audio') {await NewsBot.sendAudio(chat_news[i], obj.path, opt);}//если audio
-				else if(obj.type=='document') {await NewsBot.sendDocument(chat_news[i], obj.path, opt);}//если document
+		  let chatId = '', threadId = '';
+		  if(!!chat_news[i]) 
+		  {	let key = Object.keys(chat_news[i]);
+			if(!!chat_news[i][key[0]]) chatId = chat_news[i][key[0]];
+			if(!chatId) continue;//пропускаем цикл, если нет chatId
+			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+			if(!!threadId) opt.message_thread_id = threadId;
+			if(Object.hasOwn(obj, 'type')) 
+			{	if(obj.type=='image') {await NewsBot.sendPhoto(chatId, obj.path, opt);}//если картинка
+				else if(obj.type=='video') {await NewsBot.sendVideo(chatId, obj.path, opt);}//если видео
+				else if(obj.type=='audio') {await NewsBot.sendAudio(chatId, obj.path, opt);}//если audio
+				else if(obj.type=='document') {await NewsBot.sendDocument(chatId, obj.path, opt);}//если document
 				else if(obj.type=='album' && !!obj.media && obj.media.lengh>0) 
 				{	if(!!obj.media[0].caption_entities && typeof(obj.media[0].caption_entities) == 'string')
 					{	obj.media[0].caption_entities = JSON.parse(obj.media[0].caption_entities);
 					}
-					await NewsBot.sendMediaGroup(chat_news[i], obj.media);
+					let tmp = [...obj.media];
+					if(!!threadId) tmp.message_thread_id = threadId;
+					await NewsBot.sendMediaGroup(chatId, tmp);
 				}
 			}
-			else NewsBot.sendPhoto(chat_news[i], obj.path, opt);//без типа - картинка 
+			else NewsBot.sendPhoto(chatId, obj.path, opt);//без типа - картинка 
 		  }
 		}catch(err){WriteLogFile(err+'\nfrom publicImage()=>for()','вчат');}
 	 }
@@ -3119,9 +3142,9 @@ function setContextFiles()
 		if(!fs.existsSync(TokenDir+'/chatId.json'))
 		{	let obj = {};
 			obj.Supervisor = "123456789";
-			obj.chat_news = {};
-			obj.chat_news['ИмяКанала'] = 'chatID канала';
-			obj.chat_news['СколькоХочешь'] = 'может быть каналов';
+			obj.chat_news = [];
+			obj.chat_news.push({'ИмяКанала':'chatID канала',message_thread_id:''});
+			obj.chat_news.push({'СколькоХочешь':'может быть каналов',message_thread_id:''});
 			WriteFileJson(TokenDir+'/chatId.json',obj);
 		}
 		if(fs.existsSync(TokenDir+'/chatId.json'))//если файл уже имеется.
@@ -3130,9 +3153,9 @@ function setContextFiles()
 			if(typeof(obj) != 'object' || Object.keys(obj).length === 0) {obj={}; obj.Supervisor="123456789"; WriteFileJson(TokenDir+'/chatId.json',obj);}
 			if(!obj.Supervisor) {obj.Supervisor = "123456789"; WriteFileJson(TokenDir+'/chatId.json',obj);}
 			if(!obj.chat_news) 
-			{obj.chat_news = {};
-			 obj.chat_news['ИмяКанала'] = 'chatID канала';
-			 obj.chat_news['СколькоХочешь'] = 'может быть каналов';
+			{obj.chat_news = [];
+			 obj.chat_news.push({'ИмяКанала':'chatID канала',message_thread_id:''});
+			 obj.chat_news.push({'СколькоХочешь':'может быть каналов',message_thread_id:''});
 			 WriteFileJson(TokenDir+'/chatId.json',obj);
 			}
 			//если запрошено изменение чатайди супера в ENV
