@@ -27,7 +27,7 @@ let hostingImg = false;//выключатель кнопки хостинга к
 let area = 'АН';//местность
 let timePablic = '06:00:00';//опорное машинное время выхода публикаций на текущие сутки по-умолчанию
 let forDate = [3,0];//массив дней по дате - 3й и 0й день, если меньше 2х недель
-let lifeTime = 180;//время жизни юзера в днях
+let lifeTime = 180;//срок регистраци юзера в днях
 let rassilka = true;//выключатель крона рассылки
 //проверим папку логов
 if(!fs.existsSync(PathToLog)) {fs.mkdirSync(PathToLog); fs.chmod(currentDir+"/../log", 0o777, () => {});}
@@ -1587,7 +1587,7 @@ try{
 		str += '` /AdminList` - посмотреть настройки\n';
 		str += '` /ShowTextList` - посмотреть тексты\n';
 		str += '` /ShowImagesList` - посмотреть картинки\n';
-		str += '` /ShowLifeTime` - посмотреть общий срок жизни юзеров\n';
+		str += '` /ShowLifeTime` - посмотреть общий срок действия регистрации юзеров\n';
 		str += '` /AddUser chatID=Имя=НазваниеГруппы` - добавить Юзера\n';
 		str += '` /AddAdmin chatID=Имя` - добавить Админа Бота\n';
 		str += '` /AddWhatsApp chatID=Имя` - добавить Координатора Вотсап\n';
@@ -1597,7 +1597,7 @@ try{
 		str += '` /DelWhatsApp` - удалить Координатора Вотсап\n';
 		str += '` /DelUser chatID` - удалить Юзера\n';
 		str += '` /EditUrl новыйUrl` - изменить ссылку в Вопросах\n';
-		str += '` /EditLifeTime новыйСрок` - изменить срок жизни юзеров\n';
+		str += '` /EditLifeTime новыйСрок` - изменить срок действия регистрации юзеров\n';
 		//str += '` /DelBan chatID` - удалить из Черного списка\n';
 		sendMessage(chatId, str, {parse_mode:"markdown"});
 	}
