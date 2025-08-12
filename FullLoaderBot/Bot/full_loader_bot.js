@@ -1581,25 +1581,25 @@ try{
 	let valid = validAdmin(chatId) | validAdminBot(chatId);
 	if(valid) 
 	{	let str = 'Команды бота:\n';
-		str += '/help - список команд бота\n';
-		str += '/UserList - список авторизованных юзеров\n';
-		//str += '/BlackList - список забаненных юзеров\n';
-		str += '/AdminList - посмотреть настройки\n';
-		str += '/ShowTextList - посмотреть тексты\n';
-		str += '/ShowImagesList - посмотреть картинки\n';
-		str += '/ShowLifeTime - посмотреть общий срок жизни юзеров\n';
-		str += '/AddUser chatID=Имя=НазваниеГруппы - добавить Юзера\n';
-		str += '/AddAdmin chatID=Имя - добавить Админа Бота\n';
-		str += '/AddWhatsApp chatID=Имя - добавить Координатора Вотсап\n';
-		//str += '/AddBan chatID=Имя - добавить в Черный список\n';
-		//str += '/DeleteFiles - удаление старых картинок\n';
-		str += '/DelAdmin chatID - удалить Админа Бота\n';
-		str += '/DelWhatsApp - удалить Координатора Вотсап\n';
-		str += '/DelUser chatID - удалить Юзера\n';
-		str += '/EditUrl новыйUrl - изменить ссылку в Вопросах\n';
-		str += '/EditLifeTime новыйСрок - изменить срок жизни юзеров\n';
-		//str += '/DelBan chatID - удалить из Черного списка\n';
-		sendMessage(chatId, str);
+		str += '` /help` - список команд бота\n';
+		str += '` /UserList` - список авторизованных юзеров\n';
+		//str += '` /BlackList` - список забаненных юзеров\n';
+		str += '` /AdminList` - посмотреть настройки\n';
+		str += '` /ShowTextList` - посмотреть тексты\n';
+		str += '` /ShowImagesList` - посмотреть картинки\n';
+		str += '` /ShowLifeTime` - посмотреть общий срок жизни юзеров\n';
+		str += '` /AddUser chatID=Имя=НазваниеГруппы` - добавить Юзера\n';
+		str += '` /AddAdmin chatID=Имя` - добавить Админа Бота\n';
+		str += '` /AddWhatsApp chatID=Имя` - добавить Координатора Вотсап\n';
+		//str += '` /AddBan chatID=Имя` - добавить в Черный список\n';
+		//str += '` /DeleteFiles` - удаление старых картинок\n';
+		str += '` /DelAdmin chatID` - удалить Админа Бота\n';
+		str += '` /DelWhatsApp` - удалить Координатора Вотсап\n';
+		str += '` /DelUser chatID` - удалить Юзера\n';
+		str += '` /EditUrl новыйUrl` - изменить ссылку в Вопросах\n';
+		str += '` /EditLifeTime новыйСрок` - изменить срок жизни юзеров\n';
+		//str += '` /DelBan chatID` - удалить из Черного списка\n';
+		sendMessage(chatId, str, {parse_mode:"markdown"});
 	}
 	else sendMessage(chatId, smilik);
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/help/)','вчат');}
