@@ -2239,6 +2239,8 @@ function validUser(chatId)
 			delete UserList[chatId]; 
 			WriteFileJson(FileUserList,UserList);
 			WriteLogFile('По сроку давности удален пользователь "'+chatId+'":\n'+JSON.stringify(tmp,null,2),'вчат');
+			sendMessage(chatId, 'Срок Вашей регистрации уже истек.\n'+smilik);
+			return false;
 		}
 	}
 	if(!!UserList[chatId]) return true;//есть в юзерах
