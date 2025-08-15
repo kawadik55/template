@@ -1249,7 +1249,7 @@ try{
 	else if(WaitEditText[chatId]=='questions')
 	{	WaitEditText[chatId]=0;
 		let List = msg.text.split('\n');//делаем массив строк
-		if(List[0].indexOf('delete')+1)//если просят удаление списка
+		if((List[0].indexOf('delete')+1)||(List[0].indexOf('Delete')+1))//если просят удаление списка
 		{	if(fs.existsSync(PathToQuestions+'/'+chatId+'.txt'))
 			{	await fs.promises.unlink(PathToQuestions+'/'+chatId+'.txt');//удаляем файл
 				await sendMessage(chatId, 'Вы просили - мы удалили! :)', klava(LastKey[chatId],null, chatId));
@@ -2561,8 +2561,10 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 	str = 'Выше показан текущий список вопросов. Пришлите мне новый список вопросов в текстовом сообщении или файлом. ';
 	str += 'Каждый вопрос должен начинаться с новой строки, нумерация вопросов не нужна. ';
 	str += 'В одной строке - один вопрос.\n';
-	str += 'Чтобы удалить свой список вопросов, пришлите мне слово delete.';
-	await sendMessage(chatId, str, klava(index,null, chatId), index);
+	str += 'Чтобы удалить свой список вопросов, пришлите мне слово ` delete` с маленькой буквы.';
+	let obj = klava(index,null, chatId);
+	obj.parse_mode = 'markdown';
+	await sendMessage(chatId, str, obj, index);
 	WaitEditText[chatId] = 'questions';//ожидаем список вопросов
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendTenStep()'); return err;}
