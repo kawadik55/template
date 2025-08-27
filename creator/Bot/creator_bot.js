@@ -4301,8 +4301,8 @@ try{
 		}
 		if(match.length>2) str = str.replace(match[0],'');
 		else str = match[1];
-		await sendMessage(match[0], str, klava('Назад',null, chatId));//Посылаем сообщение подписчику
-		await sendMessage(chatId, 'Сообщение отправлено!', klava('Назад',null, chatId));
+		await sendMessage(match[0], str);//Посылаем сообщение подписчику
+		await sendMessage(chatId, 'Сообщение отправлено!');
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
