@@ -481,6 +481,7 @@ try{
 	if(validAdmin(chatId) /*|| validUser(chatId)*/)
 	{	if(msg.text=='/PublicText') {PublicText(msg);}
 		else if(msg.text=='/PublicTextAdmin') {PublicTextAdmin(msg);}
+		else if(msg.text.indexOf('/PublicMessUser')+1) {PublicMessUser(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
 			Tree['Назад'].parent = LastKey[chatId];//место возврата
@@ -4273,6 +4274,39 @@ try{
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom PublicText()'); return err;}
+}
+//====================================================================
+// Команда PublicMessUser
+async function PublicMessUser(msg)
+{
+try{
+	const chatId = msg.chat.id.toString();
+	let match = msg.text.match(/\/PublicMessUser (.+$)/);
+	if(!match || match.length<2) return false;
+	let str = match[1].trim();
+	match = [];
+	match = str.split('=');
+	if(match.length<2) return false;
+
+	if(validAdmin(chatId))
+	{	//проверка chatId
+		if(!isValidChatId(match[0])) 
+		{await sendMessage(chatId, match[0]+' не есть chatId', {parse_mode:"markdown"}); 
+		 return true;
+		}
+		//проверка текста
+		if(!match[1])//если текста нет
+		{await sendMessage(chatId, 'Тект сообщения не может быть пустым!', {parse_mode:"markdown"}); 
+		 return true;
+		}
+		if(match.length>2) str = str.replace(match[0],'');
+		else str = match[1];
+		await sendMessage(match[0], str, klava('Назад',null, chatId));//Посылаем сообщение подписчику
+		await sendMessage(chatId, 'Сообщение отправлено!', klava('Назад',null, chatId));
+	}
+	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom AddUser()'); return err;}
 }
 //====================================================================
 async function sleep(ms) {return new Promise(resolve => setTimeout(resolve, ms));}
