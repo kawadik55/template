@@ -12,8 +12,8 @@ const FileUserList = currentDir+"/UserList.txt";//имя файла белого
 const FileBlackList = currentDir+"/BlackList.txt";//имя файла черного листа
 const FileAdminList = currentDir+"/AdminList.txt";//имя файла списка админов
 const FileAdminBot = currentDir+"/AdminBot.txt";//имя файла списка админов бота
-const FileImagesList = currentDir+"/ImagesList.txt";//имя файла списка файлов.
-const FileTextList = currentDir+"/TextList.txt";//имя файла списка текстов.
+const FileImagesList = currentDir+"/ImagesList.txt";//имя файла списка файлов
+const FileTextList = currentDir+"/TextList.txt";//имя файла списка текстов
 const FileModerImagesList = currentDir+"/ModerImagesList.txt";//имя файла списка файлов на модерацию
 const FileModerTextList = currentDir+"/ModerTextList.txt";//имя файла списка текстов на модерацию
 const FileBackUpText = currentDir+"/BackUpText.txt";//имя файла бэкапа текстов
@@ -2439,7 +2439,7 @@ async function readImagesList()
 						delete ImagesList[key].media[i];//удаляем запись
 					}
 				}
-				if(ImagesList[key].media.lengh==0) {mas.push(key);}
+				if(ImagesList[key].media.length==0) {mas.push(key);}
 			}
 		}
 		if(mas.length>0) 
@@ -2961,7 +2961,7 @@ try{
 				else if(obj.type=='video') {await NewsBot.sendVideo(chatId, obj.path, opt);}//если видео
 				else if(obj.type=='audio') {await NewsBot.sendAudio(chatId, obj.path, opt);}//если audio
 				else if(obj.type=='document') {await NewsBot.sendDocument(chatId, obj.path, opt);}//если document
-				else if(obj.type=='album' && !!obj.media && obj.media.lengh>0) 
+				else if(obj.type=='album' && !!obj.media && obj.media.length>0) 
 				{	if(!!obj.media[0].caption_entities && typeof(obj.media[0].caption_entities) == 'string')
 					{	obj.media[0].caption_entities = JSON.parse(obj.media[0].caption_entities);
 					}
