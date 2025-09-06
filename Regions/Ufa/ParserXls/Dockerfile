@@ -3,10 +3,7 @@ FROM node:18.17.1 as builder
 
 # Исходники, контекст изменен в команде запуска
 WORKDIR /app
-COPY ./ParserXls/parserxls.js .
-
-COPY ./Docker/ParserXls/package.json .
-COPY ./Docker/ParserXls/package-lock.json .
+COPY ./Bot/parserxls.js package.json package-lock.json ./
 
 # Зависимости
 RUN npm i
@@ -31,7 +28,7 @@ RUN useradd -m pi
 
 ENV container="docker"
 # переменная окружения по-умолчанию, может быть переопределна в команде
-ARG ENV CURRENT_DIR=/home/pi/js/telegram/nasea/ParserXls
+ARG ENV CURRENT_DIR=/home/pi/ParserXls
 ENV ENV CURRENT_DIR=$ENV CURRENT_DIR
 
 # Копируем исполнимый файл из верхнего образа в основной
