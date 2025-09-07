@@ -9,7 +9,7 @@ const moment = require('moment');
 
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const RassilkaDir = currentDir+"/../Rassilka";
-const FileEgRassilka = RassilkaDir+'/eg.txt';//файл с ежиком
+const FileEgRassilka = RassilkaDir+'/eg.txt';//файл с ежиком.
 const FileRaspisRassilka = RassilkaDir+'/raspis.txt';//файл с расписанием на день
 const FileEg = currentDir+'/eg.txt';//файл с ежиком
 const FileRaspis = currentDir+'/raspis.txt';//файл с расписанием на день
