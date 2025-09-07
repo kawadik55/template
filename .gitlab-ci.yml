@@ -170,11 +170,65 @@ build_ParserEg:
       changes:
         - ${DIR}/Bot/*.{js}
 
-build_ParserXls:
+build_ParserXls_Ufa:
   stage: build
   variables:
     DIR: 'Regions/Ufa/ParserXls'
     NAME: 'kawadiyk/parserxls_ufa'
+  script:
+    # строим новый образ
+    - docker build -t ${NAME}:latest -f ${CI_PROJECT_DIR}/${DIR}/Dockerfile ${CI_PROJECT_DIR}/${DIR}
+    - docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/slim build --include-path=/home/pi/context --target ${NAME}:latest --tag ${NAME}:slim --http-probe=false --continue-after=1
+    # удаляем latest образ
+    - docker rmi ${NAME}:latest
+    # переименовываем slim образ в latest
+    - docker tag ${NAME}:slim ${NAME}:latest
+    - docker rmi ${NAME}:slim
+    - TEXT=`docker images`
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker images
+    #- docker login -u ${LOGIN} --password ${PASSW}
+    - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
+    - docker push ${NAME}:latest
+    - docker logout
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - ${DIR}/Bot/*.{js}
+
+build_ParserXls_Kazan:
+  stage: build
+  variables:
+    DIR: 'Regions/Kazan/ParserXls'
+    NAME: 'kawadiyk/parserxls_kazan'
+  script:
+    # строим новый образ
+    - docker build -t ${NAME}:latest -f ${CI_PROJECT_DIR}/${DIR}/Dockerfile ${CI_PROJECT_DIR}/${DIR}
+    - docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/slim build --include-path=/home/pi/context --target ${NAME}:latest --tag ${NAME}:slim --http-probe=false --continue-after=1
+    # удаляем latest образ
+    - docker rmi ${NAME}:latest
+    # переименовываем slim образ в latest
+    - docker tag ${NAME}:slim ${NAME}:latest
+    - docker rmi ${NAME}:slim
+    - TEXT=`docker images`
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker images
+    #- docker login -u ${LOGIN} --password ${PASSW}
+    - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
+    - docker push ${NAME}:latest
+    - docker logout
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - ${DIR}/Bot/*.{js}
+        
+build_Parser_Kazan:
+  stage: build
+  variables:
+    DIR: 'Regions/Kazan/Parser'
+    NAME: 'kawadiyk/parser_kazan'
   script:
     # строим новый образ
     - docker build -t ${NAME}:latest -f ${CI_PROJECT_DIR}/${DIR}/Dockerfile ${CI_PROJECT_DIR}/${DIR}
