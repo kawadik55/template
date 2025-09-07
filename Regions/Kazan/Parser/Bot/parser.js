@@ -1,7 +1,7 @@
 ﻿process.env["NTBA_FIX_350"] = 1;
 const fs = require('fs');
 const moment = require('moment');
-const TelegramBot = require('node-telegram-bot-api');
+//const TelegramBot = require('node-telegram-bot-api');
 const needle = require('needle');
 const jsdom = require("jsdom"); // Подключение модуля jsdom для работы с DOM-деревом (1)
 const { JSDOM } = jsdom; // Подключение модуля jsdom для работы с DOM-деревом (2)
