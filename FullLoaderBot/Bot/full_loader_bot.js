@@ -1528,7 +1528,9 @@ try{
 				if(ss != 'OK') console.log(ss);
 				//переносим файлы
 				for(var key in ModerImagesList)
-				{	//сообщаем отправителю
+				{ try
+				  {
+					//сообщаем отправителю
 					if(Object.hasOwn(ModerImagesList[key], 'chatId'))
 					{let opt=new Object();
 					 opt.caption = ModerImagesList[key].caption;
@@ -1559,11 +1561,13 @@ try{
 						//публикуем альбом сразу первый раз, если по Дате, или день недели совпадает
 						await publicImage(ImagesList[len]);
 					}
+					delete ModerImagesList[key];//теперь удалим эту запись из списка
+					
+				  } catch (e) {console.log(e+'\nfrom state=105'); sendMessage(chatId, 'Ошибка: пост='+key+', тип='+ModerImagesList[key].type+', дата='+ModerImagesList[key].date);}
 				}
-				//теперь очистим массив модерации
-				ModerImagesList = new Object();
-				WriteFileJson(FileModerImagesList,ModerImagesList);//сохраняем вычищенный список
-				sendMessage(chatId, 'Сделано, шеф!', klava(get_keyb100()));
+				WriteFileJson(FileModerImagesList,ModerImagesList);//сохраняем оставшийся список
+				if(Object.keys(ModerImagesList).length===0) await sendMessage(chatId, 'Сделано, шеф!', klava(get_keyb100()));
+				else await sendMessage(chatId, 'Не всё получилось, шеф :(\nЕсть ошибки...', klava(get_keyb100()));
 			}
 			else
 			{	await sendMessage(chatId, 'Вот и хорошо, торопиться не будем!', klava(get_keyb100()));
