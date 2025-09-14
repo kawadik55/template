@@ -2525,8 +2525,8 @@ try{
 				if(flag!=0) str = List[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+') - '+List[mas[i]].userName;//с номером
 				else str = List[mas[i]].text + '\n\n('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+') - '+List[mas[i]].userName;//без номера
 				let opt = {};
-				opt.entities = List[mas[i]].entities; 
-				opt.link_preview_options=List[mas[i]].link_preview_options;
+				if(!!List[mas[i]].entities) opt.entities = List[mas[i]].entities; 
+				if(!!List[mas[i]].link_preview_options) opt.link_preview_options=List[mas[i]].link_preview_options;
 				if(!!List[mas[i]].parse_mode) opt.parse_mode = List[mas[i]].parse_mode;
 				await sendMessage(chatId, str, opt);
 			}
@@ -2534,7 +2534,7 @@ try{
 			{	let opt = new Object();
 				if(Object.hasOwn(List[mas[i]], 'caption')) 
 				{	opt.caption = List[mas[i]].caption;
-					opt.caption_entities = List[mas[i]].caption_entities;
+					if(!!List[mas[i]].caption_entities) opt.caption_entities = List[mas[i]].caption_entities;
 				}
 				else opt.caption = '';
 				if(Object.hasOwn(List[mas[i]], 'parse_mode')) opt.parse_mode = List[mas[i]].parse_mode;
@@ -2565,7 +2565,7 @@ try{
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
-}catch(err){WriteLogFile(err+'\nfrom showTextList()','вчат');}
+}catch(err){WriteLogFile(err+'\nfrom showPostList()','вчат');}
 }
 //====================================================================
 async function showModerTextList(chatId, flag)
@@ -2598,11 +2598,11 @@ try{
 	if(Object.keys(ImagesList).length > 0)
 	{	for(var key in ImagesList)
 		{	let opt = new Object();
+			opt.caption = '';
 			if(Object.hasOwn(ImagesList[key], 'caption')) 
 			{	opt.caption = ImagesList[key].caption;
-				opt.caption_entities = ImagesList[key].caption_entities;
+				if(!!ImagesList[key].caption_entities) opt.caption_entities = ImagesList[key].caption_entities;
 			}
-			else opt.caption = '';
 			if(Object.hasOwn(ImagesList[key], 'parse_mode')) opt.parse_mode = ImagesList[key].parse_mode;
 			if(flag!=0) opt.caption += "\n\n** номер: "+key+" ** ("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+") - "+ImagesList[key].userName;
 			else opt.caption += "\n\n("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+") - "+ImagesList[key].userName;
