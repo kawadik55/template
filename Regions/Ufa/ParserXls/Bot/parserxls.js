@@ -138,7 +138,6 @@ try{
 					if(day<10) day = '0'+day;//делаем ведущий 0
 					floating.next_data = day+'.'+month+'.'+year;//дата ближайшего собрания
 					if(diff_days%(period*7)==0) floating.next_data = 'сегодня';
-					if(name=='В тылу врага')
 				}catch(err){console.log(err);floating = {};}
 			}
 			if(stat.length==0 && !floating.period) {continue;}//если ошибки то пропускаем
