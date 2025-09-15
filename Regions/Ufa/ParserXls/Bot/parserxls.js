@@ -127,10 +127,10 @@ try{
 					ref_data = mas[2]+'.'+mas[1]+'.'+mas[0];//перевернем дату для буржуйского представления
 					let date = new Date();//текущая дата
 					let date1 = new Date(ref_data);//опорная дата
-					let diff_days = date.getDate() - date1.getDate();//разница в днях
+					let diff_days = Math.floor((date - date1)/(24*3600*1000));//разница в днях
 					if(diff_days<0) continue;//ошибка
 					let k = Math.ceil(diff_days/(period*7))*(period*7);//большее кратное периоду
-					date.setDate(date1.getDate() + k);//к опоре прибавляем дни по периоду
+					date = new Date(date1.getTime()+new Date(k*24*3600*1000).getTime());//к опоре прибавляем дни по периоду
 					let year = date.getFullYear();
 					let month = date.getMonth()+1;
 					let day = date.getDate();
@@ -138,6 +138,7 @@ try{
 					if(day<10) day = '0'+day;//делаем ведущий 0
 					floating.next_data = day+'.'+month+'.'+year;//дата ближайшего собрания
 					if(diff_days%(period*7)==0) floating.next_data = 'сегодня';
+					if(name=='В тылу врага')
 				}catch(err){console.log(err);floating = {};}
 			}
 			if(stat.length==0 && !floating.period) {continue;}//если ошибки то пропускаем
