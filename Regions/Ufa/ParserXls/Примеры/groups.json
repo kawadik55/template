@@ -1,0 +1,2319 @@
+﻿{
+    "region": "Анонимные Наркоманы г.Уфа",
+    "shortname": "АН г.Уфа",
+    "phone": "7 917 38-38-380",
+    "site": "https://na-ufa.ru/",
+    "email": "ufa@na-ufa.ru",
+    "rubric_id": "184106274",
+    "groups": {
+        "г.Уфа": {
+            "В тылу врага": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Ведущий из зала",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "21:30",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "IP№9",
+                    "comment": "1 раз в 2 недели (ближайшее: 22.09.2025)",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "floating",
+                    "period": 2,
+                    "ref_data": "11.08.2025",
+                    "next_data": "22.09.2025"
+                },
+                {
+                    "day": "Понедельник",
+                    "format": "Рабочее",
+                    "time": "21:30",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Рабочее",
+                    "comment": "1 раз в 2 недели (ближайшее: 29.09.2025)",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "floating",
+                    "period": 2,
+                    "ref_data": "18.08.2025",
+                    "next_data": "29.09.2025"
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "20:30",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Бочонки",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Чтение литературы – Жить чистым",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "20:30",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Зеленая лампа",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "20:30",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Зеленая лампа",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "20:30",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Зеленая лампа",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Открытое",
+                    "time": "20:30",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Открытое собрание",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Зеленая лампа",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Воскресенье",
+                    "format": "Закрытое",
+                    "time": "20:30",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Ежедневник/Спикерская",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Вечерняя": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "21:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "21:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Спикерская",
+                    "comment": "1й вторник - Спикерская",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Открытое",
+                    "time": "21:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Чтение литературы + Открытое",
+                    "comment": "2й вторник - Чтение литературы+Открытое собрание",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        2
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "21:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "\"Пуэрная среда\"",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "21:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "\"Бочонки\"",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "21:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Ежедневник",
+                    "comment": "Собрания проходят только 2я и 4я пятницы месяца",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        2,
+                        4
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "12:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Группа по шагам",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "21:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Воскресенье",
+                    "format": "Закрытое",
+                    "time": "21:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Гагарин": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Ю. Гагарина, 41/2",
+                    "address_add": "(центральный вход, 2-й этаж, налево)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                    "tema": "Чтение литературы",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Ю. Гагарина, 41/2",
+                    "address_add": "(центральный вход, 2-й этаж, налево)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "02:00",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Ю. Гагарина, 41/2",
+                    "address_add": "(центральный вход, 2-й этаж, налево)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Ю. Гагарина, 41/2",
+                    "address_add": "(центральный вход, 2-й этаж, налево)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                    "tema": "Спикерская",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Ю. Гагарина, 41/2",
+                    "address_add": "(центральный вход, 2-й этаж, налево)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Ю. Гагарина, 41/2",
+                    "address_add": "(центральный вход, 2-й этаж, налево)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Ю. Гагарина, 41/2",
+                    "address_add": "(центральный вход, 2-й этаж, налево)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "10:00",
+                    "address": "ул.Ю. Гагарина, 41/2",
+                    "address_add": "(центральный вход, 2-й этаж, налево)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Ю. Гагарина, 41/2",
+                    "address_add": "(центральный вход, 2-й этаж, налево)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Воскресенье",
+                    "format": "Открытое",
+                    "time": "20:00",
+                    "address": "ул.Ю. Гагарина, 41/2",
+                    "address_add": "(центральный вход, 2-й этаж, налево)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3714",
+                    "tema": "Открытое собрание",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Дёма": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Альшеевская, 11",
+                    "address_add": "(каб.028 в помещении “ДОСАФ”)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3705",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Альшеевская, 11",
+                    "address_add": "(каб.028 в помещении “ДОСАФ”)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3705",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Альшеевская, 11",
+                    "address_add": "(каб.028 в помещении “ДОСАФ”)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3705",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Открытое",
+                    "time": "20:00",
+                    "address": "ул.Альшеевская, 11",
+                    "address_add": "(каб.028 в помещении “ДОСАФ”)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3705",
+                    "tema": "Открытое собрание",
+                    "comment": "Первый четверг месяца – Открытое собрание",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Альшеевская, 11",
+                    "address_add": "(каб.028 в помещении “ДОСАФ”)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3705",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Альшеевская, 11",
+                    "address_add": "(каб.028 в помещении “ДОСАФ”)",
+                    "add_url": "https://go.2gis.com/6q45n",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3705",
+                    "tema": "Спикерская",
+                    "comment": "Первая суббота месяца – Спикерская",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1
+                    ]
+                }
+            ],
+            "Единство": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "18:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Открытое",
+                    "time": "18:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Открытое собрание",
+                    "comment": "Последняя суббота месяца – Открытое собрание",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Воскресенье",
+                    "format": "Закрытое",
+                    "time": "18:00",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Кызлар": [
+                {
+                    "day": "Воскресенье",
+                    "format": "Закрытое",
+                    "time": "17:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша возле 1 подъезда, комната 9 на цокольном этаже)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3820",
+                    "tema": "Ежедневник",
+                    "comment": "Группа ориентирована на женщин, но открыта для всех",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "13:30",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша возле 1 подъезда, комната 9 на цокольном этаже)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3820",
+                    "tema": "Ежедневник",
+                    "comment": "Группа ориентирована на женщин, но открыта для всех",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Маяк": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "21:00",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "При свечах",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "14:00",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Чёрная пятница",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Чайная суббота",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "21:00",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Путеводные принципы",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Воскресенье",
+                    "format": "Открытое",
+                    "time": "19:00",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Открытое собрание",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Ноябрь": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Чтение БТ",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Воскресенье",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Воскресенье",
+                    "format": "Закрытое",
+                    "time": "22:00",
+                    "address": "ул.Султанова, 2",
+                    "address_add": "(вход со двора, красная крыша, ком. 9)",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4550",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:15",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Олдскул": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Айская, 75/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/hb4y9",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3708",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Понедельник",
+                    "format": "Открытое",
+                    "time": "20:00",
+                    "address": "ул.Айская, 75/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/hb4y9",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3708",
+                    "tema": "Открытое собрание",
+                    "comment": "Первый понедельник месяца – Открытое собрание",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Айская, 75/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/hb4y9",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3708",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Айская, 75/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/hb4y9",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3708",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Айская, 75/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/hb4y9",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3708",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "18:30",
+                    "address": "ул.Айская, 75/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/hb4y9",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3708",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Айская, 75/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/hb4y9",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3708",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Воскресенье",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "ул.Айская, 75/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/hb4y9",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3708",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Полтинник": [
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.50 лет СССР 43",
+                    "address_add": "(вход наркология, слева)",
+                    "add_url": "https://go.2gis.com/9ww6q",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4343",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.50 лет СССР 43",
+                    "address_add": "(вход наркология, слева)",
+                    "add_url": "https://go.2gis.com/9ww6q",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-4343",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Путь": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "19:45",
+                    "address": "м-н Шакша, ул. Высоковольтная, 10",
+                    "address_add": "(желтое крыльцо с угла дома, цокольный этаж)",
+                    "add_url": "https://go.2gis.com/yy04od",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3711",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "м-н Шакша, ул. Высоковольтная, 10",
+                    "address_add": "(желтое крыльцо с угла дома, цокольный этаж)",
+                    "add_url": "https://go.2gis.com/yy04od",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3711",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "20:00",
+                    "address": "м-н Шакша, ул. Высоковольтная, 10",
+                    "address_add": "(желтое крыльцо с угла дома, цокольный этаж)",
+                    "add_url": "https://go.2gis.com/yy04od",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3711",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Рассвет": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "09:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Духовные принципы на каждый день",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "09:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Духовные принципы на каждый день",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "09:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Духовные принципы на каждый день",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "09:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Духовные принципы на каждый день",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "09:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Духовные принципы на каждый день",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "09:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Духовные принципы на каждый день",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Воскресенье",
+                    "format": "Закрытое",
+                    "time": "09:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Духовные принципы на каждый день",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Юг": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Кировоградская, 33А",
+                    "address_add": "(2-й этаж, синяя лестница)",
+                    "add_url": "https://go.2gis.com/0xums",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                    "tema": "Духовные принципы",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Кировоградская, 33А",
+                    "address_add": "(2-й этаж, синяя лестница)",
+                    "add_url": "https://go.2gis.com/0xums",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Кировоградская, 33А",
+                    "address_add": "(2-й этаж, синяя лестница)",
+                    "add_url": "https://go.2gis.com/0xums",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Кировоградская, 33А",
+                    "address_add": "(2-й этаж, синяя лестница)",
+                    "add_url": "https://go.2gis.com/0xums",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Кировоградская, 33А",
+                    "address_add": "(2-й этаж, синяя лестница)",
+                    "add_url": "https://go.2gis.com/0xums",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Суббота",
+                    "format": "Закрытое",
+                    "time": "18:00",
+                    "address": "ул.Кировоградская, 33А",
+                    "address_add": "(2-й этаж, синяя лестница)",
+                    "add_url": "https://go.2gis.com/0xums",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Воскресенье",
+                    "format": "Закрытое",
+                    "time": "18:00",
+                    "address": "ул.Кировоградская, 33А",
+                    "address_add": "(2-й этаж, синяя лестница)",
+                    "add_url": "https://go.2gis.com/0xums",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4
+                    ]
+                },
+                {
+                    "day": "Воскресенье",
+                    "format": "Открытое",
+                    "time": "18:00",
+                    "address": "ул.Кировоградская, 33А",
+                    "address_add": "(2-й этаж, синяя лестница)",
+                    "add_url": "https://go.2gis.com/0xums",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3700",
+                    "tema": "Открытое собрание",
+                    "comment": "Последнее воскресенье – Открытое собрание",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        "last"
+                    ]
+                }
+            ]
+        },
+        "г.Октябрьский": {
+            "Весна": [
+                {
+                    "day": "Понедельник",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Садовое кольцо, 59",
+                    "address_add": "(цоколь 7го подъезда)",
+                    "add_url": "https://yandex.ru/maps/-/CHfhvFlP",
+                    "photo": "https://na-russia.org/media/tinymce/41cb90275a34493b87a80a4226c3f18a.jpg",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Понедельник",
+                    "format": "Открытое",
+                    "time": "19:00",
+                    "address": "ул.Садовое кольцо, 59",
+                    "address_add": "(цоколь 7го подъезда)",
+                    "add_url": "https://yandex.ru/maps/-/CHfhvFlP",
+                    "photo": "https://na-russia.org/media/tinymce/41cb90275a34493b87a80a4226c3f18a.jpg",
+                    "tema": "Открытое собрание",
+                    "comment": "1й понедельник месяца",
+                    "map2gis": "да",
+                    "longtime": "01:00",
+                    "type": "static",
+                    "period": [
+                        1
+                    ]
+                },
+                {
+                    "day": "Понедельник",
+                    "format": "Рабочее",
+                    "time": "20:10",
+                    "address": "ул.Садовое кольцо, 59",
+                    "address_add": "(цоколь 7го подъезда)",
+                    "add_url": "https://yandex.ru/maps/-/CHfhvFlP",
+                    "photo": "https://na-russia.org/media/tinymce/41cb90275a34493b87a80a4226c3f18a.jpg",
+                    "tema": "Рабочее",
+                    "map2gis": "да",
+                    "longtime": "00:50",
+                    "type": "static",
+                    "period": [
+                        1
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Садовое кольцо, 59",
+                    "address_add": "(цоколь 7го подъезда)",
+                    "add_url": "https://yandex.ru/maps/-/CHfhvFlP",
+                    "photo": "https://na-russia.org/media/tinymce/41cb90275a34493b87a80a4226c3f18a.jpg",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Садовое кольцо, 59",
+                    "address_add": "(цоколь 7го подъезда)",
+                    "add_url": "https://yandex.ru/maps/-/CHfhvFlP",
+                    "photo": "https://na-russia.org/media/tinymce/41cb90275a34493b87a80a4226c3f18a.jpg",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ],
+            "Новая": [
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Садовое кольцо, 59",
+                    "address_add": "(цоколь 7го подъезда)",
+                    "add_url": "https://yandex.ru/maps/-/CHfhvFlP",
+                    "photo": "https://na-russia.org/media/tinymce/41cb90275a34493b87a80a4226c3f18a.jpg",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:00",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Садовое кольцо, 59",
+                    "address_add": "(цоколь 7го подъезда)",
+                    "add_url": "https://yandex.ru/maps/-/CHfhvFlP",
+                    "photo": "https://na-russia.org/media/tinymce/41cb90275a34493b87a80a4226c3f18a.jpg",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:00",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ]
+        },
+        "г.Белебей": {
+            "Надежда": [
+                {
+                    "day": "Вторник",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Красная, 95",
+                    "address_add": "(общежитие “Современник”, 1-й этаж, направо)",
+                    "add_url": "https://go.2gis.com/l6h0kd",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3823",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                },
+                {
+                    "day": "Пятница",
+                    "format": "Закрытое",
+                    "time": "19:00",
+                    "address": "ул.Красная, 95",
+                    "address_add": "(общежитие “Современник”, 1-й этаж, направо)",
+                    "add_url": "https://go.2gis.com/l6h0kd",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3823",
+                    "tema": "Ежедневник",
+                    "map2gis": "да",
+                    "longtime": "01:30",
+                    "type": "static",
+                    "period": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        "last"
+                    ]
+                }
+            ]
+        }
+    },
+    "commitee": {
+        "г.Уфа": {
+            "Комитет БУ": [
+                {
+                    "day": "Пятница",
+                    "format": "Рабочее",
+                    "time": "20:45",
+                    "address": "ул.Интернациональная, 133А",
+                    "address_add": "(вход со стороны ул. Машиностроителей)",
+                    "add_url": "https://go.2gis.com/p2v5wt",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3695",
+                    "tema": "Рабочее собрание",
+                    "comment": "Для служащих комитета, кандидатов и вольных слушателей (ближайшее: 26.09.2025)",
+                    "map2gis": "да",
+                    "longtime": "01:00",
+                    "type": "floating",
+                    "period": 2,
+                    "ref_data": "15.08.2025",
+                    "next_data": "26.09.2025"
+                }
+            ],
+            "Комитет Диджитал": [
+                {
+                    "day": "Четверг",
+                    "format": "Рабочее",
+                    "time": "21:30",
+                    "address": "https://zoom.us/j/7507507555",
+                    "address_add": "(Код доступа: 000000)",
+                    "tema": "Рабочее собрание онлайн",
+                    "comment": "Для служащих комитета, кандидатов и вольных слушателей",
+                    "longtime": "01:00",
+                    "online": "https://zoom.us/j/7507507555",
+                    "type": "static",
+                    "period": [
+                        1
+                    ]
+                },
+                {
+                    "day": "Четверг",
+                    "format": "Рабочее",
+                    "time": "19:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Рабочее собрание",
+                    "comment": "Для служащих комитета, кандидатов и вольных слушателей",
+                    "map2gis": "да",
+                    "longtime": "01:00",
+                    "type": "static",
+                    "period": [
+                        3
+                    ]
+                }
+            ],
+            "Комитет ИЛ": [
+                {
+                    "day": "Пятница",
+                    "format": "Рабочее",
+                    "time": "20:45",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Рабочее собрание",
+                    "comment": "Для служащих комитета, кандидатов и вольных слушателей (ближайшее: 19.09.2025)",
+                    "map2gis": "да",
+                    "longtime": "01:00",
+                    "type": "floating",
+                    "period": 2,
+                    "ref_data": "22.08.2025",
+                    "next_data": "19.09.2025"
+                }
+            ],
+            "Комитет ПМ": [
+                {
+                    "day": "Вторник",
+                    "format": "Рабочее",
+                    "time": "20:45",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Рабочее собрание",
+                    "comment": "Для служащих комитета, кандидатов и вольных слушателей (ближайшее: 23.09.2025)",
+                    "map2gis": "да",
+                    "longtime": "01:00",
+                    "type": "floating",
+                    "period": 2,
+                    "ref_data": "12.08.2025",
+                    "next_data": "23.09.2025"
+                }
+            ],
+            "Комитет ПСО": [
+                {
+                    "day": "Четверг",
+                    "format": "Рабочее",
+                    "time": "20:45",
+                    "address": "ул.Лесотехникума, 22/2",
+                    "address_add": "(вход с торца)",
+                    "add_url": "https://go.2gis.com/t0naw",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3702",
+                    "tema": "Рабочее собрание",
+                    "comment": "Для служащих комитета, кандидатов и вольных слушателей (ближайшее: 25.09.2025)",
+                    "map2gis": "да",
+                    "longtime": "01:00",
+                    "type": "floating",
+                    "period": 2,
+                    "ref_data": "14.08.2025",
+                    "next_data": "25.09.2025"
+                }
+            ],
+            "Комитет РС": [
+                {
+                    "day": "Среда",
+                    "format": "Рабочее",
+                    "time": "19:00",
+                    "address": "ул.Ветошникова, 99",
+                    "address_add": "(вход с торца по Ветошникова, прямо по коридору, слева)",
+                    "add_url": "https://go.2gis.com/SDNdi",
+                    "photo": "https://na-ufa.ru/sobrania-anonimnih-narkomanov/#popmake-3689",
+                    "tema": "Рабочее собрание",
+                    "comment": "Для служащих комитета, кандидатов и вольных слушателей",
+                    "map2gis": "да",
+                    "longtime": "01:00",
+                    "type": "static",
+                    "period": [
+                        4
+                    ]
+                },
+                {
+                    "day": "Среда",
+                    "format": "Рабочее",
+                    "time": "21:30",
+                    "address": "Онлайн",
+                    "tema": "Рабочее собрание онлайн",
+                    "comment": "Для служащих комитета, кандидатов и вольных слушателей",
+                    "longtime": "01:00",
+                    "type": "static",
+                    "period": [
+                        2
+                    ]
+                }
+            ]
+        }
+    }
+}
