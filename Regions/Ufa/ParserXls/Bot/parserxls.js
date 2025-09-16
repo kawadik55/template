@@ -112,6 +112,7 @@ try{
 			if(!!sheets[name_list][num]['2й']) stat.push(2);
 			if(!!sheets[name_list][num]['3й']) stat.push(3);
 			if(!!sheets[name_list][num]['4й']) stat.push(4);
+			if(!!sheets[name_list][num]['5й']) stat.push(5);
 			if(!!sheets[name_list][num]['Последний']) stat.push('last');
 			if(!!sheets[name_list][num]['Период недель']&&!!sheets[name_list][num]['Дата'])
 			{	stat = [];//если плавающая периодичность, то чистим статический массив
