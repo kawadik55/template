@@ -181,8 +181,8 @@ try{
 				 obj.period = floating.period; 
 				 obj.ref_data = floating.ref_data;
 				 obj.next_data = floating.next_data;
-				 if(!!obj.comment) obj.comment += ' (ближайшее: '+obj.next_data+')';
-				 else obj.comment = '(ближайшее: '+obj.next_data+')';
+				 if(!!comment) comment += ' (ближайшее: '+obj.next_data+')';
+				 else comment = '(ближайшее: '+obj.next_data+')';
 				}
 				if(!!tema) obj.tema = tema;
 				else obj.tema = 'Ежедневник';
