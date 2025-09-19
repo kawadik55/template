@@ -40,8 +40,8 @@ try{
 		}
 	}
 	if(Object.keys(sheets).length>0)//запишем файл
-	{	//let err = fs.writeFileSync(currentDir+'/sheets.json', "\ufeff" + JSON.stringify(sheets,null,4));
-		//if(err) {console.log(err);}
+	{	let err = fs.writeFileSync(currentDir+'/sheets.json', "\ufeff" + JSON.stringify(sheets,null,4));
+		if(err) {console.log(err);}
 	}
 	else {console.log('Ошибка парсинга таблицы'); return;}
 	if(!sheets) return;
@@ -137,8 +137,8 @@ try{
 					let day = date.getDate();
 					if(month<10) month = '0'+month;//делаем ведущий 0
 					if(day<10) day = '0'+day;//делаем ведущий 0
-					floating.next_data = day+'.'+month+'.'+year;//дата ближайшего собрания
 					if(diff_days%(period*7)==0) floating.next_data = 'сегодня';
+					else floating.next_data = day+'.'+month+'.'+year;//дата ближайшего собрания
 				}catch(err){console.log(err);floating = {};}
 			}
 			if(stat.length==0 && !floating.period) {continue;}//если ошибки то пропускаем
