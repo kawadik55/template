@@ -171,19 +171,10 @@ try{
 					count=groups[town][name].length-1;
 					obj = groups[town][name][count];
 				}
-				if(!!day) obj.day = day;//день
 				if(!!format) obj.format = format;
 				if(!!time) obj.time = time;//время
-				if(!!adres) obj.address = adres;
-				if(!!address_add) obj.address_add = '('+address_add+')';
-				if(!!karta) obj.add_url = karta;
-				if(!!photo) obj.photo = photo;
-				if(!!tema) obj.tema = tema;
-				else obj.tema = 'Ежедневник';
-				if(!!comment) obj.comment = comment;
-				if(!!map2gis) obj.map2gis = map2gis;
 				if(!!longtime) obj.longtime = longtime;
-				if(!!online) obj.online = online;
+				if(!!day) obj.day = day;//день
 				if(stat.length>0) {obj.type = 'static'; obj.period = stat;}
 				if(!!floating.period) 
 				{obj.type = 'floating'; 
@@ -193,6 +184,15 @@ try{
 				 if(!!obj.comment) obj.comment += ' (ближайшее: '+obj.next_data+')';
 				 else obj.comment = '(ближайшее: '+obj.next_data+')';
 				}
+				if(!!tema) obj.tema = tema;
+				else obj.tema = 'Ежедневник';
+				if(!!adres) obj.address = adres;
+				if(!!address_add) obj.address_add = '('+address_add+')';
+				if(!!karta) obj.add_url = karta;
+				if(!!photo) obj.photo = photo;
+				if(!!online) obj.online = online;
+				if(!!map2gis) obj.map2gis = map2gis;
+				if(!!comment) obj.comment = comment;
 			}
 		}
 	}
