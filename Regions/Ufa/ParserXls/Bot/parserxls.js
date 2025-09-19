@@ -40,8 +40,8 @@ try{
 		}
 	}
 	if(Object.keys(sheets).length>0)//запишем файл
-	{	let err = fs.writeFileSync(currentDir+'/sheets.json', "\ufeff" + JSON.stringify(sheets,null,4));
-		if(err) {console.log(err);}
+	{	//let err = fs.writeFileSync(currentDir+'/sheets.json', "\ufeff" + JSON.stringify(sheets,null,4));
+		//if(err) {console.log(err);}
 	}
 	else {console.log('Ошибка парсинга таблицы'); return;}
 	if(!sheets) return;
