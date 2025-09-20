@@ -1563,7 +1563,13 @@ try{
 					}
 					delete ModerImagesList[key];//теперь удалим эту запись из списка
 					
-				  } catch (e) {console.log(e+'\nfrom state=105'); sendMessage(chatId, 'Ошибка: пост='+key+', тип='+ModerImagesList[key].type+', дата='+ModerImagesList[key].date);}
+				  } catch (e) 
+				  {	WriteLogFile(e+'\nfrom state=105','вчат'); 
+					let str = 'Ошибка: пост='+key;
+					if(!!ModerImagesList[key].type) str += ', тип='+ModerImagesList[key].type;
+					if(!!ModerImagesList[key].date) str += ', дата='+ModerImagesList[key].date;
+					sendMessage(chatId, str);
+				  }
 				}
 				WriteFileJson(FileModerImagesList,ModerImagesList);//сохраняем оставшийся список
 				if(Object.keys(ModerImagesList).length===0) await sendMessage(chatId, 'Сделано, шеф!', klava(get_keyb100()));
