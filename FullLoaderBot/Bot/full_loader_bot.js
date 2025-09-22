@@ -1493,8 +1493,10 @@ try{
 				let ss = await sendTextToWhatsup(ModerTextList);
 				if(ss != 'OK') console.log(ss);
 				//переносим тексты
-				for(var key in ModerTextList)
-				{	await setToTextList(ModerTextList[key]);//сохраняем в списке текстов
+				const keys = Object.keys(ModerTextList);
+				for(let jj in keys)
+				{	let key = keys[jj];
+					await setToTextList(ModerTextList[key]);//сохраняем в списке текстов
 					//публикуем текст прямо сейчас, если дата или день недели совпадает
 					await publicText(ModerTextList[key]);
 					//сообщаем отправителю
@@ -1508,11 +1510,11 @@ try{
 					 await sendMessage(ModerTextList[key].chatId, ModerTextList[key].text, opt);
 					 await sendMessage(ModerTextList[key].chatId, '👍🏻 Ура! Этот текст прошел модерацию и будет опубликован!!');
 					}
+					delete ModerTextList[key];//теперь удалим эту запись из списка
 				}
-				//теперь очистим массив модерации
-				ModerTextList = new Object();
 				WriteFileJson(FileModerTextList,ModerTextList);//сохраняем вычищенный список
-				sendMessage(chatId, 'Сделано, шеф!', klava(get_keyb100()));
+				if(Object.keys(ModerTextList).length===0) await sendMessage(chatId, 'Сделано, шеф!', klava(get_keyb100()));
+				else await sendMessage(chatId, 'Не всё получилось, шеф :(\nЕсть ошибки...', klava(get_keyb100()));
 			}
 			else
 			{	await sendMessage(chatId, 'Вот и хорошо, торопиться не будем!', klava(get_keyb100()));
@@ -1527,9 +1529,10 @@ try{
 				let ss = await sendImageToWhatsup(ModerImagesList);
 				if(ss != 'OK') console.log(ss);
 				//переносим файлы
-				for(var key in ModerImagesList)
+				let keys = Object.keys(ModerImagesList);
+				for(let jj in keys)
 				{ try
-				  {
+				  {	let key = keys[jj];
 					//сообщаем отправителю
 					if(Object.hasOwn(ModerImagesList[key], 'chatId'))
 					{let opt=new Object();
@@ -1564,11 +1567,11 @@ try{
 					delete ModerImagesList[key];//теперь удалим эту запись из списка
 					
 				  } catch (e) 
-				  {	WriteLogFile(e+'\nfrom state=105','вчат'); 
-					let str = 'Ошибка: пост='+key;
+				  {	let str = 'Ошибка: пост='+key;
 					if(!!ModerImagesList[key].type) str += ', тип='+ModerImagesList[key].type;
 					if(!!ModerImagesList[key].date) str += ', дата='+ModerImagesList[key].date;
 					sendMessage(chatId, str);
+					WriteLogFile(e+'\nfrom state=105'+'\n'+str,'вчат');
 				  }
 				}
 				WriteFileJson(FileModerImagesList,ModerImagesList);//сохраняем оставшийся список
