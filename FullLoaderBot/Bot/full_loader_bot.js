@@ -1494,9 +1494,8 @@ try{
 				if(ss != 'OK') console.log(ss);
 				//переносим тексты
 				const keys = Object.keys(ModerTextList);
-				for(let jj in keys)
-				{	let key = keys[jj];
-					await setToTextList(ModerTextList[key]);//сохраняем в списке текстов
+				for(let key of keys)
+				{	await setToTextList(ModerTextList[key]);//сохраняем в списке текстов
 					//публикуем текст прямо сейчас, если дата или день недели совпадает
 					await publicText(ModerTextList[key]);
 					//сообщаем отправителю
@@ -1530,10 +1529,9 @@ try{
 				if(ss != 'OK') console.log(ss);
 				//переносим файлы
 				let keys = Object.keys(ModerImagesList);
-				for(let jj in keys)
+				for(let key of keys)
 				{ try
-				  {	let key = keys[jj];
-					//сообщаем отправителю
+				  {	//сообщаем отправителю
 					if(Object.hasOwn(ModerImagesList[key], 'chatId'))
 					{let opt=new Object();
 					 opt.caption = ModerImagesList[key].caption;
@@ -2123,7 +2121,8 @@ try{
 	//список файлов
 	flag =0;
 	await readImagesList();//читаем список из файла
-    for(let key in ImagesList)
+    let keys = Object.keys(ImagesList);
+	for(let key of keys)
 	{	let time = moment(ImagesList[key].date,'DD.MM.YYYY');
 		if(!isNaN(time))//только по дате
 		{let days = time.diff(now, 'days')+1;
@@ -2188,7 +2187,8 @@ try{
 	//---------------------------------------------
 	//список текстов
 	await readTextList();//читаем файл текстов в TextList
-	for(let key in TextList)
+	keys = Object.keys(TextList);
+	for(let key of keys)
 	{	let time = moment(TextList[key].date,'DD.MM.YYYY');
 		if(!isNaN(time))//только по дате
 		{let days = time.diff(now, 'days')+1;
@@ -2449,7 +2449,7 @@ async function readImagesList()
 				{	if(!fs.existsSync(ImagesList[key].media[i].media))
 					{	await sendMessage(chat_Supervisor, 'Обнаружено отсутствие файла из списка:\n'+JSON.stringify(ImagesList[key],null,2));
 						WriteLogFile('Обнаружено отсутствие файла из списка:\n'+JSON.stringify(ImagesList[key],null,2));
-						delete ImagesList[key].media[i];//удаляем запись
+						ImagesList[key].media.splice(i, 1);//удаляем запись
 					}
 				}
 				if(ImagesList[key].media.length==0) {mas.push(key);}
