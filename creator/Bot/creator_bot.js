@@ -72,7 +72,6 @@ let AnswerList = {};//массивы ответов от пользовател�
 let PRIVAT = 1;//глобальная приватность, пускает только Админа и Юзера с разрешениями
 let DISTANCE = 1;//дистанция в днях о скором наступлении события
 let COMMUNITY_TEXT = '';//текст для счетчика чистого времени (трезвости, брака, развода и т.д.)
-let isPausing = false;//флаг временной остановки бота
 let MediaList=new Object();//массив группы медиа файлов
 let Stickers=new Object();//объект стикеров
 let SignOff = 0;
@@ -183,6 +182,7 @@ try {Stickers = JSON.parse(fs.readFileSync(FileSticker));} catch (err) {Stickers
 try {let bl = fs.readFileSync(FileSignOff); SignOff=Number(bl);} catch (err) {WriteFileJson(FileSignOff,SignOff.toString());}
 
 getDayCount();//загрузим счетчики текущего дня
+sendMessage.count = 0;//обнулим счетчик сообщений в сек
 
 /*(async () => {
 	for(let i=0;i<20;i++)
@@ -1798,6 +1798,7 @@ try{
 		WriteLogFile(res,'непосылать');
 		return res;
 	}
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	
 	//сохраняем для посл.удаления
 	let chat_id='', mess_id='';
@@ -1810,14 +1811,6 @@ try{
 	if(Object.hasOwn(option, 'link_preview_options')) option.link_preview_options = JSON.stringify(option.link_preview_options);
 	//посылаем сообщение
 	if(!!option.text) delete option.text;
-	sendMessage.count = (sendMessage.count || 0) + 1;//счетчик сообщений в секунду
-	if(sendMessage.count == 1) setTimeout(() => {sendMessage.count = 0;}, 1000);//на первом заряжаем таймер
-	if(sendMessage.count > SPEEDLIMIT)//достигли максимума
-	{	isPausing = true;
-		while(sendMessage.count != 0) await sleep(50);
-		sendMessage.count = 1; setTimeout(() => {sendMessage.count = 0;}, 1000);//на первом заряжаем таймер
-	}
-	isPausing = false;
 	try{res = await Bot.sendMessage(chatId, str, option);
 	}catch(err)
 	{	console.log(err+'\nfrom Bot.sendMessage("'+chatId+'")'); 
@@ -1866,6 +1859,7 @@ try{
 		WriteLogFile(res,'непосылать');
 		return res;
 	}
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	
 	//сохраняем для посл.удаления
 	let chat_id='', mess_id='';
@@ -1875,15 +1869,6 @@ try{
 	
 	//посылаем сообщение
 	if(!!option.text) delete option.text;
-	sendMessage.count = (sendMessage.count || 0) + 1;//счетчик сообщений в секунду
-	if(sendMessage.count == 1) setTimeout(() => {sendMessage.count = 0;}, 1000);//на первом заряжаем таймер
-	if(sendMessage.count > SPEEDLIMIT)//достигли максимума
-	{	isPausing = true;
-		while(sendMessage.count != 0) await sleep(50);
-		sendMessage.count = 1; setTimeout(() => {sendMessage.count = 0;}, 1000);//на первом заряжаем таймер
-	}
-	isPausing = false;
-	
 	try{res = await sendPhoto(chatId, path, option);
 	}catch(err)
 	{	console.log(err+'\nfrom Bot.sendMessageImage("'+chatId+'")'); 
@@ -2390,7 +2375,6 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 async function sendDocument(chatId, path, option)
 {	
 try{	let res;
-		while(isPausing) await sleep(100);//если бот на время забанен
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendDocument("'+chatId+'")=>if(!isValidChatId(chatId))';
 			WriteLogFile(res,'непосылать');
@@ -2401,6 +2385,7 @@ try{	let res;
 			WriteLogFile(res,'непосылать');
 			return res;
 		}
+		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 		if(!!option && !!option.caption) 
 		{if(option.caption.length > 1024) {option.caption = option.caption.substring(0,1023);}//обрезаем подпись
 		}
@@ -2423,7 +2408,6 @@ try{	let res;
 async function sendAudio(chatId, path, option)
 {	
 try{	let res;
-		while(isPausing) await sleep(100);//если бот на время забанен
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendAudio("'+chatId+'")=>if(!isValidChatId(chatId))';
 			WriteLogFile(res,'непосылать');
@@ -2434,6 +2418,7 @@ try{	let res;
 			WriteLogFile(res,'непосылать');
 			return res;
 		}
+		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 		if(!!option && !!option.caption) 
 		{if(option.caption.length > 1024) {option.caption = option.caption.substring(0,1023);}//обрезаем подпись
 		}
@@ -2456,7 +2441,6 @@ try{	let res;
 async function sendVideo(chatId, path, option)
 {	
 try{	let res;
-		while(isPausing) await sleep(100);//если бот на время забанен
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendVideo("'+chatId+'")=>if(!isValidChatId(chatId))';
 			WriteLogFile(res,'непосылать');
@@ -2467,6 +2451,7 @@ try{	let res;
 			WriteLogFile(res,'непосылать');
 			return res;
 		}
+		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 		if(!!option && !!option.caption) 
 		{if(option && option.caption.length > 1024) {option.caption = option.caption.substring(0,1023);}//обрезаем подпись
 		}
@@ -2489,7 +2474,6 @@ try{	let res;
 async function sendPhoto(chatId, path, option)
 {	
 try{	let res;
-		while(isPausing) await sleep(100);//если бот на время забанен
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendPhoto("'+chatId+'")=>if(!isValidChatId(chatId))';
 			WriteLogFile(res,'непосылать');
@@ -2500,6 +2484,7 @@ try{	let res;
 			WriteLogFile(res,'непосылать');
 			return res;
 		}
+		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 		if(!!option && !!option.caption) 
 		{if(option && option.caption.length > 1024) {option.caption = option.caption.substring(0,1023);}//обрезаем подпись
 		}
@@ -4311,6 +4296,18 @@ try{
 //====================================================================
 async function sleep(ms) {return new Promise(resolve => setTimeout(resolve, ms));}
 //====================================================================
+function getMessageCount()
+{
+	if(sendMessage.count >= SPEEDLIMIT) return false;//достигли максимума
+	sendMessage.count = (sendMessage.count || 0) + 1;//счетчик сообщений в секунду
+	if(sendMessage.count == 1) setTimeout(doAfter, 1000);//на первом заряжаем таймер
+	return true;
+	
+	function doAfter()
+	{	sendMessage.count = 0;
+	}
+}
+//====================================================================
 async function sendPublicText(obj) 
 {	
 try{//загрузим массив chatId подписчиков
@@ -4323,7 +4320,7 @@ try{//загрузим массив chatId подписчиков
 	{	if(obj.link_preview_options.is_disabled) option.disable_web_page_preview = true;
 	}
 	for(let i=0;i<mas.length;i++)
-	{	try{await sleep(500);} catch(err){WriteLogFile(err+'\nfrom sendPublicText()=>sleep()');}
+	{	//try{await sleep(500);} catch(err){WriteLogFile(err+'\nfrom sendPublicText()=>sleep()');}
 		await sendMessage(mas[i], obj.text, option);
 	}
 	return true;
@@ -4345,7 +4342,7 @@ try{//загрузим массив chatId Админов
 	{	if(obj.link_preview_options.is_disabled) option.disable_web_page_preview = true;
 	}
 	for(let i=0;i<mas.length;i++)
-	{	try{await sleep(500);} catch(err){WriteLogFile(err+'\nfrom sendPublicTextAdmin()=>sleep()');}
+	{	//try{await sleep(500);} catch(err){WriteLogFile(err+'\nfrom sendPublicTextAdmin()=>sleep()');}
 		await sendMessage(mas[i], obj.text, option);
 	}
 	return true;
@@ -4602,14 +4599,14 @@ try{
 				for(let i in user)
 				{	let chatId = user[i].toString();
 					await sendMessage(chatId, mess, {parse_mode:"markdown"});
-					await sleep(1000);
+					//await sleep(1000);
 				}
 				user = Object.keys(UserList);//создаем массив ключей из списка юзеров
 				if(user.length)
 				{	for(let i in user)
 					{	let chatId = user[i].toString();
 						await sendMessage(chatId, mess, {parse_mode:"markdown"});
-						await sleep(1000);
+						//await sleep(1000);
 					}
 				}
 			}
@@ -4646,7 +4643,7 @@ try{
 							{	let res = await sendDocument(chatId, files[k]);
 								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_srok','непосылать');
 								else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_srok','непосылать');
-								await sleep(2000);
+								//await sleep(2000);
 							}
 						 }
 						}
@@ -4661,7 +4658,7 @@ try{
 					let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
 					if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_srok','непосылать');
 					else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_srok','непосылать');
-					await sleep(1000);
+					//await sleep(1000);
 				}
 			}
 			}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_srok)');}
@@ -4692,7 +4689,7 @@ try{
 							{	let res = await sendDocument(chatId, files[k]);
 								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_smoke','непосылать');
 								else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_smoke','непосылать');
-								await sleep(2000);
+								//await sleep(2000);
 							}
 						 }
 						}
@@ -4707,7 +4704,7 @@ try{
 					let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
 					if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_smoke','непосылать');
 					else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_smoke','непосылать');
-					await sleep(1000);
+					//await sleep(1000);
 				}	
 			}
 			}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_smoke)');}
