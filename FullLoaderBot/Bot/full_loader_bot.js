@@ -21,6 +21,7 @@ const TokenDir=currentDir+"/Token";//путь к папке с токенами.
 const smilik = '¯\\_(ツ)_/¯';
 const PathToLog = currentDir+'/../log';//путь к логам
 const LOGGING = true;//включение/выключение записи лога в файл
+const SPEEDLIMIT = 15;//ограничение скорости сообщений в сек
 let PathToHostImg = '';//путь к хостингу картинок
 let hostname = '';
 let hostingImg = false;//выключатель кнопки хостинга картинок
@@ -2312,6 +2313,7 @@ async function sendMessage(chatId,str,option)
 try{	
 	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	//сохраняем для посл.удаления
 	let chat_id='', mess_id='';
 	if(LastMessId[chatId]) {chat_id=chatId; mess_id=LastMessId[chatId].messId;}
@@ -2347,6 +2349,7 @@ async function sendPhoto(chatId, path, opt)
 try{
 	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
 	await LoaderBot.sendPhoto(chatId, path, opt);
 	return true;
@@ -2358,6 +2361,7 @@ async function sendAlbum(chatId, media, opt)
 try{
 	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	let mas = [...media];
 	if(!!opt && !!opt.caption)
 	{	if(!mas[0].caption) mas[0].caption = '';
@@ -2377,6 +2381,7 @@ async function sendVideo(chatId, path, opt)
 try{
 	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
 	await LoaderBot.sendVideo(chatId, path, opt);
 	return true;
@@ -2388,6 +2393,7 @@ async function sendAudio(chatId, path, opt)
 try{
 	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
 	await LoaderBot.sendAudio(chatId, path, opt);
 	return true;
@@ -2399,6 +2405,7 @@ async function sendDocument(chatId, path, opt)
 try{
 	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
 	await LoaderBot.sendDocument(chatId, path, opt);
 	return true;
@@ -2825,7 +2832,10 @@ try{
 			 if(Object.hasOwn(obj.link_preview_options, 'is_disabled')) opt.disable_web_page_preview = true;
 			}
 			if(!!obj.parse_mode) opt.parse_mode = obj.parse_mode;
-			if(!!chatId) await NewsBot.sendMessage(chatId, obj.text, opt);
+			if(!!chatId)
+			{	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
+				await NewsBot.sendMessage(chatId, obj.text, opt);
+			}
 		  }
 		}catch(err){WriteLogFile(err+'\nfrom publicText()=>for()','вчат');}
 	}
@@ -2969,6 +2979,7 @@ try{
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
 			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
 			if(!!threadId) opt.message_thread_id = threadId;
+			while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 			if(Object.hasOwn(obj, 'type')) 
 			{	if(obj.type=='image') {await NewsBot.sendPhoto(chatId, obj.path, opt);}//если картинка
 				else if(obj.type=='video') {await NewsBot.sendVideo(chatId, obj.path, opt);}//если видео
@@ -3261,6 +3272,20 @@ try{
 }
 //====================================================================
 function getKeyByValue(object, value) {return Object.keys(object).find(key => object[key] === value);
+}
+//====================================================================
+async function sleep(ms) {return new Promise(resolve => setTimeout(resolve, ms));}
+//====================================================================
+function getMessageCount()
+{
+	if(sendMessage.count >= SPEEDLIMIT) return false;//достигли максимума
+	sendMessage.count = (sendMessage.count || 0) + 1;//счетчик сообщений в секунду
+	if(sendMessage.count == 1) setTimeout(doAfter, 1000);//на первом заряжаем таймер
+	return true;
+	
+	function doAfter()
+	{	sendMessage.count = 0;
+	}
 }
 //====================================================================
 function getKeyList()

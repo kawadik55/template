@@ -13,6 +13,7 @@ const FileRun = currentDir+'/run.txt';//файл со списком запус�
 const FileButtons = currentDir+'/buttons.txt';//файл с кнопками
 const PathToLog = currentDir+'/../log';//путь к логам
 const LOGGING = true;//включение/выключение записи лога в файл
+const SPEEDLIMIT = 15;//ограничение скорости сообщений в сек
 //---------------------------------------------------
 //сразу проверяем или создаем необходимые папки и файлы
 //setContextFiles();
@@ -48,6 +49,7 @@ let Buttons={};//кнопки
 let masDay=['пустота','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье','Ежедневно'];
 var flagEg=0, eg='', raspis='', flagRaspis=0, fun={}, count_text=0, count_photo=0;
 let forDate=[];
+let GlobalCountMessage = 0;
 
 //файл списка запуска функций
 try 
@@ -325,6 +327,7 @@ async function send_Eg()
 			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
 			if(!!threadId) opt.message_thread_id = threadId;
 			opt.parse_mode = "markdown"; opt.disable_web_page_preview = true;
+			while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 			let res = await bot.sendMessage(chatId,eg,opt);
 			if(res===false) WriteLogFile('Не смог послать Ежик "'+' в '+name[0]);
 			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
@@ -470,6 +473,7 @@ async function sendTextToBot(chat, text, opt)
   try{
 	  if(!isValidChatId(chat)) return false;//если не число, то не пускаем
 	  if(text=='') return false;
+	  while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	  res = await bot.sendMessage(chat,text,opt);
   }catch(err)
   {	console.error(getTimeStr()+err);
@@ -486,6 +490,7 @@ async function sendPhotoToBot(chat, path, opt)
 	if(!isValidChatId(chat)) return false;//если не число, то не пускаем
 	if(path=='') return false;
 	if(!fs.existsSync(path)) return false;
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	res = await bot.sendPhoto(chat,path,opt);
   }catch(err)
   { console.error(getTimeStr()+err);
@@ -502,6 +507,7 @@ async function sendVideoToBot(chat, path, opt)
 	if(!isValidChatId(chat)) return false;//если не число, то не пускаем
 	if(path=='') return false;
 	if(!fs.existsSync(path)) return false;
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	res = await bot.sendVideo(chat,path,opt);
   }catch(err)
   { console.error(getTimeStr()+err);
@@ -518,6 +524,7 @@ async function sendAudioToBot(chat, path, opt)
 	if(!isValidChatId(chat)) return false;//если не число, то не пускаем
 	if(path=='') return false;
 	if(!fs.existsSync(path)) return false;
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	res = await bot.sendAudio(chat,path,opt);
   }catch(err)
   { console.error(getTimeStr()+err);
@@ -534,6 +541,7 @@ async function sendDocumentToBot(chat, path, opt)
 	if(!isValidChatId(chat)) return false;//если не число, то не пускаем
 	if(path=='') return false;
 	if(!fs.existsSync(path)) return false;
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	res = await bot.sendDocument(chat,path,opt);
   }catch(err)
   { console.error(getTimeStr()+err);
@@ -550,6 +558,7 @@ async function sendAlbumToBot(chat, media)
 	if(!isValidChatId(chat)) return false;//если не число, то не пускаем
 	if(media=='') return false;
 	for(let i=0;i<media.length;i++) {if(!fs.existsSync(media[i].media)) return false;}
+	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	res = await bot.sendMediaGroup(chat,media);
   }catch(err)
   { console.error(getTimeStr()+err);
@@ -617,6 +626,20 @@ function setContextFiles()
 		//{fs.copyFileSync(cBot+'/buttons.txt',currentDir+'/buttons.txt');}
 		//if(fs.existsSync(cBot+'/run.txt') && !fs.existsSync(currentDir+'/run.txt')) 
 		//{fs.copyFileSync(cBot+'/run.txt',currentDir+'/run.txt');}
+	}
+}
+//====================================================================
+async function sleep(ms) {return new Promise(resolve => setTimeout(resolve, ms));}
+//====================================================================
+function getMessageCount()
+{
+	if(GlobalCountMessage >= SPEEDLIMIT) return false;//достигли максимума
+	GlobalCountMessage = (GlobalCountMessage || 0) + 1;//счетчик сообщений в секунду
+	if(GlobalCountMessage == 1) setTimeout(doAfter, 1000);//на первом заряжаем таймер
+	return true;
+	
+	function doAfter()
+	{	GlobalCountMessage = 0;
 	}
 }
 //====================================================================
