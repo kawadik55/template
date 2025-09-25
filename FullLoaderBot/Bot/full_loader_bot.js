@@ -477,6 +477,7 @@ try{
 		TempPost[chatId].type = 'image';//тип - картинка
 		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
 		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
+		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss:ms');//время загрузки
 		//если в подписи форматирования нет, то проверим на символы markdown
 		if(!TempPost[chatId].caption_entities && !!TempPost[chatId].caption)
 		{	let cnt1 = (TempPost[chatId].caption.match(/\*/g) || []).length;//символы *
@@ -612,6 +613,7 @@ try{
 		TempPost[chatId].type = 'video';//тип - видео
 		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
 		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
+		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss:ms');//время загрузки
 		//переносим ролик и записываем в список файлов на модерацию
 		let len = await setToModerImagesList(path, newpath, TempPost[chatId], media_group_id);//получаем последний индекс
         //если одиночная ролик
@@ -728,6 +730,7 @@ try{
 		TempPost[chatId].type = 'audio';//тип - audio
 		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
 		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
+		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss:ms');//время загрузки
 		//переносим ролик и записываем в список файлов на модерацию
 		let len = await setToModerImagesList(path, newpath, TempPost[chatId]);//получаем последний индекс
             
@@ -811,6 +814,7 @@ try{
 		TempPost[chatId].type = 'document';//тип - document
 		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
 		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
+		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss:ms');//время загрузки
 		//переносим ролик и записываем в список файлов на модерацию
 		let len = await setToModerImagesList(path, newpath, TempPost[chatId]);//получаем последний индекс
             
@@ -884,6 +888,7 @@ try{
 		TempPost[chatId].text=msg.text;//сам текст
 		TempPost[chatId].entities=msg.entities;//форматирование
 		if(!!msg.link_preview_options) TempPost[chatId].link_preview_options=msg.link_preview_options;//превью
+		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss:ms');//время загрузки
 		//если форматирования нет, то проверим на markdown
 		if(!TempPost[chatId].entities)
 		{	let cnt1 = (TempPost[chatId].text.match(/\*/g) || []).length;//символы *
@@ -1582,7 +1587,7 @@ try{
 			}
 		}
 	}
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(callback_query)','вчат');}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(callback_query)\n'+JSON.stringify(msg,null,2),'вчат');}
 });
 //====================================================================
 // Показать список команд
@@ -2919,6 +2924,7 @@ try{
 			if(Object.hasOwn(obj, 'date')) MediaList[media_group_id].date = obj.date;//дата
 			if(Object.hasOwn(obj, 'userName')) MediaList[media_group_id].userName = obj.userName;
 			if(Object.hasOwn(obj, 'chatId')) MediaList[media_group_id].chatId = obj.chatId;
+			if(Object.hasOwn(obj, 'timeload')) MediaList[media_group_id].timeload = obj.timeload;
 			MediaList[media_group_id].type = 'album';
 		}
 		let mobj = {};
@@ -2948,6 +2954,7 @@ try{
 	if(Object.hasOwn(obj, 'type')) ModerImagesList[len].type = obj.type;//тип файла
 	if(Object.hasOwn(obj, 'userName')) ModerImagesList[len].userName = obj.userName;
 	if(Object.hasOwn(obj, 'chatId')) ModerImagesList[len].chatId = obj.chatId;
+	if(Object.hasOwn(obj, 'timeload')) ModerImagesList[len].timeload = obj.timeload;
 	
 	ModerImagesList = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
 	WriteFileJson(FileModerImagesList,ModerImagesList);//сохраним список в файл
