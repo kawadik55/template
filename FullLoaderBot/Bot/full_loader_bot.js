@@ -477,7 +477,7 @@ try{
 		TempPost[chatId].type = 'image';//тип - картинка
 		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
 		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
-		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss:ms');//время загрузки
+		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss');//время загрузки
 		//если в подписи форматирования нет, то проверим на символы markdown
 		if(!TempPost[chatId].caption_entities && !!TempPost[chatId].caption)
 		{	let cnt1 = (TempPost[chatId].caption.match(/\*/g) || []).length;//символы *
@@ -613,7 +613,7 @@ try{
 		TempPost[chatId].type = 'video';//тип - видео
 		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
 		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
-		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss:ms');//время загрузки
+		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss');//время загрузки
 		//переносим ролик и записываем в список файлов на модерацию
 		let len = await setToModerImagesList(path, newpath, TempPost[chatId], media_group_id);//получаем последний индекс
         //если одиночная ролик
@@ -730,7 +730,7 @@ try{
 		TempPost[chatId].type = 'audio';//тип - audio
 		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
 		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
-		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss:ms');//время загрузки
+		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss');//время загрузки
 		//переносим ролик и записываем в список файлов на модерацию
 		let len = await setToModerImagesList(path, newpath, TempPost[chatId]);//получаем последний индекс
             
@@ -814,7 +814,7 @@ try{
 		TempPost[chatId].type = 'document';//тип - document
 		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
 		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
-		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss:ms');//время загрузки
+		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss');//время загрузки
 		//переносим ролик и записываем в список файлов на модерацию
 		let len = await setToModerImagesList(path, newpath, TempPost[chatId]);//получаем последний индекс
             
@@ -888,7 +888,7 @@ try{
 		TempPost[chatId].text=msg.text;//сам текст
 		TempPost[chatId].entities=msg.entities;//форматирование
 		if(!!msg.link_preview_options) TempPost[chatId].link_preview_options=msg.link_preview_options;//превью
-		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss:ms');//время загрузки
+		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss');//время загрузки
 		//если форматирования нет, то проверим на markdown
 		if(!TempPost[chatId].entities)
 		{	let cnt1 = (TempPost[chatId].text.match(/\*/g) || []).length;//символы *
