@@ -167,6 +167,10 @@ cron.schedule('15 2 * * *', function()//ночью каждый день
 		{	let mas = FilesList[i].split('/');
 			let filename = mas[mas.length-1];//чисто имя файла
 			mas = filename.split('-');
+			if(mas.length<2 || moment(mas[1],'DD_MM_YYYY').isValid()==false)//проверяем на валидность 
+			{	WriteLogFile('В хостинге обнаружен путь к левому файлу '+FilesList[i], 'вчат');
+				continue;//пропускаем если не наш
+			}
 			if(moment().diff(moment(mas[1],'DD_MM_YYYY'), 'days') > 365)//если совсем старый файл
 			{	try {fs.unlinkSync(FilesList[i]);} catch (e) {console.log(e);}
 				WriteLogFile('Файл '+FilesList[i]+' удален из папки хостинга картинок.');
