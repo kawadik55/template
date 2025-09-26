@@ -147,7 +147,7 @@ async function send_Images()
 			if(date==time) flag++;//прям сегодня
           }
 		  
-		  if(flag>0) {WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date+'('+((flag>0)?'да':'нет')+')');made++;}
+		  if(flag>0) {WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date);made++;}
           
           //публикуем файлы
           if(flag) 
@@ -254,7 +254,7 @@ async function send_Text()
 			if(date==time) flag++;//прям сегодня
           }
 		  
-		  if(flag>0) {WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date+'('+((flag>0)?'да':'нет')+')');made++;}
+		  if(flag>0) {WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date);made++;}
           
           //публикуем текст
 		  if(flag)
