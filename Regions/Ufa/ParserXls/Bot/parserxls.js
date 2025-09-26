@@ -386,7 +386,7 @@ try{
 					//время
 					out[town[i]][cnt][1] = time;
 					//адрес
-					let address_add = mas[n].address_add.trim();
+					let address_add = (!!mas[n].address_add)? mas[n].address_add.trim():'';
 					let address = mas[n].address;
 					if(address.indexOf('https://')+1) address = '<b><a  href="'+address+'" >Онлайн собрание</a></b>'; 
 					if(!!address_add) out[town[i]][cnt][2] = address+' '+address_add+';';
