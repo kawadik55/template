@@ -41,7 +41,7 @@ if(!fs.existsSync(PathToLog)) {fs.mkdirSync(PathToLog); fs.chmod(currentDir+"/..
 setContextFiles();
 //---------------------------------------------------
 var LogFile;
-(() =>{	let tmp=currentDir.split('/'); let name=tmp[tmp.length-1]+'_loader.log';//вытащим чисто имя папки в конце
+(() =>{	let tmp=currentDir.split('/'); let name=tmp[tmp.length-1]+'.log';//вытащим чисто имя папки в конце
 		LogFile = PathToLog+'/'+name;
 })();
 let config={};
