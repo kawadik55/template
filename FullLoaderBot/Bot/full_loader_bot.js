@@ -18,6 +18,10 @@ const FileModerImagesList = currentDir+"/ModerImagesList.txt";//имя файл�
 const FileModerTextList = currentDir+"/ModerTextList.txt";//имя файла списка текстов на модерацию
 const FileBackUpText = currentDir+"/BackUpText.txt";//имя файла бэкапа текстов
 const TokenDir=currentDir+"/Token";//путь к папке с токенами
+const FileRun = currentDir+'/run.txt';//файл со списком запуска
+const FileButtons = currentDir+'/buttons.txt';//файл с кнопками
+var FileEg = 	currentDir+'/../Raspis/eg.txt';//файл с ежиком
+var FileRaspis = currentDir+'/../Raspis/raspis.txt';//файл с расписанием на день
 const smilik = '¯\\_(ツ)_/¯';
 const PathToLog = currentDir+'/../log';//путь к логам
 const LOGGING = true;//включение/выключение записи лога в файл
@@ -37,7 +41,7 @@ if(!fs.existsSync(PathToLog)) {fs.mkdirSync(PathToLog); fs.chmod(currentDir+"/..
 setContextFiles();
 //---------------------------------------------------
 var LogFile;
-(() =>{	let tmp=currentDir.split('/'); let name=tmp[tmp.length-1]+'_loader.log';//вытащим чисто имя папки в конце
+(() =>{	let tmp=currentDir.split('/'); let name=tmp[tmp.length-1]+'.log';//вытащим чисто имя папки в конце
 		LogFile = PathToLog+'/'+name;
 })();
 let config={};
@@ -105,7 +109,24 @@ let dayOfWeek=new Object();
 let numOfDelete=new Object();
 let timeCron='';//время для крона
 let MediaList=new Object();//массив группы медиа файлов
+let RunList = {};//список запуска функций
+let Buttons = {};//кнопки
 
+//файл списка запуска функций рассылки
+try 
+{ RunList = JSON.parse(fs.readFileSync(FileRun));
+} catch (err) 
+{WriteLogFile('Ошибка парсинга RunList\n'+err,'вбот');
+ RunList.Text = false; RunList.Image = false; RunList.Eg = false; RunList.Raspis = false;
+ RunList.FileEg = '/eg.txt';
+ RunList.FileRaspis = '/raspis.txt';
+}
+if(!!RunList.FileEg) FileEg = currentDir+RunList.FileEg;
+if(!!RunList.FileRaspis) FileRaspis = currentDir+RunList.FileRaspis;
+//файл кнопок
+try 
+{ Buttons = JSON.parse(fs.readFileSync(FileButtons));
+} catch (err) {console.error(err);}
 //прочитаем сохраненный файл LastMessId.txt
 try 
 {let bl = fs.readFileSync(currentDir+"/LastMessId.txt");
@@ -146,14 +167,15 @@ if(!timeCron)
 //установим службу публикаций в каналах
 cron.schedule(timeCron, function() 
 {	if(rassilka)//если рассылка включена
-	{	console.log('---------------------');
+	{	/*console.log('---------------------');
 		console.log('Running Cron Job');
 		//запускаем файл рассылки
 		execFile('/home/pi/rassilka', (err, stdout, stderr) => 
 		{
 			if (err) WriteLogFile(err+'\nfrom cron()','вчат');
 			console.log(stdout);
-		});
+		});*/
+		RassilkaFromCron();
 	}
 });
 //установим службу удаления старых картинок из хостинга
@@ -966,13 +988,13 @@ try{
 			 opt.caption = List[num].caption;
 			 opt.caption_entities = List[num].caption_entities;
 			 if(Object.hasOwn(List[num], 'type'))
-			 {if(List[num].type == 'image') {await sendPhoto(chatId, List[num].path, opt);}
-			  else if(List[num].type == 'video') {await sendVideo(chatId, List[num].path, opt);}
-			  else if(List[num].type == 'audio') {await sendAudio(chatId, List[num].path, opt);}
-			  else if(List[num].type == 'document') {await sendDocument(chatId, List[num].path, opt);}
-			  else if(List[num].type=='album') {await sendAlbum(chatId, List[num].media);}
+			 {if(List[num].type == 'image') {await sendPhoto(LoaderBot, chatId, List[num].path, opt);}
+			  else if(List[num].type == 'video') {await sendVideo(LoaderBot, chatId, List[num].path, opt);}
+			  else if(List[num].type == 'audio') {await sendAudio(LoaderBot, chatId, List[num].path, opt);}
+			  else if(List[num].type == 'document') {await sendDocument(LoaderBot, chatId, List[num].path, opt);}
+			  else if(List[num].type=='album') {await sendAlbum(LoaderBot, chatId, List[num].media);}
 			 }
-			 else await sendPhoto(chatId, List[num].path, opt);
+			 else await sendPhoto(LoaderBot, chatId, List[num].path, opt);
 			}
 			
 			sendMessage(chatId, '👆 Удаляем этот пост? 👆', klava(keyboard['7']));
@@ -993,13 +1015,13 @@ try{
 			opt.caption = ImagesList[num].caption;
 			opt.caption_entities = ImagesList[num].caption_entities;
 			if(Object.hasOwn(ImagesList[num], 'type'))
-			{if(ImagesList[num].type == 'image') {await sendPhoto(chatId, ImagesList[num].path, opt);}
-			 else if(ImagesList[num].type == 'video') {await sendVideo(chatId, ImagesList[num].path, opt);}
-			 else if(ImagesList[num].type == 'audio') {await sendAudio(chatId, ImagesList[num].path, opt);}
-			 else if(ImagesList[num].type == 'document') {await sendDocument(chatId, ImagesList[num].path, opt);}
-			 else if(ImagesList[num].type=='album') {await sendAlbum(chatId, ImagesList[num].media);}
+			{if(ImagesList[num].type == 'image') {await sendPhoto(LoaderBot, chatId, ImagesList[num].path, opt);}
+			 else if(ImagesList[num].type == 'video') {await sendVideo(LoaderBot, chatId, ImagesList[num].path, opt);}
+			 else if(ImagesList[num].type == 'audio') {await sendAudio(LoaderBot, chatId, ImagesList[num].path, opt);}
+			 else if(ImagesList[num].type == 'document') {await sendDocument(LoaderBot, chatId, ImagesList[num].path, opt);}
+			 else if(ImagesList[num].type=='album') {await sendAlbum(LoaderBot, chatId, ImagesList[num].media);}
 			}
-			else await sendPhoto(chatId, ImagesList[num].path, opt);
+			else await sendPhoto(LoaderBot, chatId, ImagesList[num].path, opt);
 			sendMessage(chatId, '👆 Удаляем этот файл? 👆', klava(keyboard['8']));
 		}
 		else await sendMessage(chatId, 'В списке такого номера нет!', klava(begin(chatId)));
@@ -1033,13 +1055,13 @@ try{
 			opt.caption = ModerImagesList[num].caption;
 			opt.caption_entities = ModerImagesList[num].caption_entities;
 			if(Object.hasOwn(ModerImagesList[num], 'type'))
-			{if(ModerImagesList[num].type == 'image') {await sendPhoto(chatId, ModerImagesList[num].path, opt);}
-			 else if(ModerImagesList[num].type == 'video') {await sendVideo(chatId, ModerImagesList[num].path, opt);}
-			 else if(ModerImagesList[num].type == 'audio') {await sendAudio(chatId, ModerImagesList[num].path, opt);}
-			 else if(ModerImagesList[num].type == 'document') {await sendDocument(chatId, ModerImagesList[num].path, opt);}
-			 else if(ModerImagesList[num].type=='album') {await sendAlbum(chatId, ModerImagesList[num].media);}
+			{if(ModerImagesList[num].type == 'image') {await sendPhoto(LoaderBot, chatId, ModerImagesList[num].path, opt);}
+			 else if(ModerImagesList[num].type == 'video') {await sendVideo(LoaderBot, chatId, ModerImagesList[num].path, opt);}
+			 else if(ModerImagesList[num].type == 'audio') {await sendAudio(LoaderBot, chatId, ModerImagesList[num].path, opt);}
+			 else if(ModerImagesList[num].type == 'document') {await sendDocument(LoaderBot, chatId, ModerImagesList[num].path, opt);}
+			 else if(ModerImagesList[num].type=='album') {await sendAlbum(LoaderBot, chatId, ModerImagesList[num].media);}
 			}
-			else await sendPhoto(chatId, ModerImagesList[num].path, opt);
+			else await sendPhoto(LoaderBot, chatId, ModerImagesList[num].path, opt);
 			sendMessage(chatId, '👆 Удаляем этот файл? 👆', klava(keyboard['103']));
 		}
 		else await sendMessage(chatId, 'В списке такого номера нет!', klava(get_keyb100()));
@@ -1073,13 +1095,13 @@ try{
 		{let opt=new Object();
 		 opt.caption = ModerImagesList[numOfDelete[chatId]].caption;
 		 if(Object.hasOwn(ModerImagesList[numOfDelete[chatId]], 'type'))
-		 {if(ModerImagesList[numOfDelete[chatId]].type == 'image') {await sendPhoto(ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
-		  else if(ModerImagesList[numOfDelete[chatId]].type == 'video') {await sendVideo(ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
-		  else if(ModerImagesList[numOfDelete[chatId]].type == 'audio') {await sendAudio(ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
-		  else if(ModerImagesList[numOfDelete[chatId]].type == 'document') {await sendDocument(ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
-		  else if(ModerImagesList[numOfDelete[chatId]].type == 'album') {await sendAlbum(ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].media);}
+		 {if(ModerImagesList[numOfDelete[chatId]].type == 'image') {await sendPhoto(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
+		  else if(ModerImagesList[numOfDelete[chatId]].type == 'video') {await sendVideo(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
+		  else if(ModerImagesList[numOfDelete[chatId]].type == 'audio') {await sendAudio(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
+		  else if(ModerImagesList[numOfDelete[chatId]].type == 'document') {await sendDocument(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
+		  else if(ModerImagesList[numOfDelete[chatId]].type == 'album') {await sendAlbum(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].media);}
 		 }
-		 else await sendPhoto(ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);
+		 else await sendPhoto(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);
 		 await sendMessage(ModerImagesList[numOfDelete[chatId]].chatId, '😢 К сожалению этот файл не прошел модерацию и был удален по причине:\n'+msg.text);
 		}
 		try//удаляем сам файл
@@ -1547,13 +1569,13 @@ try{
 					 opt.caption = ModerImagesList[key].caption;
 					 if(Object.hasOwn(ModerImagesList[key], 'caption_entities')) opt.caption_entities = ModerImagesList[key].caption_entities;
 					 if(Object.hasOwn(ModerImagesList[key], 'type'))
-					 {if(ModerImagesList[key].type == 'image') {await sendPhoto(ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
-					  else if(ModerImagesList[key].type == 'video') {await sendVideo(ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
-					  else if(ModerImagesList[key].type == 'audio') {await sendAudio(ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
-					  else if(ModerImagesList[key].type == 'document') {await sendDocument(ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
-					  else if(ModerImagesList[key].type == 'album') {await sendAlbum(ModerImagesList[key].chatId, ModerImagesList[key].media);}
+					 {if(ModerImagesList[key].type == 'image') {await sendPhoto(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
+					  else if(ModerImagesList[key].type == 'video') {await sendVideo(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
+					  else if(ModerImagesList[key].type == 'audio') {await sendAudio(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
+					  else if(ModerImagesList[key].type == 'document') {await sendDocument(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
+					  else if(ModerImagesList[key].type == 'album') {await sendAlbum(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].media);}
 					 }
-					 else await sendPhoto(ModerImagesList[key].chatId, ModerImagesList[key].path, opt);
+					 else await sendPhoto(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].path, opt);
 					 await sendMessage(ModerImagesList[key].chatId, '👍🏻 Ура! Этот файл прошел модерацию и будет опубликован!!');
 					}
 					if(!!ModerImagesList[key].path)//одиночный файл
@@ -2353,22 +2375,23 @@ try{
 		}
 }
 //====================================================================
-async function sendPhoto(chatId, path, opt)
+async function sendPhoto(Bot, chatId, path, opt)
 {
 try{
-	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
+	//if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	if(!fs.existsSync(path)) return false;
 	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	await LoaderBot.sendPhoto(chatId, path, opt);
+	await Bot.sendPhoto(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendPhoto()','вчат');return Promise.reject(false);}
 }
 //====================================================================
-async function sendAlbum(chatId, media, opt)
+async function sendAlbum(Bot, chatId, media, opt)
 {
 try{
-	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
+	//if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
 	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	let mas = [...media];
@@ -2380,43 +2403,46 @@ try{
 	{	mas[0].caption_entities = JSON.parse(mas[0].caption_entities);
 	}
 	if(!!mas[0].caption && mas[0].caption.length > 1024) {mas[0].caption = mas[0].caption.substr(0,1023);}//обрезаем подпись
-	await LoaderBot.sendMediaGroup(chatId, mas);
+	await Bot.sendMediaGroup(chatId, mas);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAlbum()','вчат');return Promise.reject(false);}
 }
 //====================================================================
-async function sendVideo(chatId, path, opt)
+async function sendVideo(Bot, chatId, path, opt)
 {
 try{
-	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
+	//if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	if(!fs.existsSync(path)) return false;
 	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	await LoaderBot.sendVideo(chatId, path, opt);
+	await Bot.sendVideo(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendVideo()','вчат');return Promise.reject(false);}
 }
 //====================================================================
-async function sendAudio(chatId, path, opt)
+async function sendAudio(Bot, chatId, path, opt)
 {
 try{
-	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
+	//if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	if(!fs.existsSync(path)) return false;
 	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	await LoaderBot.sendAudio(chatId, path, opt);
+	await Bot.sendAudio(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAudio()','вчат');return Promise.reject(false);}
 }
 //====================================================================
-async function sendDocument(chatId, path, opt)
+async function sendDocument(Bot, chatId, path, opt)
 {
 try{
-	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
+	//if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	if(!fs.existsSync(path)) return false;
 	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	await LoaderBot.sendDocument(chatId, path, opt);
+	await Bot.sendDocument(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendDocument()','вчат');return Promise.reject(false);}
 }
@@ -2567,12 +2593,12 @@ try{
 				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+") - "+List[mas[i]].userName;
 				if(!!List[mas[i]].parse_mode) opt.parse_mode = List[mas[i]].parse_mode;
 				if(Object.hasOwn(List[mas[i]], 'type'))
-				{if(List[mas[i]].type=='image') {await sendPhoto(chatId, List[mas[i]].path, opt);}
-				 else if(List[mas[i]].type=='video') {await sendVideo(chatId, List[mas[i]].path, opt);}
-				 else if(List[mas[i]].type=='audio') {await sendAudio(chatId, List[mas[i]].path, opt);}
-				 else if(List[mas[i]].type=='document') {await sendDocument(chatId, List[mas[i]].path, opt);}
+				{if(List[mas[i]].type=='image') {await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='video') {await sendVideo(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='audio') {await sendAudio(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='document') {await sendDocument(LoaderBot, chatId, List[mas[i]].path, opt);}
 				}
-				else await sendPhoto(chatId, List[mas[i]].path, opt);
+				else await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);
 			}
 			else if(Object.hasOwn(List[mas[i]], 'media'))//это альбом
 			{	let opt = new Object();
@@ -2580,11 +2606,11 @@ try{
 				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+") - "+List[mas[i]].userName;
 				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+") - "+List[mas[i]].userName;
 				if(Object.hasOwn(List[mas[i]], 'type'))
-				{if(List[mas[i]].type=='image') {await sendPhoto(chatId, List[mas[i]].path, opt);}
-				 else if(List[mas[i]].type=='video') {await sendVideo(chatId, List[mas[i]].path, opt);}
-				 else if(List[mas[i]].type=='audio') {await sendAudio(chatId, List[mas[i]].path, opt);}
-				 else if(List[mas[i]].type=='document') {await sendDocument(chatId, List[mas[i]].path, opt);}
-				 else if(List[mas[i]].type=='album') {await sendAlbum(chatId, List[mas[i]].media, opt);}
+				{if(List[mas[i]].type=='image') {await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='video') {await sendVideo(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='audio') {await sendAudio(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='document') {await sendDocument(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='album') {await sendAlbum(LoaderBot, chatId, List[mas[i]].media, opt);}
 				}
 			}
 		}
@@ -2633,13 +2659,13 @@ try{
 			else opt.caption += "\n\n("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+") - "+ImagesList[key].userName;
 			if(!!ImagesList[key].parse_mode) opt.parse_mode = ImagesList[key].parse_mode;
 			if(Object.hasOwn(ImagesList[key], 'type'))
-			{if(ImagesList[key].type=='image') {await sendPhoto(chatId, ImagesList[key].path, opt);}
-			 else if(ImagesList[key].type=='video') {await sendVideo(chatId, ImagesList[key].path, opt);}
-			 else if(ImagesList[key].type=='audio') {await sendAudio(chatId, ImagesList[key].path, opt);}
-			 else if(ImagesList[key].type=='document') {await sendDocument(chatId, ImagesList[key].path, opt);}
-			 else if(ImagesList[key].type=='album') {await sendAlbum(chatId, ImagesList[key].media, opt);}
+			{if(ImagesList[key].type=='image') {await sendPhoto(LoaderBot, chatId, ImagesList[key].path, opt);}
+			 else if(ImagesList[key].type=='video') {await sendVideo(LoaderBot, chatId, ImagesList[key].path, opt);}
+			 else if(ImagesList[key].type=='audio') {await sendAudio(LoaderBot, chatId, ImagesList[key].path, opt);}
+			 else if(ImagesList[key].type=='document') {await sendDocument(LoaderBot, chatId, ImagesList[key].path, opt);}
+			 else if(ImagesList[key].type=='album') {await sendAlbum(LoaderBot, chatId, ImagesList[key].media, opt);}
 			}
-			else await sendPhoto(chatId, ImagesList[key].path, opt);
+			else await sendPhoto(LoaderBot, chatId, ImagesList[key].path, opt);
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
@@ -2664,13 +2690,13 @@ try{
 			else opt.caption += "\n\n("+ModerImagesList[key].date+" - "+ModerImagesList[key].dayOfWeek+") - "+ModerImagesList[key].userName;
 			if(!!ModerImagesList[key].parse_mode) opt.parse_mode = ModerImagesList[key].parse_mode;
 			if(Object.hasOwn(ModerImagesList[key], 'type'))
-			{if(ModerImagesList[key].type=='image') {await sendPhoto(chatId, ModerImagesList[key].path, opt);}
-			 else if(ModerImagesList[key].type=='video') {await sendVideo(chatId, ModerImagesList[key].path, opt);}
-			 else if(ModerImagesList[key].type=='audio') {await sendAudio(chatId, ModerImagesList[key].path, opt);}
-			 else if(ModerImagesList[key].type=='document') {await sendDocument(chatId, ModerImagesList[key].path, opt);}
-			 else if(ModerImagesList[key].type=='album') {await sendAlbum(chatId, ModerImagesList[key].media, opt);}
+			{if(ModerImagesList[key].type=='image') {await sendPhoto(LoaderBot, chatId, ModerImagesList[key].path, opt);}
+			 else if(ModerImagesList[key].type=='video') {await sendVideo(LoaderBot, chatId, ModerImagesList[key].path, opt);}
+			 else if(ModerImagesList[key].type=='audio') {await sendAudio(LoaderBot, chatId, ModerImagesList[key].path, opt);}
+			 else if(ModerImagesList[key].type=='document') {await sendDocument(LoaderBot, chatId, ModerImagesList[key].path, opt);}
+			 else if(ModerImagesList[key].type=='album') {await sendAlbum(LoaderBot, chatId, ModerImagesList[key].media, opt);}
 			}
-			else await sendPhoto(chatId, ModerImagesList[key].path, opt);
+			else await sendPhoto(LoaderBot, chatId, ModerImagesList[key].path, opt);
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
@@ -2689,7 +2715,7 @@ function sendPhotoToAdmin(path, opt)
 {
 try{
     let keys = Object.keys(AdminBot);
-    for(let i in keys) sendPhoto(keys[i], path, opt);//пошлем картинку админу из списка
+    for(let i in keys) sendPhoto(LoaderBot, keys[i], path, opt);//пошлем картинку админу из списка
 }catch(err){WriteLogFile(err+'\nfrom sendPhotoToAdmin()','вчат');}
 }
 //====================================================================
@@ -2697,7 +2723,7 @@ async function sendVideoToAdmin(path, opt)
 {
 try{
     let keys = Object.keys(AdminBot);
-    for(let i in keys) await sendVideo(keys[i], path, opt);//пошлем ролик админу из списка
+    for(let i in keys) await sendVideo(LoaderBot, keys[i], path, opt);//пошлем ролик админу из списка
 }catch(err){WriteLogFile(err+'\nfrom sendVideoToAdmin()','вчат');}
 }
 //====================================================================
@@ -2705,7 +2731,7 @@ async function sendAudioToAdmin(path, opt)
 {
 try{
     let keys = Object.keys(AdminBot);
-    for(let i in keys) await sendAudio(keys[i], path, opt);//пошлем аудио админу из списка
+    for(let i in keys) await sendAudio(LoaderBot, keys[i], path, opt);//пошлем аудио админу из списка
 }catch(err){WriteLogFile(err+'\nfrom sendAudioToAdmin()','вчат');}
 }
 //====================================================================
@@ -2713,7 +2739,7 @@ async function sendDocToAdmin(path, opt)
 {
 try{
     let keys = Object.keys(AdminBot);
-    for(let i in keys) await sendDocument(keys[i], path, opt);//пошлем файл админу из списка
+    for(let i in keys) await sendDocument(LoaderBot, keys[i], path, opt);//пошлем файл админу из списка
 }catch(err){WriteLogFile(err+'\nfrom sendDocToAdmin()','вчат');}
 }
 //====================================================================
@@ -2992,20 +3018,20 @@ try{
 			if(!!threadId) opt.message_thread_id = threadId;
 			while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 			if(Object.hasOwn(obj, 'type')) 
-			{	if(obj.type=='image') {await NewsBot.sendPhoto(chatId, obj.path, opt);}//если картинка
-				else if(obj.type=='video') {await NewsBot.sendVideo(chatId, obj.path, opt);}//если видео
-				else if(obj.type=='audio') {await NewsBot.sendAudio(chatId, obj.path, opt);}//если audio
-				else if(obj.type=='document') {await NewsBot.sendDocument(chatId, obj.path, opt);}//если document
+			{	if(obj.type=='image') {await sendPhoto(NewsBot, chatId, obj.path, opt);}//если картинка
+				else if(obj.type=='video') {await sendVideo(NewsBot, chatId, obj.path, opt);}//если видео
+				else if(obj.type=='audio') {await sendAudio(NewsBot, chatId, obj.path, opt);}//если audio
+				else if(obj.type=='document') {await sendDocument(NewsBot, chatId, obj.path, opt);}//если document
 				else if(obj.type=='album' && !!obj.media && obj.media.length>0) 
 				{	if(!!obj.media[0].caption_entities && typeof(obj.media[0].caption_entities) == 'string')
 					{	obj.media[0].caption_entities = JSON.parse(obj.media[0].caption_entities);
 					}
 					let tmp = [...obj.media];
 					if(!!threadId) tmp.message_thread_id = threadId;
-					await NewsBot.sendMediaGroup(chatId, tmp);
+					await sendAlbum(NewsBot, chatId, tmp);
 				}
 			}
-			else NewsBot.sendPhoto(chatId, obj.path, opt);//без типа - картинка 
+			else sendPhoto(NewsBot, chatId, obj.path, opt);//без типа - картинка 
 		  }
 		}catch(err){WriteLogFile(err+'\nfrom publicImage()=>for()','вчат');}
 	 }
@@ -3026,10 +3052,10 @@ try{
 			if(Object.hasOwn(obj, 'caption')) opt.caption = obj.caption;
 			if(Object.hasOwn(obj, 'caption_entities')) opt.caption_entities = obj.caption_entities;
 			if(Object.hasOwn(obj, 'parse_mode')) opt.parse_mode = obj.parse_mode;
-			if(obj.type=='image') {await sendPhoto(chat_coordinatorWhatsApp, obj.path, opt);}//если картинка
-			else if(obj.type=='video') {await sendVideo(chat_coordinatorWhatsApp, obj.path, opt);}//если видео
-			else if(obj.type=='audio') {await sendAudio(chat_coordinatorWhatsApp, obj.path, opt);}//если audio
-			else if(obj.type=='document') {await sendDocument(chat_coordinatorWhatsApp, obj.path, opt);}//если document
+			if(obj.type=='image') {await sendPhoto(LoaderBot, chat_coordinatorWhatsApp, obj.path, opt);}//если картинка
+			else if(obj.type=='video') {await sendVideo(LoaderBot, chat_coordinatorWhatsApp, obj.path, opt);}//если видео
+			else if(obj.type=='audio') {await sendAudio(LoaderBot, chat_coordinatorWhatsApp, obj.path, opt);}//если audio
+			else if(obj.type=='document') {await sendDocument(LoaderBot, chat_coordinatorWhatsApp, obj.path, opt);}//если document
 			await sendMessage(chat_coordinatorWhatsApp, '👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻\n'+obj.date+' - '+obj.dayOfWeek);
 			flag++;
 		}
@@ -3622,3 +3648,367 @@ var keyList =
 }
 return keyList;
 }
+//====================================================================
+async function sendTextToBot(Bot, chat, text, opt)
+{ let res;
+  try{
+	  if(!isValidChatId(chat)) return false;//если не число, то не пускаем
+	  if(text=='') return false;
+	  while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
+	  res = await Bot.sendMessage(chat,text,opt);
+  }catch(err)
+  {	console.error(getTimeStr()+err);
+    console.error('Не смог послать текст в '+chat);
+	WriteLogFile(err+'\nfrom sendTextToBot()','вчат');
+	res=err;
+  }
+  return res;
+}
+//====================================================================
+//запускаем функции
+async function RassilkaFromCron() 
+{	
+try{
+  WriteLogFile('\nНачинаем Рассылку:');
+  
+  //ежик
+  if(RunList.Eg===true) await send_Eg();
+  
+  //расписание
+  if(RunList.Raspis===true) await send_Raspis();
+  
+  //публикуем тексты
+  if(RunList.Text===true) await send_Text();
+  
+  //публикуем фото
+  if(RunList.Image===true) await send_Images();
+
+}catch(err){WriteLogFile(err+'\nfrom RassilkaFromCron()','вчат');}
+}
+//====================================================================
+function getTimeStr() {return moment().format('DD-MM-YY HH:mm:ss:ms ');}
+//====================================================================
+//посылает Ежик всегда в markdown
+async function send_Eg()
+{ try
+  {		let eg = '';
+		if(fs.existsSync(FileEg)) eg = fs.readFileSync(FileEg).toString();
+		if(!eg) {WriteLogFile(getTimeStr()+'файл с ежиком отсутствует'); return;}
+		let good = 0;
+		WriteLogFile('Рассылка Ежика в каналы:');
+		for(let i=0;i<chat_news.length;i++) 
+		{  try{	
+			let chatId = '', threadId = '', opt = {};
+			let name = Object.keys(chat_news[i]);
+			if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+			if(!chatId) continue;//пропускаем цикл, если нет chatId
+			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+			if(!!threadId) opt.message_thread_id = threadId;
+			opt.parse_mode = "markdown"; opt.disable_web_page_preview = true;
+			while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
+			let res = await sendTextToBot(NewsBot,chatId,eg,opt);
+			if(res===false) WriteLogFile('Не смог послать Ежик "'+' в '+name[0]);
+			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
+			{	
+				if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
+				{//нельзя послать сообщение админу в телегу
+					/*if(good==0)//если не послано еще ни одного корректного сообщения 
+					{	fun['sendEg'] = setTimeout(send_Eg, interval);
+						return;//выходим, дальше цикл теряет смысл
+					}*/
+					WriteLogFile(' '+res);
+				}
+				else //ошибка от Ноды
+				{//можно послать сообщение админу в телегу
+					let obj = {}; obj.message = '';
+					if(Object.hasOwn(res, 'message')) obj.message = res.message;
+					WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
+				}
+			}
+			else 
+			{	good++;//если без ошибок
+				WriteLogFile('в '+name[0]+' = ОК');
+			}
+		  }catch(err){WriteLogFile(err+'\nfrom send_Eg()=>for()','вчат');}
+		}
+  } catch (err) 
+  {WriteLogFile(err+'\nfrom send_Eg()','вчат');
+  }
+}
+//====================================================================
+async function send_Raspis()
+{ try
+  {		let raspis = '';
+		if(fs.existsSync(FileRaspis)) raspis = fs.readFileSync(FileRaspis).toString();
+		if(!raspis) {WriteLogFile('файл с расписанием отсутствует'); return;}
+		let good = 0;
+		
+		let mode = 'HTML';//по-умолчанию
+		let obj = {};
+		let flag = 1;
+		//проверим на объект
+		try{obj = JSON.parse(raspis);}catch(err){flag = 0;}//если не JSON
+		if(flag)//если это объект
+		{	if(Object.hasOwn(obj, 'text')) raspis = obj.text;
+			if(Object.hasOwn(obj, 'mode')) mode = obj.mode;
+		}
+		
+		WriteLogFile('Рассылка Расписания в каналы:');
+		let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
+		for(let i=0;i<chat_news.length;i++) 
+		{  try{
+			let chatId = '', threadId = '';
+			let name = Object.keys(chat_news[i]);
+			if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+			if(!chatId) continue;//пропускаем цикл, если нет chatId
+			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+			if(!!threadId) opt.message_thread_id = threadId;
+			let res = await sendTextToBot(NewsBot,chatId,raspis,opt);
+			if(res===false) WriteLogFile('Не смог послать Расписание "'+' в '+name[0]);
+			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
+			{	
+				if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
+				{//нельзя послать сообщение админу в телегу
+					/*if(good==0)//если не послано еще ни одного корректного сообщения 
+					{	fun['sendRaspis'] = setTimeout(send_Raspis, interval);
+						return;//выходим, дальше цикл теряет смысл
+					}*/
+					WriteLogFile(' '+res);
+				}
+				else //ошибка от Ноды
+				{//можно послать сообщение админу в телегу
+					let obj = {}; obj.message = '';
+					if(Object.hasOwn(res, 'message')) obj.message = res.message;
+					WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
+				}
+			}
+			else 
+			{	good++;//если без ошибок
+				WriteLogFile('в '+name[0]+' = ОК');
+			}
+		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis()=>for()','вчат');}
+		}
+  } catch (err) 
+  {WriteLogFile(err+'\nfrom send_Raspis()','вчат');
+  }
+}
+//====================================================================
+//вернем кнопку со ссылкой, парс режим и выкл превью
+function getButtonUrl(pars, preview)
+{
+try{
+	let opt = {};
+	if(Object.hasOwn(Buttons, 'reply_markup')) opt.reply_markup = Buttons.reply_markup;
+	if(pars==='HTML' || pars==='markdown') opt.parse_mode = pars;
+	if(preview===true) opt.disable_web_page_preview = true;
+	return opt;
+}catch(err){WriteLogFile(err+'\nfrom getButtonUrl()','вчат'); return {};}	
+}
+//====================================================================
+async function send_Images()
+{ try
+  {	let good = 0;
+    WriteLogFile('Рассылка картинок:');
+	if(Object.keys(ImagesList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
+	let made = 0;
+	//читаем список
+	let now = moment().startOf('day');//текущий день
+	for(let key in ImagesList)
+	{	try{  
+		  let flag = 0;
+          let date = ImagesList[key].date;//запись даты
+          let day = ImagesList[key].dayOfWeek;//запись дня
+          
+          //если по дням из массива
+          if(masDay.indexOf(day)+1)
+          { //если дата окончания не наступила
+			if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY'))//правильная дата
+			{	let time = moment(date,'DD.MM.YYYY');//дата окончания
+				if(time.diff(now, 'days') >= 0)//разница в днях, 0 = сегодня
+				{	if(day==masDay[8]) flag++;//ежедневно, публикуем однозначно
+					else
+					{ 	let dayWeek = new Date().getDay();//сегодняшний день недели
+						if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
+						if(dayWeek==masDay.indexOf(day)) flag++;//совпали дни, публикуем
+					}
+				}
+			}
+          }
+          //если чистая дата
+          else if(date==moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && day=='Дата')
+          {
+            if(public_byDate(date)) flag++;
+          }
+          //если Однократно или Завтра или Сегодня и дата верна
+		  else if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && (day=='Однократно' || day=='Завтра'|| day=='Сегодня'))
+          { 
+            let time = moment(now,'DD.MM.YYYY').format('DD.MM.YYYY');
+			if(date==time) flag++;//прям сегодня
+          }
+		  
+		  if(flag>0) {WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date);made++;}
+          
+          //публикуем файлы
+          if(flag) 
+          { let opt = new Object();
+            if(Object.hasOwn(ImagesList[key], 'caption')) opt.caption = ImagesList[key].caption;
+			if(Object.hasOwn(ImagesList[key], 'caption_entities')) opt.caption_entities = ImagesList[key].caption_entities;
+            if(Object.hasOwn(ImagesList[key], 'parse_mode')) opt.parse_mode = ImagesList[key].parse_mode;
+			//основной канал новостей
+			for(let i=0;i<chat_news.length;i++) 
+			{	let chatId = '', threadId = '';
+				let name = Object.keys(chat_news[i]);
+				if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+				if(!chatId) continue;//пропускаем цикл, если нет chatId
+				if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+				if(!!threadId) opt.message_thread_id = threadId;
+				let res;
+				if(!!ImagesList[key].type)
+				{if(ImagesList[key].type == 'image') res = await sendPhoto(NewsBot, chatId, ImagesList[key].path, opt);
+				 else if(ImagesList[key].type == 'video') res = await sendVideo(NewsBot, chatId, ImagesList[key].path, opt);
+				 else if(ImagesList[key].type == 'audio') {res = await sendAudio(NewsBot, chatId, ImagesList[key].path, opt);}
+				 else if(ImagesList[key].type == 'document') {res = await sendDocument(NewsBot, chatId, ImagesList[key].path, opt);}
+				 else if(ImagesList[key].type == 'album') 
+				 {	let tmp = [...ImagesList[key].media];
+					if(!!threadId) tmp.message_thread_id = threadId;
+					res = await sendAlbum(NewsBot, chatId, tmp);
+				 }
+				}
+				else res = await sendPhoto(NewsBot, chatId, ImagesList[key].path, opt);
+				if(res===false) WriteLogFile('Не смог послать файл "'+key+'"'+' в '+name[0]); 
+				else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
+				{	
+					if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
+					{//нельзя послать сообщение админу в телегу
+						WriteLogFile(' '+res);
+					}
+					else //ошибка от Ноды
+					{//можно послать сообщение админу в телегу
+						let obj = {}; obj.message = '';
+						if(Object.hasOwn(res, 'message')) obj.message = res.message;
+						WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
+					}
+				}
+				else 
+				{	good++;//если без ошибок
+					WriteLogFile('"'+key+'"'+' в '+name[0]+' = ОК');
+				}
+			}
+          }
+		}catch(err){WriteLogFile(err+'\nfrom send_Images()=>for()','вчат');}
+	}
+	if(made==0) WriteLogFile('К сожалению на сегодня ничего нет :(');
+  } catch (err) 
+  {console.error(getTimeStr()+err); 
+   WriteLogFile(err+'\nfrom send_Images()','вчат');
+  }
+}
+//====================================================================
+//особое расписание публикаций по Дате
+function public_byDate(date)
+{	
+try{
+	let flag = false;
+	let now = moment().startOf('day');//текущий день
+	let time = moment(date,'DD.MM.YYYY');
+	let days = time.diff(now, 'days')+1;
+    if(days>0 && days%7==0) flag=true;
+    else if(days<14)//менее 2х недель
+    {	let tmp=days-1;
+		if(forDate.indexOf(tmp)+1) flag=true;
+	}
+	return flag;
+}catch(err){WriteLogFile(err+'\nfrom public_byDate()','вчат'); return false;}
+}
+//====================================================================
+async function send_Text()
+{ try
+  {	
+	let good = 0;
+	WriteLogFile('Рассылка текстов:');
+	if(Object.keys(TextList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
+	let made = 0;
+	//читаем список
+	let now = moment().startOf('day');//текущий день
+	for(let key in TextList)
+	{   try{  
+		  let date = TextList[key].date;//запись даты
+		  let day = TextList[key].dayOfWeek;//запись дня
+          let flag = 0;
+          
+          //если по дням
+          if(masDay.indexOf(day)+1)
+          { //если дата окончания не наступила
+			if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY'))//правильная дата
+			{	let time = moment(date,'DD.MM.YYYY')//дата окончания
+				if(time.diff(now, 'days') >= 0);//разница в днях, 0 = сегодня
+				{	if(day==masDay[8]) flag++;//ежедневно, публикуем однозначно
+					else
+					{ 	let dayWeek = new Date().getDay();//сегодняшний день недели
+						if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
+						if(dayWeek==masDay.indexOf(day)) flag++;//совпали дни, публикуем
+					}
+				}
+			}
+          }
+          //если чистая дата
+          else if(date==moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && day=='Дата')
+          {
+            if(public_byDate(date)) flag++;
+          }
+          //если Однократно и дата верна
+		  else if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && (day=='Однократно' || day=='Завтра' || day=='Сегодня'))
+          { 
+            let time = moment(now,'DD.MM.YYYY').format('DD.MM.YYYY');
+			if(date==time) flag++;//прям сегодня
+          }
+		  
+		  if(flag>0) {WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date);made++;}
+          
+          //публикуем текст
+		  if(flag)
+          { let opt = new Object();
+            opt.entities = TextList[key].entities;
+			if(Object.hasOwn(TextList[key], 'link_preview_options'))
+			{opt.link_preview_options=JSON.stringify(TextList[key].link_preview_options);
+			 if(Object.hasOwn(TextList[key].link_preview_options, 'is_disabled')) opt.disable_web_page_preview = true;
+			}
+			if(!!TextList[key].parse_mode) opt.parse_mode = TextList[key].parse_mode;
+            //основной канал новостей
+			for(let i=0;i<chat_news.length;i++) 
+			{	let chatId = '', threadId = '';
+				let name = Object.keys(chat_news[i]);
+				if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+				if(!chatId) continue;//пропускаем цикл, если нет chatId
+				if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+				if(!!threadId) opt.message_thread_id = threadId;
+				let res = await sendTextToBot(NewsBot, chatId, TextList[key].text, opt);
+				if(res===false) WriteLogFile('Не смог послать текст "'+key+'"'+' в '+name[0]);
+				else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
+				{	
+					if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
+					{//нельзя послать сообщение админу в телегу
+						WriteLogFile(' '+res);
+					}
+					else //ошибка от Ноды
+					{//можно послать сообщение админу в телегу
+						let obj = {}; obj.message = '';
+						if(Object.hasOwn(res, 'message')) obj.message = res.message;
+						WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
+					}
+				}
+				else 
+				{	good++;//если без ошибок
+					WriteLogFile('"'+key+'"'+' в '+name[0]+' = ОК');
+				}
+			}
+          }
+		}catch(err){WriteLogFile(err+'\nfrom send_Text()=>for()','вчат');}
+	}
+	if(made==0) WriteLogFile('К сожалению на сегодня ничего нет :(');
+  } catch (err) 
+  {console.error(getTimeStr()+err); 
+   WriteLogFile(err+'\nfrom send_Text()','вчат');
+  }
+}
+//====================================================================

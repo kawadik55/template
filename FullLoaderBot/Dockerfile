@@ -3,7 +3,7 @@ FROM node:18.17.1 as builder
 
 # Исходники
 WORKDIR /app
-COPY ./Bot/full_loader_bot.js ./Bot/rassilka.js package.json package-lock.json ./
+COPY ./Bot/full_loader_bot.js package.json package-lock.json ./
 
 # Зависимости
 RUN npm i
@@ -12,8 +12,6 @@ RUN npm i -g pkg
 # Компиляция
 RUN pkg full_loader_bot.js -o full_loader_bot
 RUN chmod 777 /app/full_loader_bot
-RUN pkg rassilka.js -o rassilka
-RUN chmod 777 /app/rassilka
 
 # ------------------------------------------------
 # Образ основной
@@ -37,6 +35,5 @@ ENV ENV CURRENT_DIR=$ENV CURRENT_DIR
 # Копируем исполнимый файл из верхнего образа в основной
 WORKDIR /home/pi
 COPY --from=builder /app/full_loader_bot .
-COPY --from=builder /app/rassilka .
 COPY ./Bot/ ./context/Bot/
 CMD ["./full_loader_bot"]
