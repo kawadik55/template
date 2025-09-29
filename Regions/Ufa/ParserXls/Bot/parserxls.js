@@ -341,7 +341,7 @@ try{
 			if(mas.length == 0) continue;//пропускаем группу, если нет собраний
 			for(let n in mas)//по массиву собраний
 			{	//пропускаем группу, если нет нужных форматов
-				if(mas[n].format!='Закрытое'&&mas[n].format!='Открытое'/*&&mas[n].format!='Рабочее'*/) continue;
+				if(mas[n].format!='Закрытое'&&mas[n].format!='Открытое'&&mas[n].format!='Рабочее') continue;
 				//будем собирать выходной массив - имя, время, адрес, тема, карта, коммент, некст дата, format
 				//если сегодняшний день недели имеется в записи
 				if(masDay[dayWeek] == mas[n].day)
@@ -399,6 +399,7 @@ try{
 						if(!!mas[n].online) online = mas[n].online;
 						if(!!online) tema = '<b><a  href="'+online+'" >'+tema+'</a></b>';//гиперссылкой
 						if(tema.indexOf('Открытое')+1) out[town[i]][cnt][3] += '\nТема: <b>'+tema+'</b>';//жирный
+						else if(tema.indexOf('Рабочее')+1) out[town[i]][cnt][3] += '\nТема: <b>'+tema+'</b>';//жирный
 						else out[town[i]][cnt][3] += '\nТема: <i>'+tema+'</i>';//курсивом
 					}
 					//карта
