@@ -2335,6 +2335,7 @@ function welcome(chatId,name)
 try{
 	let str='';
 	str+='Для загрузки текста или файла (картинка, видео, аудио, документ, альбом) просто нажми соответствующую кнопку и следуй моим подсказкам.';
+	str+='\nВремя выхода публикаций в каналы - ' + timePablic + ' МСК';
 	sendMessage(chatId, str, klava(begin(chatId)));
 }catch(err){WriteLogFile(err+'\nfrom welcome()','вчат');}	
 }
