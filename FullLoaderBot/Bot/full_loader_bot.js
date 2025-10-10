@@ -1,7 +1,7 @@
 ﻿process.env["NTBA_FIX_350"] = 1;
 const fs = require('fs');
 const path = require('path');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const cron = require('node-cron');
 const { execFile } = require('child_process');
 const TelegramBot = require('node-telegram-bot-api');
@@ -31,6 +31,7 @@ let hostname = '';
 let hostingImg = false;//выключатель кнопки хостинга картинок
 let area = 'АН';//местность
 let timePablic = '06:00:00';//опорное машинное время выхода публикаций на текущие сутки по-умолчанию
+let utcOffset = moment().utcOffset();//пока системное смещение
 let forDate = [3,0];//массив дней по дате - 3й и 0й день, если меньше 2х недель
 let lifeTime = 180;//срок регистраци юзера в днях
 let rassilka = true;//выключатель крона рассылки
@@ -47,14 +48,17 @@ var LogFile;
 let config={};
 try{config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
 	if(!config.lifeTime) {config.lifeTime = lifeTime; WriteFileJson(currentDir+"/config.json",config);}
+	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
 }catch(err)
-{config = {"area":area, "timePablic":timePablic, "forDate":forDate, "lifeTime":lifeTime, "rassilka":rassilka, "hostingImg":hostingImg, "pathHostingImg":"/../www/img", "hostname":"https://vps.na-ufa.ru"};
+{config = {"area":area, "timePablic":timePablic, "utcOffset":String(utcOffset), "forDate":forDate, "lifeTime":lifeTime, "rassilka":rassilka, "hostingImg":hostingImg, "pathHostingImg":"/../www/img", "hostname":"https://vps.na-ufa.ru"};
  WriteFileJson(currentDir+"/config.json",config);
 }
-area = config.area; timePablic = config.timePablic; forDate = config.forDate; lifeTime = config.lifeTime; rassilka = config.rassilka; 
+if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset','вчат');}
+area = config.area; timePablic = config.timePablic; utcOffset = Number(config.utcOffset); forDate = config.forDate; lifeTime = config.lifeTime; rassilka = config.rassilka; 
 if(!!config.hostingImg) hostingImg = config.hostingImg;
 if(!!config.pathHostingImg) PathToHostImg = currentDir+config.pathHostingImg;
 if(!!config.hostname) hostname = config.hostname;
+setTimezoneByOffset(utcOffset);//устанавливаем локальную таймзону
 
 const chat_Supervisor = require(TokenDir+"/chatId.json").Supervisor;//пользователь 'Supervisor'
 // выбор токена
@@ -158,26 +162,19 @@ const TmpPath = "/tmp";//путь для временных файлов
 let forDeleteList = [];//список файлов на удаление
 //let keyboard = require(currentDir+"/knopki.json");// массив клавиатур из файла
 //====================================================================
-if(!timeCron)
+if(!timeCron)//всегда выполняется
 {	if(timePablic != moment(timePablic,'HH:mm:ss').format('HH:mm:ss'))
 	{WriteLogFile('Ошибка в timePublic','вчат'); timePablic = '06:00:00';
 	}
-	let tmp=timePablic.split(':'); timeCron = tmp[1]+' '+tmp[0]+' * * *';
+	let tmp=timePablic.split(':');
+	timeCron = tmp[1]+' '+tmp[0]+' * * *';
 }
 //установим службу публикаций в каналах
 cron.schedule(timeCron, function() 
 {	if(rassilka)//если рассылка включена
-	{	/*console.log('---------------------');
-		console.log('Running Cron Job');
-		//запускаем файл рассылки
-		execFile('/home/pi/rassilka', (err, stdout, stderr) => 
-		{
-			if (err) WriteLogFile(err+'\nfrom cron()','вчат');
-			console.log(stdout);
-		});*/
-		RassilkaFromCron();
+	{	RassilkaFromCron();
 	}
-});
+},{timezone:moment().tz()});//в локальной таймзоне
 //установим службу удаления старых картинок из хостинга
 cron.schedule('15 2 * * *', function()//ночью каждый день
 {	if(hostingImg && fs.existsSync(PathToHostImg))//если хостинг разрешен
@@ -199,7 +196,7 @@ cron.schedule('15 2 * * *', function()//ночью каждый день
 			}
 		}
 	}
-});
+},{timezone:moment().tz()});//в локальной таймзоне
 //====================================================================
 function klava(keyb)
 {try{	
@@ -337,7 +334,7 @@ else
 	console.log('sec='+sec);
 })();*/
 WriteLogFile('Запуск бота @'+namebot);
-if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic);
+if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic+'Z'+moment().format('Z'));
 //====================================================================
 // СТАРТ
 LoaderBot.onText(/\/start/, async (msg) => 
@@ -2335,7 +2332,7 @@ function welcome(chatId,name)
 try{
 	let str='';
 	str+='Для загрузки текста или файла (картинка, видео, аудио, документ, альбом) просто нажми соответствующую кнопку и следуй моим подсказкам.';
-	str+='\nВремя выхода публикаций в каналы - ' + timePablic + ' МСК';
+	str+='\nВремя выхода публикаций в каналы - ' + timePablic + 'Z' + moment().format('Z');
 	sendMessage(chatId, str, klava(begin(chatId)));
 }catch(err){WriteLogFile(err+'\nfrom welcome()','вчат');}	
 }
@@ -3136,7 +3133,10 @@ function setContextFiles()
 		if(fs.existsSync(cBot+'/LoaderUserGuid.txt')) {fs.copyFileSync(cBot+'/LoaderUserGuid.txt',currentDir+'/LoaderUserGuid.txt');}
 	}
 	//config.json
-		if(!fs.existsSync(currentDir+'/config.json')) {WriteFileJson(currentDir+'/config.json',{"timePablic":"06:00:00"});}
+		if(!fs.existsSync(currentDir+'/config.json')) 
+		{	obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru";
+			WriteFileJson(currentDir+'/config.json',obj);
+		}
 		if(fs.existsSync(currentDir+'/config.json'))//если файл уже имеется
 		{	let obj;
 			try{obj = JSON.parse(fs.readFileSync(currentDir+'/config.json'));}catch(err){console.log(err);}
@@ -3145,6 +3145,7 @@ function setContextFiles()
 			 WriteFileJson(currentDir+'/config.json',obj);
 			}
 			if(!Object.hasOwn(obj,'rassilka')) {obj.rassilka = true; WriteFileJson(currentDir+'/config.json',obj);}
+			if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+'/config.json',obj);}
 			//если запрошено изменение конфига в ENV
 			if(!!CONFIG_OBJ) 
 			{	let mas;
@@ -4011,5 +4012,47 @@ async function send_Text()
   {console.error(getTimeStr()+err); 
    WriteLogFile(err+'\nfrom send_Text()','вчат');
   }
+}
+//====================================================================
+function setTimezoneByOffset(offsetMinutes)
+{	
+	// Ищем подходящую временную зону
+    const allZones = moment.tz.names();
+    let suitableZones = allZones.filter(zone => 
+	{	const zoneOffset = moment.tz(zone).utcOffset();
+        return zoneOffset === offsetMinutes;
+    });
+    if(suitableZones.length > 0) 
+	{	// Берем первую подходящую зону
+        moment.tz.setDefault(suitableZones[0]);
+        //WriteLogFile('Установлена зона: '+suitableZones[0]+', смещение: '+moment().format('Z'));
+        return suitableZones[0];
+    }
+	else
+	{	// Если точной зоны нет, то ищем наиболее подходящую
+		const sign = offsetMinutes >= 0 ? '+' : '-';
+		let hours = Math.floor(Math.abs(offsetMinutes) / 60);
+		let minutes = Math.abs(offsetMinutes) % 60;
+		if(minutes<30) minutes = 0;
+		else {minutes = 0; hours++;}
+		if(hours>12) hours = 12;
+		let localOffset = hours*60 + minutes;
+		if(sign=='-') localOffset = -localOffset;
+		// Ищем подходящую временную зону
+		suitableZones = allZones.filter(zone => 
+		{	const zoneOffset = moment.tz(zone).utcOffset();
+			return zoneOffset === localOffset;
+		});
+		if(suitableZones.length > 0) 
+		{	// Берем первую подходящую зону
+			moment.tz.setDefault(suitableZones[0]);
+			//WriteLogFile('Установлена зона: '+suitableZones[0]+', смещение: '+moment().format('Z'));
+			return suitableZones[0];
+		}
+		else 
+		{	WriteLogFile('Таймзона не установлена! Смещение: '+moment().format('Z'),'вчат');
+			return null;
+		}
+    }
 }
 //====================================================================
