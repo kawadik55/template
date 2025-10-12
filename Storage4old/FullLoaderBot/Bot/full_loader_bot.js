@@ -6,7 +6,7 @@ const cron = require('node-cron');
 const { execFile } = require('child_process');
 const TelegramBot = require('node-telegram-bot-api');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const PathToImages = currentDir+'/images';//путь к файлам на выполнение.
+const PathToImages = currentDir+'/images';//путь к файлам на выполнение
 const PathToImagesModer = currentDir+'/moder';//путь к файлам на выполнение
 const FileUserList = currentDir+"/UserList.txt";//имя файла белого листа
 const FileBlackList = currentDir+"/BlackList.txt";//имя файла черного листа
@@ -169,24 +169,10 @@ if(!timeCron)//всегда выполняется
 	let tmp=timePablic.split(':');
 	timeCron = tmp[1]+' '+tmp[0]+' * * *';
 }
-//установим службу стандартных утренних публикаций в каналах
-var Cron1 = cron.schedule(timeCron, async function() 
+//установим службу публикаций в каналах
+cron.schedule(timeCron, function() 
 {	if(rassilka)//если рассылка включена
-	{	WriteLogFile('\nНачинаем Рассылку:');
-		//ежик
-		if(RunList.Eg===true) await send_Eg();
-		//расписание
-		if(RunList.Raspis===true) await send_Raspis();
-	}
-},{timezone:moment().tz()});//в локальной таймзоне
-//установим службу публикаций по времени, каждую нечетную мин
-var Cron2 = cron.schedule('1-59/2 * * * *', async function() 
-{	if(rassilka)//если рассылка включена
-	{	let now = moment();
-		//публикуем тексты
-		if(RunList.Text===true) await send_Text(now);
-		//публикуем фото
-		if(RunList.Image===true) await send_Images(now);	
+	{	RassilkaFromCron();
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
 //установим службу удаления старых картинок из хостинга
@@ -433,7 +419,9 @@ try{
 			try {path = await LoaderBot.downloadFile(msg.photo[msg.photo.length-1].file_id, PathToHostImg);}
 			catch(err)
 			{	sendMessage(chatId, 'Эта картинка слишком велика, разрешено не более 20Мб', klava(begin(chatId)));
-				clearTempWait(chatId);
+				numOfDelete[chatId]='';
+				delete WaitFlag[chatId];
+				delete TempPost[chatId];
 				return;
 			}
 			let mas = path.split('/');
@@ -447,7 +435,9 @@ try{
 			let str = hostname+'/'+fileName;
 			await sendMessage(chatId, 'Прямая ссылка на картинку:\n'+str);
 			await sendMessage(chatId, 'Чтобы вернуться, нажмите на кнопку', klava(keyboard['3']));//в Начало
-			clearTempWait(chatId);
+			numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
+			delete TempPost[chatId];
 			return;
 		}
 		//если ничего не ожидается
@@ -455,19 +445,22 @@ try{
 		{	sendMessage(chatId, '🤷🏻‍♂️');
 			return;
 		}
-		let date = '', day = '', time = '';
+		let date = '', day = '';
 		if(!!TempPost[chatId] && !!TempPost[chatId].date) 		date = TempPost[chatId].date;//дата
 		if(!!TempPost[chatId] && !!TempPost[chatId].dayOfWeek) 	day = TempPost[chatId].dayOfWeek;//день
-		if(!!TempPost[chatId] && !!TempPost[chatId].time) 		time = TempPost[chatId].time;//время
 		
 		if(!day || !date)
-		{	clearTempWait(chatId);
+		{	numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
+			delete TempPost[chatId];
 			sendMessage(chatId, 'Неожиданно... игнорирую.', klava(begin(chatId)));
 			return;
 		}
 		//если дата корявая, то уходим
 		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY')) 
-		{	clearTempWait(chatId);
+		{	numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
+			delete TempPost[chatId];
 			//если файлы уже были загружены, то нужно их удалить!
 			if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
 			sendMessage(chatId, 'Неожиданная дата или период... игнорирую.', klava(begin(chatId)));
@@ -476,7 +469,9 @@ try{
 		//проверяем подпись
 		if(Object.hasOwn(msg, 'caption') && msg.caption.length > 1000)
 		{	sendMessage(chatId, '🤷‍♂️Сожалею, но подпись к файлу не может превышать 1000 символов!🤷‍♂️', klava(keyboard['3']));
-			clearTempWait(chatId);
+			delete TempPost[chatId];
+			numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
 			//если файлы уже были загружены, то нужно их удалить!
 			if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
 			return;
@@ -489,7 +484,9 @@ try{
 		try {path = await LoaderBot.downloadFile(msg.photo[msg.photo.length-1].file_id, TmpPath);}
 		catch(err)
 		{sendMessage(chatId, 'Эта картинка слишком велика, разрешено не более 20Мб', klava(begin(chatId)));
-		 clearTempWait(chatId);
+		 numOfDelete[chatId]='';
+		 delete WaitFlag[chatId];
+		 delete TempPost[chatId];
 		 //если файлы уже были загружены, то нужно их удалить!
 		 if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
 		 return;
@@ -532,7 +529,6 @@ try{
 		{	TempPost[chatId] = {};
 			TempPost[chatId].date = date;
 			TempPost[chatId].dayOfWeek = day;
-			if(!!time) TempPost[chatId].time = time;
 			//проверяем конец альбома
 			if(MediaList[media_group_id].media.length == MediaList[media_group_id].count.length)
 			{	let obj = {};
@@ -542,7 +538,6 @@ try{
 				obj.userName = MediaList[media_group_id].userName;
 				obj.chatId = MediaList[media_group_id].chatId;
 				obj.type = MediaList[media_group_id].type;
-				if(!!MediaList[media_group_id].time) obj.time = MediaList[media_group_id].time;
 				delete WaitFlag[obj.chatId];
 				delete TempPost[obj.chatId];
 				delete MediaList[media_group_id];
@@ -554,7 +549,8 @@ try{
 			}
 		}
 		else
-		{	clearTempWait(obj.chatId);
+		{	delete WaitFlag[obj.chatId];
+			delete TempPost[obj.chatId];
 			delete MediaList[media_group_id];
 		}
 	}
@@ -585,19 +581,22 @@ try{
 		{	sendMessage(chatId, '🤷🏻‍♂️');
 			return;
 		}
-		let date = '', day = '', time = '';
+		let date = '', day = '';
 		if(!!TempPost[chatId] && !!TempPost[chatId].date) 		date = TempPost[chatId].date;//дата
 		if(!!TempPost[chatId] && !!TempPost[chatId].dayOfWeek) 	day = TempPost[chatId].dayOfWeek;//день
-		if(!!TempPost[chatId] && !!TempPost[chatId].time) 		time = TempPost[chatId].time;//время
 		
 		if(!day || !date)
-		{	clearTempWait(chatId);
+		{	numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
+			delete TempPost[chatId];
 			sendMessage(chatId, 'Неожиданно... игнорирую.', klava(begin(chatId)));
 			return;
 		}
 		//если дата корявая, то уходим
 		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY')) 
-		{	clearTempWait(chatId);
+		{	numOfDelete[chatId]='';
+			delete TempPost[chatId];
+			delete WaitFlag[chatId];
 			//если файлы уже были загружены, то нужно их удалить!
 			if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
 			sendMessage(chatId, 'Неожиданная дата или период... игнорирую.', klava(begin(chatId)));
@@ -606,7 +605,9 @@ try{
 		//проверяем подпись
 		if(Object.hasOwn(msg, 'caption') && msg.caption.length > 1000)
 		{	sendMessage(chatId, '🤷‍♂️Сожалею, но подпись к ролику не может превышать 1000 символов!🤷‍♂️', klava(keyboard['3']));
-			clearTempWait(chatId);
+			delete TempPost[chatId];
+			numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
 			//если файлы уже были загружены, то нужно их удалить!
 			if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
 			return;
@@ -619,7 +620,9 @@ try{
 		try {path = await LoaderBot.downloadFile(msg.video.file_id, TmpPath);}
 		catch(err)
 		{sendMessage(chatId, 'Этот ролик слишком велик, разрешено не более 20Мб', klava(begin(chatId)));
-		 clearTempWait(chatId);
+		 numOfDelete[chatId]='';
+		 delete TempPost[chatId];
+		 delete WaitFlag[chatId];
 		 //если файлы уже были загружены, то нужно их удалить!
 		 if(!!media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
 		 return;
@@ -647,7 +650,6 @@ try{
 		{	TempPost[chatId] = {};
 			TempPost[chatId].date = date;
 			TempPost[chatId].dayOfWeek = day;
-			if(!!time) TempPost[chatId].time = time;
 			//проверяем конец альбома
 			if(MediaList[media_group_id].media.length == MediaList[media_group_id].count.length)
 			{	let obj = {};
@@ -657,7 +659,6 @@ try{
 				obj.userName = MediaList[media_group_id].userName;
 				obj.chatId = MediaList[media_group_id].chatId;
 				obj.type = MediaList[media_group_id].type;
-				if(!!MediaList[media_group_id].time) obj.time = MediaList[media_group_id].time;
 				delete WaitFlag[obj.chatId];
 				delete TempPost[obj.chatId];
 				delete MediaList[media_group_id];
@@ -703,23 +704,31 @@ try{
 			return;
 		}
 		let date = '', day = '';
+		
 		if(!!TempPost[chatId] && !!TempPost[chatId].date) 		date = TempPost[chatId].date;//дата
 		if(!!TempPost[chatId] && !!TempPost[chatId].dayOfWeek) 	day = TempPost[chatId].dayOfWeek;//день
+		//delete WaitFlag[chatId];
 		
 		if(!day || !date)
-		{	clearTempWait(chatId);
+		{	numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
+			delete TempPost[chatId];
 			sendMessage(chatId, 'Неожиданно... игнорирую.', klava(begin(chatId)));
 			return;
 		}
 		//проверяем подпись
 		if(Object.hasOwn(msg, 'caption') && msg.caption.length > 1000)
 		{	sendMessage(chatId, '🤷‍♂️Сожалею, но подпись к аудио не может превышать 1000 символов!🤷‍♂️', klava(keyboard['3']));
-			clearTempWait(chatId);
+			delete TempPost[chatId];
+			delete WaitFlag[chatId];
+			numOfDelete[chatId]='';
 			return;
 		}
 		//если дата корявая или нет периода, то уходим
 		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') || !day)  
-		{	clearTempWait(chatId);
+		{	numOfDelete[chatId]='';
+			delete TempPost[chatId];
+			delete WaitFlag[chatId];
 			sendMessage(chatId, 'Неожиданная дата или период... игнорирую.', klava(begin(chatId)));
 			return;
 		}
@@ -789,7 +798,9 @@ try{
 			delete WaitFlag[chatId];
 		}
 		if(!day || !date)
-		{	clearTempWait(chatId);
+		{	numOfDelete[chatId]='';
+			delete WaitFlag[chatId];
+			delete TempPost[chatId];
 			sendMessage(chatId, 'Неожиданно... игнорирую.', klava(begin(chatId)));
 			return;
 		}
@@ -884,7 +895,9 @@ try{
 		//проверяем текст
 		if(!msg.text && msg.text.length > 4050)
 		{	sendMessage(chatId, '🤷‍♂️Сожалею, но длина текста не может превышать 4000 символов!🤷‍♂️', klava(keyboard['3']));
-			clearTempWait(chatId);
+			delete WaitFlag[chatId];//удаляем из листа ожиданий
+			delete TempPost[chatId];
+			numOfDelete[chatId]='';
 			return;
 		}
 	  //----------------------------------------------------------------
@@ -927,7 +940,8 @@ try{
 	  //----------------------------------------------------------------
 	  //второй стейт - сюда входим только если ждем Дату
 	  else if(WaitFlag[chatId]==2)
-	  {	delete WaitFlag[chatId];//удаляем из листа ожиданий
+	  {	let mark = WaitFlag[chatId];
+		delete WaitFlag[chatId];//удаляем из листа ожиданий
 		//проверим дату
 		let date=msg.text;
 		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY'))
@@ -939,15 +953,12 @@ try{
 		else if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY'))//если дата верна
 		{	
 			TempPost[chatId].date = date;//запоминаем дату
-			/*let str = 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ, альбом), который необходимо опубликовать. ';
+			let str = 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ, альбом), который необходимо опубликовать. ';
 			str += 'Его можно просто скопировать-вставить из любого чата, или загрузить из хранилища. ';
 			str += 'Форматирование текста и подписи сохраняется.';
 			WaitFlag[chatId]=1;//взводим флаг ожидания текста или файла от юзера
 			await sendMessage(chatId, str, klava(keyboard['3']));
-			//теперь будем ждать или текст, или файл*/
-			let str = 'Хотите ввести особое *ВРЕМЯ* публикации? Если нажмете *Нет*, то пост будет опубликован ';
-			str += 'в стандартное время - '+timePablic+'Z'+moment().format('Z');
-			await sendMessage(chatId, str, klava(keyboard['10']));//Да/Нет/В начало
+			//теперь будем ждать или текст, или файл
 		}
 		else 
 		{	if(!!TempPost[chatId]) delete TempPost[chatId];
@@ -1108,30 +1119,11 @@ try{
 		numOfDelete[chatId]='';
 	  }
 	  //----------------------------------------------------------------
-	  //ловим время публикации
-	  else if(WaitFlag[chatId]=='Time')
-	  {	delete WaitFlag[chatId];//удаляем из листа ожиданий
-		//проверим время
-		let time=msg.text;
-		if(time != moment(time,'HH:mm').format('HH:mm'))
-		{	clearTempWait(chatId);
-			sendMessage(chatId, 'Время не соответствует шаблону, или символы введены некорректно!\nПопробуйте еще разок сначала', klava(begin(chatId)));
-		}
-		else //если время корректно
-		{	
-			TempPost[chatId].time = time;//запоминаем время
-			let str = 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ, альбом), который необходимо опубликовать. ';
-			str += 'Его можно просто скопировать-вставить из любого чата, или загрузить из хранилища. ';
-			str += 'Форматирование текста и подписи сохраняется.';
-			WaitFlag[chatId]=1;//взводим флаг ожидания текста или файла от юзера
-			await sendMessage(chatId, str, klava(keyboard['3']));
-			//теперь будем ждать или текст, или файл
-		}
-	  }
-	  //----------------------------------------------------------------
 	  else //если пришел текст 'от фонаря'
 	  {	if(forDeleteList.length > 0) forDeleteList = [];//очищаем список удаляемых файлов
-		clearTempWait(chatId);
+		delete TempPost[chatId];//удаляем из временного текста
+		delete WaitFlag[chatId];//удаляем из листа ожиданий
+		numOfDelete[chatId]='';
 		//сохраняем для посл.удаления
 		let chat_id='', mess_id='';
 		if(LastMessId[chatId]) {chat_id=chatId; mess_id=LastMessId[chatId].messId;}
@@ -1228,17 +1220,23 @@ try{
 				numOfDelete[chatId]='';
 			}
 			else if(button=='Нет')
-			{	clearTempWait(chatId);
+			{	delete TempPost[chatId];//удаляем временный текст
+                delete WaitFlag[chatId];
+                numOfDelete[chatId]='';
 				await sendMessage(chatId, 'Не беда! Давайте попробуем еще разок с начала!', klava(begin(chatId)));
 			}
 			else if(button=='Назад')
-			{	clearTempWait(chatId);
+			{	delete WaitFlag[chatId];
+				delete TempPost[chatId];//удаляем временный текст
+				numOfDelete[chatId]='';
 				welcome(chatId,name);
 			}
 		}
 		//------------ В Начало ----------------------------------------
 		else if(state==3)
-		{	clearTempWait(chatId);
+		{	if(WaitFlag[chatId]) delete WaitFlag[chatId];
+			if(TempPost[chatId]) delete TempPost[chatId];
+			numOfDelete[chatId]='';
             welcome(chatId,name);
 		}
 		//------------ набор 'Да + Нет' при удалении файлов -------------------------
@@ -1310,18 +1308,26 @@ try{
 				await sendMessage(chatId, str, klava(keyboard['9']));//кнопки дней для текста
 			}
 			else if(button == 'Завтра')//для Завтра
-			{	TempPost[chatId].date = moment().add(1,'day').format('DD.MM.YYYY');//запоминаем дату на завтра
-				str = 'Режим Завтра, на '+TempPost[chatId].date+'\n';
-				str += 'Хотите ввести особое *ВРЕМЯ* публикации? Если нажмете *Нет*, то пост будет опубликован ';
-				str += 'в стандартное время - '+timePablic+'Z'+moment().format('Z');
-				await sendMessage(chatId, str, klava(keyboard['10']));//Да/Нет/В начало
+			{	let date = moment().add(1,'day').format('DD.MM.YYYY');//дата на завтра в строке
+				TempPost[chatId].date = date;//запоминаем дату
+				str = 'Режим Завтра, на '+date+'\n';
+				str += 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ, альбом), который необходимо опубликовать. ';
+				str += 'Его можно просто скопировать-вставить из любого чата, или загрузить из хранилища. ';
+				str += 'Форматирование текста и подписи сохраняется.';
+				WaitFlag[chatId]=1;//взводим флаг ожидания текста или файла от юзера
+				await sendMessage(chatId, str, klava(keyboard['3']));
+				//теперь будем ждать или текст, или файл
 			}
 			else if(button == 'Сегодня')//для Сегодня
-			{	TempPost[chatId].date = moment().add(0,'day').format('DD.MM.YYYY');//запоминаем дату на Сегодня
-				str = 'Режим "Только Сегодня", на '+TempPost[chatId].date+'\n';
-				str += 'Хотите ввести особое *ВРЕМЯ* публикации? Если нажмете *Нет*, то после модерации ';
-				str += 'пост будет опубликован немедленно, если его прислали после '+timePablic+'Z'+moment().format('Z');
-				await sendMessage(chatId, str, klava(keyboard['10']));//Да/Нет/В начало
+			{	let date = moment().add(0,'day').format('DD.MM.YYYY');//дата на Сегодня в строке
+				TempPost[chatId].date = date;//запоминаем дату
+				str = 'Режим "Только Сегодня", на '+date+'\n';
+				str += 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ, альбом), который необходимо опубликовать. ';
+				str += 'Его можно просто скопировать-вставить из любого чата, или загрузить из хранилища. ';
+				str += 'Форматирование текста и подписи сохраняется.';
+				WaitFlag[chatId]=1;//взводим флаг ожидания текста или файла от юзера
+				await sendMessage(chatId, str, klava(keyboard['3']));
+				//теперь будем ждать или текст, или файл
 			}
 		}
 		//------------ набор 'Да + Нет' при удалении поста--------
@@ -1423,22 +1429,6 @@ try{
 			}
 			numOfDelete[chatId]='';
 		}
-		//------------ набор 'Да/Нет/В начало для ввода времени' -------------------------
-		else if(state==10)
-		{	if(button=='Да')
-			{	let str = 'Пришлите мне время в формате ЧЧ:ММ\n';
-				WaitFlag[chatId]='Time';//взводим флаг ожидания Времени от юзера
-				await sendMessage(chatId, str, klava(keyboard['3']));//кнопка 'В Начало'
-			}
-			else if(button=='Нет')
-			{	let str = 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ, альбом), который необходимо опубликовать. ';
-				str += 'Его можно просто скопировать-вставить из любого чата, или загрузить из хранилища. ';
-				str += 'Форматирование текста и подписи сохраняется.';
-				WaitFlag[chatId]=1;//взводим флаг ожидания текста или файла от юзера
-				await sendMessage(chatId, str, klava(keyboard['3']));
-				//теперь будем ждать или текст, или файл
-			}
-		}
 		//------------ набор 'Админ Бота' -------------------------
 		else if(state==100)
 		{	if(button=='Удалить Тексты')//которые на модерацию
@@ -1498,12 +1488,15 @@ try{
 			}
 			else
 			{	await sendMessage(chatId, 'Вот и хорошо, торопиться не будем!', klava(get_keyb100()));
-				clearTempWait(chatId);
+				numOfDelete[chatId]='';
+				delete WaitFlag[chatId];//удаляем из листа ожиданий
 			}
 		}
 		//------------ Назад ----------------------------------------
 		else if(state==102)
-		{	clearTempWait(chatId);
+		{	if(WaitFlag[chatId]) delete WaitFlag[chatId];
+			if(TempPost[chatId]) delete TempPost[chatId];
+			numOfDelete[chatId]='';
             await sendMessage(chatId, 'Вот и хорошо, торопиться не будем!', klava(begin(chatId)));
 		}
 		//------------ набор 'Да + Нет' при удалении файла на модерацию--------
@@ -1516,7 +1509,8 @@ try{
 			}
 			else
 			{	await sendMessage(chatId, 'Вот и хорошо, торопиться не будем!', klava(get_keyb100()));
-				clearTempWait(chatId);//удаляем из листа ожиданий
+				numOfDelete[chatId]='';
+				delete WaitFlag[chatId];//удаляем из листа ожиданий
 			}
 		}
 		//------------ набор 'Да + Нет' при публикации текста--------
@@ -2554,9 +2548,8 @@ try{
 	if(mas.length > 0)
 	{	for(let i in mas)
 		{	let str = '';
-			let time = !!TextList[mas[i]].time?(' - '+TextList[mas[i]].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
-			if(flag!=0) str = TextList[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+TextList[mas[i]].date+' - '+TextList[mas[i]].dayOfWeek+time+') - '+TextList[mas[i]].userName;//с номером
-			else str = TextList[mas[i]].text + '\n\n('+TextList[mas[i]].date+' - '+TextList[mas[i]].dayOfWeek+time+') - '+TextList[mas[i]].userName;//без номера
+			if(flag!=0) str = TextList[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+TextList[mas[i]].date+' - '+TextList[mas[i]].dayOfWeek+') - '+TextList[mas[i]].userName;//с номером
+			else str = TextList[mas[i]].text + '\n\n('+TextList[mas[i]].date+' - '+TextList[mas[i]].dayOfWeek+') - '+TextList[mas[i]].userName;//без номера
 			let opt = {};
 			opt.entities = TextList[mas[i]].entities; 
 			opt.link_preview_options=TextList[mas[i]].link_preview_options;
@@ -2578,9 +2571,8 @@ try{
 	{	for(let i in mas)
 		{	if(Object.hasOwn(List[mas[i]], 'text'))//это текст
 			{	let str = '';
-				let time = !!List[mas[i]].time?(' - '+List[mas[i]].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
-				if(flag!=0) str = List[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+time+') - '+List[mas[i]].userName;//с номером
-				else str = List[mas[i]].text + '\n\n('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+time+') - '+List[mas[i]].userName;//без номера
+				if(flag!=0) str = List[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+') - '+List[mas[i]].userName;//с номером
+				else str = List[mas[i]].text + '\n\n('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+') - '+List[mas[i]].userName;//без номера
 				let opt = {};
 				if(!!List[mas[i]].entities) opt.entities = List[mas[i]].entities; 
 				if(!!List[mas[i]].link_preview_options) opt.link_preview_options=List[mas[i]].link_preview_options;
@@ -2595,9 +2587,8 @@ try{
 				}
 				else opt.caption = '';
 				if(Object.hasOwn(List[mas[i]], 'parse_mode')) opt.parse_mode = List[mas[i]].parse_mode;
-				let time = !!List[mas[i]].time?(' - '+List[mas[i]].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
-				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+time+") - "+List[mas[i]].userName;
-				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+time+") - "+List[mas[i]].userName;
+				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+") - "+List[mas[i]].userName;
+				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+") - "+List[mas[i]].userName;
 				if(!!List[mas[i]].parse_mode) opt.parse_mode = List[mas[i]].parse_mode;
 				if(Object.hasOwn(List[mas[i]], 'type'))
 				{if(List[mas[i]].type=='image') {await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);}
@@ -2610,9 +2601,8 @@ try{
 			else if(Object.hasOwn(List[mas[i]], 'media'))//это альбом
 			{	let opt = new Object();
 				opt.caption = '';
-				let time = !!List[mas[i]].time?(' - '+List[mas[i]].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
-				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+time+") - "+List[mas[i]].userName;
-				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+time+") - "+List[mas[i]].userName;
+				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+") - "+List[mas[i]].userName;
+				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+") - "+List[mas[i]].userName;
 				if(Object.hasOwn(List[mas[i]], 'type'))
 				{if(List[mas[i]].type=='image') {await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);}
 				 else if(List[mas[i]].type=='video') {await sendVideo(LoaderBot, chatId, List[mas[i]].path, opt);}
@@ -2636,9 +2626,8 @@ try{
 	if(mas.length > 0)
 	{	for(let i in mas)
 		{	let str = '';
-			let time = !!ModerTextList[mas[i]].time?(' - '+ModerTextList[mas[i]].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
-			if(flag!=0) str = ModerTextList[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+ModerTextList[mas[i]].date+' - '+ModerTextList[mas[i]].dayOfWeek+time+') - '+ModerTextList[mas[i]].userName;//с номером
-			else str = ModerTextList[mas[i]].text + '\n\n('+ModerTextList[mas[i]].date+' - '+ModerTextList[mas[i]].dayOfWeek+time+') - '+ModerTextList[mas[i]].userName;//без номера
+			if(flag!=0) str = ModerTextList[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+ModerTextList[mas[i]].date+' - '+ModerTextList[mas[i]].dayOfWeek+') - '+ModerTextList[mas[i]].userName;//с номером
+			else str = ModerTextList[mas[i]].text + '\n\n('+ModerTextList[mas[i]].date+' - '+ModerTextList[mas[i]].dayOfWeek+') - '+ModerTextList[mas[i]].userName;//без номера
 			let opt = {};
 			opt.entities = ModerTextList[mas[i]].entities;
 			opt.link_preview_options=ModerTextList[mas[i]].link_preview_options;
@@ -2664,9 +2653,8 @@ try{
 				if(!!ImagesList[key].caption_entities) opt.caption_entities = ImagesList[key].caption_entities;
 			}
 			if(Object.hasOwn(ImagesList[key], 'parse_mode')) opt.parse_mode = ImagesList[key].parse_mode;
-			let time = !!ImagesList[key].time?(' - '+ImagesList[key].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
-			if(flag!=0) opt.caption += "\n\n** номер: "+key+" ** ("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+time+") - "+ImagesList[key].userName;
-			else opt.caption += "\n\n("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+time+") - "+ImagesList[key].userName;
+			if(flag!=0) opt.caption += "\n\n** номер: "+key+" ** ("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+") - "+ImagesList[key].userName;
+			else opt.caption += "\n\n("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+") - "+ImagesList[key].userName;
 			if(!!ImagesList[key].parse_mode) opt.parse_mode = ImagesList[key].parse_mode;
 			if(Object.hasOwn(ImagesList[key], 'type'))
 			{if(ImagesList[key].type=='image') {await sendPhoto(LoaderBot, chatId, ImagesList[key].path, opt);}
@@ -2696,9 +2684,8 @@ try{
 			}
 			else opt.caption = '';
 			if(Object.hasOwn(ModerImagesList[key], 'parse_mode')) opt.parse_mode = ModerImagesList[key].parse_mode;
-			let time = !!ModerImagesList[key].time?(' - '+ModerImagesList[key].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
-			if(flag!=0) opt.caption += "\n\n** номер: "+key+" ** ("+ModerImagesList[key].date+" - "+ModerImagesList[key].dayOfWeek+time+") - "+ModerImagesList[key].userName;
-			else opt.caption += "\n\n("+ModerImagesList[key].date+" - "+ModerImagesList[key].dayOfWeek+time+") - "+ModerImagesList[key].userName;
+			if(flag!=0) opt.caption += "\n\n** номер: "+key+" ** ("+ModerImagesList[key].date+" - "+ModerImagesList[key].dayOfWeek+") - "+ModerImagesList[key].userName;
+			else opt.caption += "\n\n("+ModerImagesList[key].date+" - "+ModerImagesList[key].dayOfWeek+") - "+ModerImagesList[key].userName;
 			if(!!ModerImagesList[key].parse_mode) opt.parse_mode = ModerImagesList[key].parse_mode;
 			if(Object.hasOwn(ModerImagesList[key], 'type'))
 			{if(ModerImagesList[key].type=='image') {await sendPhoto(LoaderBot, chatId, ModerImagesList[key].path, opt);}
@@ -2802,7 +2789,7 @@ try{
 function check_permissions(obj)
 {
 try{
-	//публикуем текст прямо сейчас, если дата или день недели и время совпадает
+	//публикуем текст прямо сейчас, если дата или день недели совпадает
 	let flag = 0;
 	let now = moment().startOf('day');//текущий день
 	let day;
@@ -2852,29 +2839,15 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom check_permissions()','вчат');}
 }
 //====================================================================
-//эта функция используется только при загрузке поста, в рассылке не участвует
 async function publicText(obj)
 {
 try{
 	//проверяем разрешение на публикацию немедленно
 	let flag = check_permissions(obj);
-	let timepublic = moment(timePablic,'HH:mm:ss');//время "Ч"
-	let timeobj;
-	if(Object.hasOwn(obj, 'time') && !!obj.time)
-	{	if(obj.time == moment(obj.time,'HH:mm').format('HH:mm')) timeobj = moment(obj.time,'HH:mm');
-	}
-	
-	// до или после глобальной публикации
+	// до или после утренней публикации
+	let time = moment(timePablic,'HH:mm:ss');//время "Ч"
 	let now = moment();//текущее время
-	let sec = -1;
-	//если времени в объекте нет, то используем глобальное время публикаций
-	if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
-	//если время в объекте есть, то используем совпадение времени
-	else
-	{	sec = now.diff(timeobj, 'seconds');//разница в секундах
-		if(sec >= 0 && sec < 120) sec = 1;//в 2х-минутном интервале от времени "Ч"
-		else sec = -1;
-	}
+	let sec = now.diff(time, 'seconds');//разница в секундах 
 	//публикуем в каналах из массива, если условия совпадают
 	if(flag && sec>0)//если после времени утренней публикации
 	{	for(let i=0;i<chat_news.length;i++) 
@@ -2980,7 +2953,6 @@ try{
 			if(Object.hasOwn(obj, 'userName')) MediaList[media_group_id].userName = obj.userName;
 			if(Object.hasOwn(obj, 'chatId')) MediaList[media_group_id].chatId = obj.chatId;
 			if(Object.hasOwn(obj, 'timeload')) MediaList[media_group_id].timeload = obj.timeload;
-			if(Object.hasOwn(obj, 'time')) MediaList[media_group_id].time = obj.time;
 			MediaList[media_group_id].type = 'album';
 		}
 		let mobj = {};
@@ -3011,7 +2983,6 @@ try{
 	if(Object.hasOwn(obj, 'userName')) ModerImagesList[len].userName = obj.userName;
 	if(Object.hasOwn(obj, 'chatId')) ModerImagesList[len].chatId = obj.chatId;
 	if(Object.hasOwn(obj, 'timeload')) ModerImagesList[len].timeload = obj.timeload;
-	if(Object.hasOwn(obj, 'time')) ModerImagesList[len].time = obj.time;
 	
 	ModerImagesList = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
 	WriteFileJson(FileModerImagesList,ModerImagesList);//сохраним список в файл
@@ -3028,22 +2999,10 @@ try{
 	if(Object.hasOwn(obj, 'parse_mode')) opt.parse_mode = obj.parse_mode;
 	//проверяем разрешение на публикацию немедленно
 	let flag = check_permissions(obj);
-	let timepublic = moment(timePablic,'HH:mm:ss');//время "Ч"
-	let timeobj;
-	if(Object.hasOwn(obj, 'time') && !!obj.time)
-	{	if(obj.time == moment(obj.time,'HH:mm').format('HH:mm')) timeobj = moment(obj.time,'HH:mm');
-	}
 	// до или после утренней публикации
+	let time = moment(timePablic,'HH:mm:ss');//время "Ч"
 	let now = moment();//текущее время
-	let sec = -1;
-	//если времени в объекте нет, то используем глобальное время публикаций
-	if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
-	//если время в объекте есть, то используем совпадение времени
-	else
-	{	sec = now.diff(timeobj, 'seconds');//разница в секундах
-		if(sec >= 0 && sec < 120) sec = 1;//в 2х-минутном интервале от времени "Ч"
-		else sec = -1;
-	} 
+	let sec = now.diff(time, 'seconds');//разница в секундах 
 	//публикуем в каналах из массива, если условия совпадают
 	if(flag && sec>0)//если после времени утренней публикации 
     {for(let i=0;i<chat_news.length;i++) 
@@ -3135,8 +3094,8 @@ function isValidChatId(value)
 //====================================================================
 async function WriteLogFile(arr, flag) 
 {   if(!LOGGING) return;
+	console.log(arr);
 	let str=moment().format('DD.MM.YY HH:mm:ss:ms')+' - '+arr+'\n';
-	console.log(str.replace('\n',''));
     try{
 		await fs.appendFileSync(LogFile, str);
 		if(!!logBot && !!flag) 
@@ -3554,24 +3513,6 @@ var keyList =
       }
     ]
   ],
-  "10": [
-    [
-      {
-        "text": "Да",
-        "callback_data": "10_Да"
-      },
-      {
-        "text": "Нет",
-        "callback_data": "10_Нет"
-      }
-    ],
-    [
-      {
-        "text": "в 'Начало'",
-        "callback_data": "3_Вначало"
-      }
-    ]
-  ],
   "100": [
     [
       {
@@ -3866,51 +3807,31 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom getButtonUrl()','вчат'); return {};}	
 }
 //====================================================================
-async function send_Images(now)
+async function send_Images()
 { try
   {	let good = 0;
-    //WriteLogFile('Рассылка картинок:');
-	//if(Object.keys(ImagesList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
+    WriteLogFile('Рассылка картинок:');
+	if(Object.keys(ImagesList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
 	let made = 0;
-	let timepublic = moment(timePablic,'HH:mm:ss');//время "Ч"
-	if(!now || moment(now).isValid()==false) now = moment();
 	//читаем список
-	let daynow = moment().startOf('day');//текущий день
+	let now = moment().startOf('day');//текущий день
 	for(let key in ImagesList)
 	{	try{  
 		  let flag = 0;
           let date = ImagesList[key].date;//запись даты
           let day = ImagesList[key].dayOfWeek;//запись дня
-		  let timeobj;
-		  if(Object.hasOwn(ImagesList[key], 'time') && !!ImagesList[key].time)
-		  {	if(ImagesList[key].time == moment(ImagesList[key].time,'HH:mm').format('HH:mm')) timeobj = moment(ImagesList[key].time,'HH:mm');
-		  }
           
           //если по дням из массива
           if(masDay.indexOf(day)+1)
           { //если дата окончания не наступила
 			if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY'))//правильная дата
 			{	let time = moment(date,'DD.MM.YYYY');//дата окончания
-				if(time.diff(daynow, 'days') >= 0)//разница в днях, 0 = сегодня
-				{	if(day==masDay[8])//ежедневно 
-					{	let sec;
-						//без timeobj, публикуем во время timepublic
-						if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
-						//иначе публикуем во время timeobj
-						else sec = now.diff(timeobj, 'seconds');//разница в секундах
-						if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
-					}
+				if(time.diff(now, 'days') >= 0)//разница в днях, 0 = сегодня
+				{	if(day==masDay[8]) flag++;//ежедневно, публикуем однозначно
 					else
 					{ 	let dayWeek = new Date().getDay();//сегодняшний день недели
 						if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
-						if(dayWeek==masDay.indexOf(day))//совпали дни, публикуем 
-						{	let sec;
-							//без timeobj, публикуем во время timepublic
-							if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
-							//иначе публикуем во время timeobj
-							else sec = now.diff(timeobj, 'seconds');//разница в секундах
-							if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
-						}
+						if(dayWeek==masDay.indexOf(day)) flag++;//совпали дни, публикуем
 					}
 				}
 			}
@@ -3918,30 +3839,16 @@ async function send_Images(now)
           //если чистая дата
           else if(date==moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && day=='Дата')
           {
-            if(public_byDate(date)) 
-			{	let sec;
-				//без timeobj, публикуем во время timepublic
-				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
-				//иначе публикуем во время timeobj
-				else sec = now.diff(timeobj, 'seconds');//разница в секундах
-				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
-			}
+            if(public_byDate(date)) flag++;
           }
           //если Однократно или Завтра или Сегодня и дата верна
 		  else if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && (day=='Однократно' || day=='Завтра'|| day=='Сегодня'))
           { 
-            let time = moment(daynow,'DD.MM.YYYY').format('DD.MM.YYYY');
-			if(date==time)//прям сегодня 
-			{	let sec;
-				//без timeobj, публикуем во время timepublic
-				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
-				//с датой публикуем во время timeobj
-				else sec = now.diff(timeobj, 'seconds');//разница в секундах
-				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
-			}
+            let time = moment(now,'DD.MM.YYYY').format('DD.MM.YYYY');
+			if(date==time) flag++;//прям сегодня
           }
 		  
-		  if(flag>0) {WriteLogFile('image "'+key+'"'+' => день='+day+'; дата='+date);made++;}
+		  if(flag>0) {WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date);made++;}
           
           //публикуем файлы
           if(flag) 
@@ -3970,7 +3877,7 @@ async function send_Images(now)
 				 }
 				}
 				else res = await sendPhoto(NewsBot, chatId, ImagesList[key].path, opt);
-				if(res===false) WriteLogFile('Не смог послать файл image "'+key+'"'+' в '+name[0]); 
+				if(res===false) WriteLogFile('Не смог послать файл "'+key+'"'+' в '+name[0]); 
 				else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 				{	
 					if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
@@ -3986,13 +3893,13 @@ async function send_Images(now)
 				}
 				else 
 				{	good++;//если без ошибок
-					WriteLogFile('image "'+key+'"'+' в '+name[0]+' = ОК');
+					WriteLogFile('"'+key+'"'+' в '+name[0]+' = ОК');
 				}
 			}
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Images()=>for()','вчат');}
 	}
-	//if(made==0) WriteLogFile('К сожалению на сегодня ничего нет :(');
+	if(made==0) WriteLogFile('К сожалению на сегодня ничего нет :(');
   } catch (err) 
   {console.error(getTimeStr()+err); 
    WriteLogFile(err+'\nfrom send_Images()','вчат');
@@ -4016,26 +3923,19 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom public_byDate()','вчат'); return false;}
 }
 //====================================================================
-//используется в рассылке
-async function send_Text(now)
+async function send_Text()
 { try
   {	
 	let good = 0;
-	//WriteLogFile('Рассылка текстов:');
-	//if(Object.keys(TextList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
+	WriteLogFile('Рассылка текстов:');
+	if(Object.keys(TextList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
 	let made = 0;
-	let timepublic = moment(timePablic,'HH:mm:ss');//время "Ч"
-	if(!now || moment(now).isValid()==false) now = moment();
 	//читаем список
-	let daynow = moment().startOf('day');//текущий день
+	let now = moment().startOf('day');//текущий день
 	for(let key in TextList)
 	{   try{  
 		  let date = TextList[key].date;//запись даты
 		  let day = TextList[key].dayOfWeek;//запись дня
-		  let timeobj;
-		  if(Object.hasOwn(TextList[key], 'time') && !!TextList[key].time)
-		  {	if(TextList[key].time == moment(TextList[key].time,'HH:mm').format('HH:mm')) timeobj = moment(TextList[key].time,'HH:mm');
-		  }
           let flag = 0;
           
           //если по дням
@@ -4043,26 +3943,12 @@ async function send_Text(now)
           { //если дата окончания не наступила
 			if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY'))//правильная дата
 			{	let time = moment(date,'DD.MM.YYYY')//дата окончания
-				if(time.diff(daynow, 'days') >= 0);//разница в днях, 0 = сегодня
-				{	if(day==masDay[8])//ежедневно 
-					{	let sec;
-						//без timeobj, публикуем во время timepublic
-						if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
-						//иначе публикуем во время timeobj
-						else sec = now.diff(timeobj, 'seconds');//разница в секундах
-						if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
-					}
-					else //по дням недели
+				if(time.diff(now, 'days') >= 0);//разница в днях, 0 = сегодня
+				{	if(day==masDay[8]) flag++;//ежедневно, публикуем однозначно
+					else
 					{ 	let dayWeek = new Date().getDay();//сегодняшний день недели
 						if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
-						if(dayWeek==masDay.indexOf(day))//совпали дни, публикуем 
-						{	let sec;
-							//без timeobj, публикуем во время timepublic
-							if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
-							//иначе публикуем во время timeobj
-							else sec = now.diff(timeobj, 'seconds');//разница в секундах
-							if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
-						}
+						if(dayWeek==masDay.indexOf(day)) flag++;//совпали дни, публикуем
 					}
 				}
 			}
@@ -4070,30 +3956,16 @@ async function send_Text(now)
           //если чистая дата
           else if(date==moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && day=='Дата')
           {
-            if(public_byDate(date)) 
-			{	let sec;
-				//без timeobj, публикуем во время timepublic
-				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
-				//иначе публикуем во время timeobj
-				else sec = now.diff(timeobj, 'seconds');//разница в секундах
-				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
-			}
+            if(public_byDate(date)) flag++;
           }
           //если Однократно и дата верна
 		  else if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') && (day=='Однократно' || day=='Завтра' || day=='Сегодня'))
           { 
-            let time = moment(daynow,'DD.MM.YYYY').format('DD.MM.YYYY');
-			if(date==time)//прям сегодня 
-			{	let sec;
-				//без timeobj, публикуем во время timepublic
-				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
-				//иначе публикуем во время timeobj
-				else sec = now.diff(timeobj, 'seconds');//разница в секундах
-				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
-			}
+            let time = moment(now,'DD.MM.YYYY').format('DD.MM.YYYY');
+			if(date==time) flag++;//прям сегодня
           }
 		  
-		  if(flag>0) {WriteLogFile('text "'+key+'"'+' => день='+day+'; дата='+date);made++;}
+		  if(flag>0) {WriteLogFile('"'+key+'"'+' => день='+day+'; дата='+date);made++;}
           
           //публикуем текст
 		  if(flag)
@@ -4113,7 +3985,7 @@ async function send_Text(now)
 				if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
 				if(!!threadId) opt.message_thread_id = threadId;
 				let res = await sendTextToBot(NewsBot, chatId, TextList[key].text, opt);
-				if(res===false) WriteLogFile('Не смог послать текст text "'+key+'"'+' в '+name[0]);
+				if(res===false) WriteLogFile('Не смог послать текст "'+key+'"'+' в '+name[0]);
 				else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 				{	
 					if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
@@ -4129,13 +4001,13 @@ async function send_Text(now)
 				}
 				else 
 				{	good++;//если без ошибок
-					WriteLogFile('text "'+key+'"'+' в '+name[0]+' = ОК');
+					WriteLogFile('"'+key+'"'+' в '+name[0]+' = ОК');
 				}
 			}
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Text()=>for()','вчат');}
 	}
-	//if(made==0) WriteLogFile('К сожалению на сегодня ничего нет :(');
+	if(made==0) WriteLogFile('К сожалению на сегодня ничего нет :(');
   } catch (err) 
   {console.error(getTimeStr()+err); 
    WriteLogFile(err+'\nfrom send_Text()','вчат');
@@ -4184,8 +4056,3 @@ function setTimezoneByOffset(offsetMinutes)
     }
 }
 //====================================================================
-function clearTempWait(chatId)
-{	if(WaitFlag[chatId]) delete WaitFlag[chatId];
-	if(TempPost[chatId]) delete TempPost[chatId];
-	numOfDelete[chatId]='';
-}
