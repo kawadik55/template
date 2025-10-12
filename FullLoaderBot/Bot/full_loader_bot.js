@@ -180,7 +180,7 @@ var Cron1 = cron.schedule(timeCron, async function()
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
 //установим службу публикаций по времени, каждую нечетную мин
-var Cron2 = cron.schedule('1-59/2 * * * *', async function() 
+var Cron2 = cron.schedule('*/2 * * * *', async function() 
 {	if(rassilka)//если рассылка включена
 	{	let now = moment();
 		//публикуем тексты
@@ -3940,8 +3940,8 @@ async function send_Images(now)
 				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
 			}
           }
-		  
-		  if(flag>0) {WriteLogFile('image "'+key+'"'+' => день='+day+'; дата='+date);made++;}
+		  let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
+		  if(flag>0) {WriteLogFile('image "'+key+'"'+' => день='+day+'; дата='+date+timestr);made++;}
           
           //публикуем файлы
           if(flag) 
@@ -4092,8 +4092,8 @@ async function send_Text(now)
 				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
 			}
           }
-		  
-		  if(flag>0) {WriteLogFile('text "'+key+'"'+' => день='+day+'; дата='+date);made++;}
+		  let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
+		  if(flag>0) {WriteLogFile('text "'+key+'"'+' => день='+day+'; дата='+date+timestr);made++;}
           
           //публикуем текст
 		  if(flag)
