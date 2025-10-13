@@ -180,9 +180,10 @@ var Cron1 = cron.schedule(timeCron, async function()
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
 //установим службу публикаций по времени, каждую нечетную мин
-var Cron2 = cron.schedule('*/2 * * * *', async function() 
+var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
 {	if(rassilka)//если рассылка включена
 	{	let now = moment();
+		now = now.subtract(10, 'seconds');//приводим к 0 сек
 		//публикуем тексты
 		if(RunList.Text===true) await send_Text(now);
 		//публикуем фото
@@ -190,7 +191,7 @@ var Cron2 = cron.schedule('*/2 * * * *', async function()
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
 //установим службу удаления старых картинок из хостинга
-cron.schedule('15 2 * * *', function()//ночью каждый день
+var Cron3 = cron.schedule('15 2 * * *', function()//ночью каждый день
 {	if(hostingImg && fs.existsSync(PathToHostImg))//если хостинг разрешен
 	{	//Удаляем старые файлы
 		const isFile = fileName => {return fs.lstatSync(fileName).isFile()};
@@ -211,6 +212,9 @@ cron.schedule('15 2 * * *', function()//ночью каждый день
 		}
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
+Cron1.start();
+Cron2.start();
+Cron3.start();
 //====================================================================
 function klava(keyb)
 {try{	
@@ -3898,7 +3902,7 @@ async function send_Images(now)
 						if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
 						//иначе публикуем во время timeobj
 						else sec = now.diff(timeobj, 'seconds');//разница в секундах
-						if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
+						if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 					}
 					else
 					{ 	let dayWeek = new Date().getDay();//сегодняшний день недели
@@ -3909,7 +3913,7 @@ async function send_Images(now)
 							if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
 							//иначе публикуем во время timeobj
 							else sec = now.diff(timeobj, 'seconds');//разница в секундах
-							if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
+							if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 						}
 					}
 				}
@@ -3924,7 +3928,7 @@ async function send_Images(now)
 				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
 				//иначе публикуем во время timeobj
 				else sec = now.diff(timeobj, 'seconds');//разница в секундах
-				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
+				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 			}
           }
           //если Однократно или Завтра или Сегодня и дата верна
@@ -3937,7 +3941,7 @@ async function send_Images(now)
 				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
 				//с датой публикуем во время timeobj
 				else sec = now.diff(timeobj, 'seconds');//разница в секундах
-				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
+				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 			}
           }
 		  let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
@@ -4050,7 +4054,7 @@ async function send_Text(now)
 						if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
 						//иначе публикуем во время timeobj
 						else sec = now.diff(timeobj, 'seconds');//разница в секундах
-						if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
+						if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 					}
 					else //по дням недели
 					{ 	let dayWeek = new Date().getDay();//сегодняшний день недели
@@ -4061,7 +4065,7 @@ async function send_Text(now)
 							if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
 							//иначе публикуем во время timeobj
 							else sec = now.diff(timeobj, 'seconds');//разница в секундах
-							if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
+							if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 						}
 					}
 				}
@@ -4076,7 +4080,7 @@ async function send_Text(now)
 				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
 				//иначе публикуем во время timeobj
 				else sec = now.diff(timeobj, 'seconds');//разница в секундах
-				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
+				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 			}
           }
           //если Однократно и дата верна
@@ -4089,7 +4093,7 @@ async function send_Text(now)
 				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
 				//иначе публикуем во время timeobj
 				else sec = now.diff(timeobj, 'seconds');//разница в секундах
-				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале от времени "Ч"
+				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 			}
           }
 		  let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
