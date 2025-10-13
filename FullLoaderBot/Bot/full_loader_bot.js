@@ -172,7 +172,7 @@ if(!timeCron)//всегда выполняется
 //установим службу стандартных утренних публикаций в каналах
 var Cron1 = cron.schedule(timeCron, async function() 
 {	if(rassilka)//если рассылка включена
-	{	WriteLogFile('\nНачинаем Рассылку:');
+	{	WriteLogFile('\nНачинаем стандартную Рассылку:');
 		//ежик
 		if(RunList.Eg===true) await send_Eg();
 		//расписание
@@ -2881,7 +2881,11 @@ try{
 	}
 	//публикуем в каналах из массива, если условия совпадают
 	if(flag && sec>0)//если после времени утренней публикации
-	{	for(let i=0;i<chat_news.length;i++) 
+	{	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
+		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
+		let date = !!obj.date?obj.date:'';//запись даты
+		WriteLogFile('text "Срочно" => день='+day+'; дата='+date+timestr);
+		for(let i=0;i<chat_news.length;i++) 
 		try{
 		  if(!!chat_news[i])
 		  {	let opt = {};
@@ -2899,6 +2903,7 @@ try{
 			if(!!chatId)
 			{	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 				await NewsBot.sendMessage(chatId, obj.text, opt);
+				WriteLogFile('в '+key[0]+' = ОК');
 			}
 		  }
 		}catch(err){WriteLogFile(err+'\nfrom publicText()=>for()','вчат');}
@@ -3023,6 +3028,7 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom setToModerImagesList()','вчат'); return -1;}
 }
 //====================================================================
+//эта функция используется только при загрузке поста, в рассылке не участвует
 async function publicImage(obj)
 {
 try{
@@ -3050,7 +3056,11 @@ try{
 	} 
 	//публикуем в каналах из массива, если условия совпадают
 	if(flag && sec>0)//если после времени утренней публикации 
-    {for(let i=0;i<chat_news.length;i++) 
+    {	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
+		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
+		let date = !!obj.date?obj.date:'';//запись даты
+		WriteLogFile(obj.type+' "Срочно" => день='+day+'; дата='+date+timestr);
+	 for(let i=0;i<chat_news.length;i++) 
 	 {	try{
 		  let chatId = '', threadId = '';
 		  if(!!chat_news[i]) 
@@ -3074,7 +3084,8 @@ try{
 					await sendAlbum(NewsBot, chatId, tmp);
 				}
 			}
-			else sendPhoto(NewsBot, chatId, obj.path, opt);//без типа - картинка 
+			else sendPhoto(NewsBot, chatId, obj.path, opt);//без типа - картинка
+			WriteLogFile('в '+key[0]+' = ОК');
 		  }
 		}catch(err){WriteLogFile(err+'\nfrom publicImage()=>for()','вчат');}
 	 }
@@ -3990,7 +4001,7 @@ async function send_Images(now)
 				}
 				else 
 				{	good++;//если без ошибок
-					WriteLogFile('image "'+key+'"'+' в '+name[0]+' = ОК');
+					WriteLogFile('в '+name[0]+' = ОК');
 				}
 			}
           }
@@ -4133,7 +4144,7 @@ async function send_Text(now)
 				}
 				else 
 				{	good++;//если без ошибок
-					WriteLogFile('text "'+key+'"'+' в '+name[0]+' = ОК');
+					WriteLogFile('в '+name[0]+' = ОК');
 				}
 			}
           }
