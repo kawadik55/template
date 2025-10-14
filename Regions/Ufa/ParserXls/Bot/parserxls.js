@@ -583,7 +583,7 @@ try{
 	}
 	if(!out || Object.keys(out).length==0) str += 'К сожалению, сегодня собраний нет... 😩';
 			
-	//запишем файл текущего дня в папку /Rassilka/commitee.txt
+	//запишем файл комитетов в папку /Rassilka/commitee.txt
     let obj = {}; obj.text = str; obj.mode = 'HTML';
 	let err = fs.writeFileSync(FileCommitee, /*"\ufeff" +*/ JSON.stringify(obj,null,2));
     if(err) {console.log(err);}
