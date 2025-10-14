@@ -2955,7 +2955,7 @@ try{
 		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
 		 return true;
 		}
-		if(!checkPathFile(path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
+		if(!checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
 		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и изменим путь к файлу
 		let i, dl=Tree[LastKey[chatId]].child.length;
@@ -2995,7 +2995,7 @@ try{
 		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
 		 return true;
 		}
-		if(!checkPathFile(path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
+		if(!checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
 		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и изменим путь к файлу
 		let i, dl=Tree[LastKey[chatId]].child.length;
@@ -3796,7 +3796,7 @@ try{
 	if(!match || match.length<2) return false;
 	let mas = match[1].split('=');//разбиваем строку
 	const key = mas[0];//имя кнопки
-	let path = FileRaspis;//путь по-умолчанию
+	let path = '';
 	if(mas.length>1 && !!mas[1]) path = mas[1];//путь из команды, если есть
 
 	if(validAdmin(chatId))
@@ -3806,13 +3806,16 @@ try{
 		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
 		 return true;
 		}
-		if(!checkPathFile(path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
+		if(!!path && !checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
 		await addNode(String(max),LastKey[chatId],key,'raspis');
-		Tree[String(max)].path = path;//добавляем путь к файлу
+		if(!!path)
+		{	Tree[String(max)].path = path;//добавляем путь к файлу
+			await WriteFileJson(FileTree,Tree);
+		}
 		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
 		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
 	}
@@ -3830,7 +3833,7 @@ try{
 	if(!match || match.length<2) return false;
 	let mas = match[1].split('=');//разбиваем строку
 	const key = mas[0];//имя кнопки
-	let path = FileEg;//путь по-умолчанию
+	let path = '';
 	if(mas.length>1 && !!mas[1]) path = mas[1];//путь из команды, если есть
 
 	if(validAdmin(chatId))
@@ -3840,13 +3843,16 @@ try{
 		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
 		 return true;
 		}
-		if(!checkPathFile(path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
+		if(!!path && !checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
 		await addNode(String(max),LastKey[chatId],key,'eg');
-		Tree[String(max)].path = path;//добавляем путь к файлу
+		if(!!path)
+		{	Tree[String(max)].path = path;//добавляем путь к файлу
+			await WriteFileJson(FileTree,Tree);
+		}
 		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
 		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
 	}
