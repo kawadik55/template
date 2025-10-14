@@ -7,8 +7,9 @@ const wwwDir=currentDir+"/../www";//путь к папке www, на урове�
 const RassilkaDir = currentDir+"/../Rassilka";
 const RassilkaDirOpen = currentDir+"/../../pso/Rassilka";
 //const RassilkaDir = currentDir+"/../Parser";
-const FileRaspis = RassilkaDir+'/raspis.txt';//файл с расписанием на день
-const FileRaspisOpen = RassilkaDirOpen+'/raspis_open.txt';//файл открытых с расписанием.
+const FileRaspis = RassilkaDir+'/raspis.txt';//файл с расписанием на день.
+const FileRaspisOpen = RassilkaDirOpen+'/raspis_open.txt';//файл открытых с расписанием
+const FileCommitee = RassilkaDir+'/commitee.txt';//файл с расписанием комитетов
 const FileXlsDir = currentDir+'/../XlsBot/doc/1';//папка
 //const FileZagol = /^ListUfa\.xls+x?$/;//маска файла, xlsx или xls.
 const FileZagol = 'Местность.xls';//маска заголовочного файла местности, xls
@@ -458,8 +459,140 @@ try{
 	str = str.replace(/\n/g,'<br />');//делаем перевод строки html
 	err = '';
 	err = fs.writeFileSync(currentDir+'/raspis.html', "\ufeff" + str);
-	if(!!err) {bot.sendMessage(ServiceChat,err); console.log(err);}
+	if(!!err) {/*bot.sendMessage(ServiceChat,err);*/ console.log(err);}
 	//console.log('Создал файл raspis.txt');
+	
+}catch(err){console.log(err);}
+}
+//====================================================================
+//запишем расписание рабочек комитетов в файл
+async function save_commitee_file()
+{
+try{	
+	let masDay=['','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+	let groups = '';
+	if(!!List.commitee) groups = List.commitee;
+	else {console.log('Ошибка! Отсутствует объект List.commitee'); return;}
+	//по текущему дню недели создадим расписание из объекта
+	var dayWeek = new Date().getDay();//сегодня день недели
+	if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
+	let str = '🔷<strong>Расписание рабочих собраний комитетов</strong>🔷\n\n';//заголовок
+	//str += '<strong>'+masDay[dayWeek]+'</strong>\n\n';//день недели в заголовке
+	let town = Object.keys(groups);//массив городов
+	if(!town) {console.log('Ошибка! Отсутствует массив городов'); return;}
+	let out = {};//выходной объект
+	
+	//получим все что нужно в этом месяце
+	let lastWeek=false;//признак последней недели месяца
+	let date = new Date();//текущее местное время
+	let DateOfMonth = date.getDate();//текущее число
+	let month = date.getMonth();//текущий месяц
+	let year = date.getFullYear();//текущий год
+	let lastDateOfMonth = new Date(year, month + 1, 0).getDate();//последнее число в месяце
+	let firstWeekday = new Date(year, month, 1).getDay();//первое число месяца
+	let offsetDate = (dayWeek - firstWeekday + 7)%7;//до первого dayWeek в месяце
+	let date1 = new Date(year,month,1+offsetDate).getTime();//дата первого dayWeek
+	let weekOfMonth = date - date1;
+	weekOfMonth = Math.trunc(weekOfMonth/(1000 * 3600 * 24));//разница в целых днях, будет кратна 7
+	weekOfMonth = Math.trunc(weekOfMonth/7) + 1;//номер текущего сегодняшнего дня недели в месяце
+	if((lastDateOfMonth-DateOfMonth)<7) lastWeek=true;//последняя неделя
+	
+	for(let i=0;i<town.length;i++)//по городам
+	{	let name = Object.keys(groups[town[i]]);//массив комитетов в городе
+		if(name.length==0) continue;//если комитетов нету, то пропускаем этот город
+		for(let num=0;num<name.length;num++)//по комитетам
+		{	let mas = groups[town[i]][name[num]];//массив собраний по имени комитета
+			if(mas.length == 0) continue;//пропускаем комитет, если нет собраний
+			for(let n in mas)//по массиву собраний
+			{	//будем собирать выходной массив - имя, время, адрес, тема, карта, коммент, некст дата, format
+				//если день недели имеется в записи
+				if(!!mas[n].day)
+				{	let time = mas[n].time;
+					if(!out[town[i]]) out[town[i]] = [];
+					let cnt;
+					out[town[i]].push(new Array(7));//имя, время, адрес, день, карта, коммент, формат
+					cnt = out[town[i]].length-1;
+					//сделаем гиперссылку из названия комитета
+					//if(!!mas[n].photo) 
+					//	out[town[i]][cnt][0] = '<a  href="'+mas[n].photo+'" >'+name[num]+'</a>';
+					//else out[town[i]][cnt][0] = '«'+name[num]+'»';//если url нет, то просто имя комитета
+					out[town[i]][cnt][0] = '«'+name[num]+'»';
+					//время
+					out[town[i]][cnt][1] = time;
+					//адрес
+					let address_add = (!!mas[n].address_add)? mas[n].address_add.trim():'';
+					let address = mas[n].address;
+					if(address.indexOf('https://')+1) address = '<b><a  href="'+address+'" >Онлайн собрание</a></b>'; 
+					if(!!address_add) out[town[i]][cnt][2] = address+' '+address_add+';';
+					else out[town[i]][cnt][2] = address+';';
+					//день
+					out[town[i]][cnt][3] = '';
+					if(mas[n].type=='static') //если период статический
+					{	let period = mas[n].period;//массив периода - недели месяца
+						let str = '<i>'+mas[n].day+' - ';//начало курсива жиром
+						for(let k in period) {if(period[k]=='last') str += 'последняя '; else str += period[k]+'я, ';}
+						str += 'неделя месяца:</i>';//конец курсива
+						out[town[i]][cnt][3] = str;
+					}
+					else if(mas[n].type=='floating') //если период плавающий
+					{	let period = mas[n].period;//раз в x недели
+						let str = '<i>'+mas[n].day+' - раз в '+period+' недели (ближайшее: '+mas[n].next_data+'):</i>';//курсив жиром
+						out[town[i]][cnt][3] = str;
+					}
+					else out[town[i]][cnt][3] = 'Неизвестный день'; 
+					//карта
+					let karta = '';
+					if(!!mas[n].add_url) karta += '<a  href="'+mas[n].add_url+'" >Маршрут</a>';
+					out[town[i]][cnt][4] = karta;
+					//комментарий
+					out[town[i]][cnt][5] = '';
+					let comment;
+					if(mas[n].comment) comment = mas[n].comment;
+					if(!!comment) out[town[i]][cnt][5] = '\n'+comment;
+					//формат
+					out[town[i]][cnt][6] = '';
+					if(mas[n].format) out[town[i]][cnt][6] = '\nФормат: <i>'+mas[n].format+'</i>';
+				}
+			}
+		}
+		
+		if(!!out[town[i]])//если есть собрания
+		{	//сортируем по именам комитетов
+			out[town[i]].sort(function(a,b) 
+			{	if (a === b) {return 0;}
+				else {return (a < b) ? -1 : 1;}
+			});
+			//соберем строку для телеги
+			let line = '====================\n';
+			str += '<strong>'+'Местность '+town[i]+'</strong>\n\n';//город
+			for(let j=0; j<out[town[i]].length; j++)
+			{	name = line + (str.indexOf(out[town[i]][j][0])+1 ? '' : (out[town[i]][j][0]+'\n')) + line;
+				if(str.indexOf(out[town[i]][j][0])+1) name = '\n';
+				else name = line + out[town[i]][j][0] + '\n' + line;
+				let time = out[town[i]][j][1];
+				let adres = out[town[i]][j][2]+'\n';
+				let day = out[town[i]][j][3]+'\n';
+				let karta = !!out[town[i]][j][4] ? (out[town[i]][j][4]+'\n') : '';
+				let comment = '';//out[town[i]][j][5];
+				//let format = out[town[i]][j][6];//пока формат не выводим
+				//соберем результат
+				str += '<strong>'+name+'</strong>'+day+adres+karta;
+			}
+			str += '<b>'+line+'</b>';
+		}
+	}
+	if(!out || Object.keys(out).length==0) str += 'К сожалению, сегодня собраний нет... 😩';
+			
+	//запишем файл текущего дня в папку /Rassilka/commitee.txt
+    let obj = {}; obj.text = str; obj.mode = 'HTML';
+	let err = fs.writeFileSync(FileCommitee, /*"\ufeff" +*/ JSON.stringify(obj,null,2));
+    if(err) {console.log(err);}
+	//запишем расписание в формате html
+	str = obj.text;
+	str = str.replace(/\n/g,'<br />');//делаем перевод строки html
+	err = '';
+	err = fs.writeFileSync(currentDir+'/commitee.html', "\ufeff" + str);
+	if(!!err) {/*bot.sendMessage(ServiceChat,err);*/ console.log(err);}
 	
 }catch(err){console.log(err);}
 }
@@ -557,6 +690,7 @@ try{
 	}
 	
 	await save_today_file();
+	await save_commitee_file();
 	//setCsvYandex();
 	//save_open_file();
 	//console.log(new Date()+' parserxls - OK!');
