@@ -4,6 +4,7 @@ const XLSX = require('xlsx');
 
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const wwwDir=currentDir+"/../www";//путь к папке www, на уровень выше
+const utilsDir=wwwDir+'/utils';
 const RassilkaDir = currentDir+"/../Rassilka";
 const RassilkaDirOpen = currentDir+"/../../pso/Rassilka";
 //const RassilkaDir = currentDir+"/../Parser";
@@ -449,6 +450,7 @@ try{
 	str += 'Расписание собраний города <a  href="https://na-volga.ru/sobraniya-anonimnie-narkomani/an-v-sterlitamake/" >Стерлитамак</a>, время и место их проведения Вы можете уточнить позвонив по номеру \n<strong>+79173702268</strong> или <strong>+79610402244</strong>\n';
 	str += 'Расписание собраний города <a  href="https://na-volga.ru/an-v-neftekamske/" >Нефтекамск</a>, время и место их проведения Вы можете уточнить позвонив по номеру \n<strong>+79656540044</strong>\n';
 	str += 'Расписание собраний города <a  href="https://na-sea.ru/raspisanie-grupp/tujmazy.html" >Туймазы</a>, время и место их проведения Вы можете уточнить позвонив по номеру \n<strong>+79376005686</strong>\n';
+	str += '\n<a  href="https://vps.na-ufa.ru/commitee.html" >Расписание комитетов МКО Уфа</a>\n';
 	
 	//запишем файл текущего дня в папку /Rassilka/raspis.txt
     let obj = {}; obj.text = str; obj.mode = 'HTML';
@@ -459,8 +461,10 @@ try{
 	str = str.replace(/\n/g,'<br />');//делаем перевод строки html
 	err = '';
 	err = fs.writeFileSync(currentDir+'/raspis.html', "\ufeff" + str);
-	if(!!err) {/*bot.sendMessage(ServiceChat,err);*/ console.log(err);}
-	//console.log('Создал файл raspis.txt');
+	if(!!err) console.log(err);
+	err = '';
+	err = fs.writeFileSync(utilsDir+'/raspis.html', "\ufeff" + str);
+	if(!!err) console.log(err);
 	
 }catch(err){console.log(err);}
 }
@@ -592,7 +596,10 @@ try{
 	str = str.replace(/\n/g,'<br />');//делаем перевод строки html
 	err = '';
 	err = fs.writeFileSync(currentDir+'/commitee.html', "\ufeff" + str);
-	if(!!err) {/*bot.sendMessage(ServiceChat,err);*/ console.log(err);}
+	if(!!err) console.log(err);
+	err = '';
+	err = fs.writeFileSync(utilsDir+'/commitee.html', "\ufeff" + str);
+	if(!!err) console.log(err);
 	
 }catch(err){console.log(err);}
 }
