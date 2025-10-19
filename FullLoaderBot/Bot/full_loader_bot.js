@@ -5,6 +5,7 @@ const moment = require('moment-timezone');
 const cron = require('node-cron');
 const { execFile } = require('child_process');
 const TelegramBot = require('node-telegram-bot-api');
+const TelegramQueue = require('./TelegramQueue');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const PathToImages = currentDir+'/images';//путь к файлам на выполнение.
 const PathToImagesModer = currentDir+'/moder';//путь к файлам на выполнение
@@ -96,6 +97,13 @@ let tokenLog;
 try{tokenLog = require(TokenDir+"/logs_bot.json").token;}catch(err){console.log(err);}
 var logBot;
 if(!!tokenLog) logBot = new TelegramBot(tokenLog, {polling: false});//бот для вывода лог-сообщений
+// Создаем очередь
+const queue = new TelegramQueue(LoaderBot, {
+    maxRetries: 5,
+    retryDelay: 10000,
+    messagesPerSecond: 10,
+	maxConsecutiveErrors: 5
+});
 //---------------------------------------------------
 let UserList=new Object();//массив допущенных
 let BlackList=new Object();//массив забаненных
@@ -345,14 +353,33 @@ else
  WriteFileJson(FileAdminList,AdminList);
 }
 
+WriteLogFile('Запуск бота @'+namebot+'.');
+if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic+'Z'+moment().format('Z'));
+
+//загружаем очередь, если сохраняли
+if(fs.existsSync(currentDir+'/queue.json'))
+{	let savedQueue;
+	try{
+		savedQueue = JSON.parse(fs.readFileSync(currentDir+'/queue.json'));
+	} catch(err){WriteLogFile('Ошибка парсинга savedQueue\n'+err,'вбот');}
+	if(!!savedQueue.queue)
+	{	queue.queue = [...savedQueue.queue];
+		queue.queue.forEach(item => {
+			item.bot = item.bot=='NewsBot' ? NewsBot : (item.bot=='logBot' ? logBot : LoaderBot)
+		});
+		WriteLogFile('Загружена очередь из файла, '+queue.queue.length+' постов. Запускаем передачу.');
+	}
+	WriteFileJson(currentDir+'/queue.json', {});//очищаем файл
+}
+
+if(queue.queue.length>0) queue.forceProcess();//запускаем не пустую очередь на выполнение
+
 /*(async () => {   
 	let time = moment(timePablic,'HH:mm:ss');//время "Ч"
 	let now = moment('00:00:00','HH:mm:ss');//текущее время
 	let sec = now.diff(time, 'seconds');//разница в секундах
 	console.log('sec='+sec);
 })();*/
-WriteLogFile('Запуск бота @'+namebot);
-if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic+'Z'+moment().format('Z'));
 //====================================================================
 // СТАРТ
 LoaderBot.onText(/\/start/, async (msg) => 
@@ -2374,12 +2401,12 @@ try{
 		 if(!!mess_id) {await remove_message(chat_id, mess_id);}
 		}
 	}
-	else {res=await LoaderBot.sendMessage(chatId, str/*, {parse_mode:"markdown"}*/);}
+	else {res=await LoaderBot.sendMessage(chatId, str);
+		 }
 
 	return res;
 }catch(err)
-		{	/*if(!!res.chat.username) WriteLogFile(err+'\nfrom sendMessage("'+chatId+'", '+res.chat.username+')');
-			else*/ WriteLogFile(err+'\nfrom sendMessage("'+chatId+'")','вчат');
+		{	WriteLogFile(err+'\nfrom sendMessage("'+chatId+'")','вчат');
 		}
 }
 //====================================================================
@@ -2389,9 +2416,10 @@ try{
 	//if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
 	if(!fs.existsSync(path)) return false;
-	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
+	//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	await Bot.sendPhoto(chatId, path, opt);
+	await queue.addToQueue({type:'sendPhoto', chatId:chatId, data:path, options:opt, bot:Bot});
+	//await Bot.sendPhoto(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendPhoto()','вчат');return Promise.reject(false);}
 }
@@ -2401,7 +2429,7 @@ async function sendAlbum(Bot, chatId, media, opt)
 try{
 	//if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
-	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
+	//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	let mas = [...media];
 	if(!!opt && !!opt.caption)
 	{	if(!mas[0].caption) mas[0].caption = '';
@@ -2411,7 +2439,8 @@ try{
 	{	mas[0].caption_entities = JSON.parse(mas[0].caption_entities);
 	}
 	if(!!mas[0].caption && mas[0].caption.length > 1024) {mas[0].caption = mas[0].caption.substr(0,1023);}//обрезаем подпись
-	await Bot.sendMediaGroup(chatId, mas);
+	await queue.addToQueue({type:'sendMediaGroup', chatId:chatId, data:mas, bot:Bot});
+	//await Bot.sendMediaGroup(chatId, mas);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAlbum()','вчат');return Promise.reject(false);}
 }
@@ -2422,9 +2451,10 @@ try{
 	//if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
 	if(!fs.existsSync(path)) return false;
-	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
+	//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	await Bot.sendVideo(chatId, path, opt);
+	await queue.addToQueue({type:'sendVideo', chatId:chatId, data:path, options:opt, bot:Bot});
+	//await Bot.sendVideo(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendVideo()','вчат');return Promise.reject(false);}
 }
@@ -2435,9 +2465,10 @@ try{
 	//if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
 	if(!fs.existsSync(path)) return false;
-	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
+	//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	await Bot.sendAudio(chatId, path, opt);
+	await queue.addToQueue({type:'sendAudio', chatId:chatId, data:path, options:opt, bot:Bot});
+	//await Bot.sendAudio(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAudio()','вчат');return Promise.reject(false);}
 }
@@ -2448,9 +2479,10 @@ try{
 	//if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
 	if(!fs.existsSync(path)) return false;
-	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
+	//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	await Bot.sendDocument(chatId, path, opt);
+	await queue.addToQueue({type:'sendDocument', chatId:chatId, data:path, options:opt, bot:Bot});
+	//await Bot.sendDocument(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendDocument()','вчат');return Promise.reject(false);}
 }
@@ -2478,6 +2510,28 @@ catch(err){
 {	process.on(event, async ()=>
 	{	fs.writeFileSync(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2));
 		clearInterval(timer);
+		await queue.destroy();// Корректно уничтожаем очередь
+		if(queue.queue.length>0)
+		{	//await WriteFileJson(currentDir+'/queue.json', queue.queue);
+			//fs.writeFile(currentDir+'/queue.json', queue.queue);
+			const state = {
+				queue: queue.queue.map(item => ({
+					id: item.id,
+					timestamp: item.timestamp,
+					type: item.type,
+					data: item.data,
+					options: item.options,
+					chatId: item.chatId,
+					attempts: item.attempts,
+					bot: item.bot==NewsBot ? 'NewsBot' : (item.bot==logBot ? 'logBot' : 'LoaderBot')
+				}))
+			};
+			
+			
+			await WriteFileJson(currentDir+'/queue.json', state);
+			await WriteLogFile('Остатки очереди='+queue.queue.length+', записали в queue.json');
+			//console.log(queue.queue);
+		}
 		await WriteLogFile('выход из процесса по '+event);
 		process.exit();
 	});
@@ -2610,6 +2664,8 @@ try{
 				 else if(List[mas[i]].type=='document') {await sendDocument(LoaderBot, chatId, List[mas[i]].path, opt);}
 				}
 				else await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);
+				//ждем выполнения очереди
+				try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			}
 			else if(Object.hasOwn(List[mas[i]], 'media'))//это альбом
 			{	let opt = new Object();
@@ -2624,6 +2680,8 @@ try{
 				 else if(List[mas[i]].type=='document') {await sendDocument(LoaderBot, chatId, List[mas[i]].path, opt);}
 				 else if(List[mas[i]].type=='album') {await sendAlbum(LoaderBot, chatId, List[mas[i]].media, opt);}
 				}
+				//ждем выполнения очереди
+				try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			}
 		}
 	}
@@ -2680,6 +2738,8 @@ try{
 			 else if(ImagesList[key].type=='album') {await sendAlbum(LoaderBot, chatId, ImagesList[key].media, opt);}
 			}
 			else await sendPhoto(LoaderBot, chatId, ImagesList[key].path, opt);
+			//ждем выполнения очереди
+			try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
@@ -2712,6 +2772,8 @@ try{
 			 else if(ModerImagesList[key].type=='album') {await sendAlbum(LoaderBot, chatId, ModerImagesList[key].media, opt);}
 			}
 			else await sendPhoto(LoaderBot, chatId, ModerImagesList[key].path, opt);
+			//ждем выполнения очереди
+			try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
@@ -3156,7 +3218,8 @@ async function WriteLogFile(arr, flag)
 		await fs.appendFileSync(LogFile, str);
 		if(!!logBot && !!flag) 
 		{str='From @'+namebot+' '+area+'\n'+str;
-		 await logBot.sendMessage(chat_Supervisor, str);
+		 await queue.addToQueue({type:'sendMessage', chatId:chat_Supervisor, data:str, bot:logBot});
+		 //await logBot.sendMessage(chat_Supervisor, str);
 		}
 	}catch(err){}
 }
@@ -3728,10 +3791,11 @@ return keyList;
 async function sendTextToBot(Bot, chat, text, opt)
 { let res;
   try{
-	  if(!isValidChatId(chat)) return false;//если не число, то не пускаем
-	  if(text=='') return false;
-	  while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
-	  res = await Bot.sendMessage(chat,text,opt);
+		if(!isValidChatId(chat)) return false;//если не число, то не пускаем
+		if(text=='') return false;
+		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
+		res = queue.addToQueue({type:'sendMessage', chatId:chat, data:text, options:opt, bot:Bot});
+		//res = await Bot.sendMessage(chat,text,opt);
   }catch(err)
   {	console.error(getTimeStr()+err);
     console.error('Не смог послать текст в '+chat);
@@ -3739,27 +3803,6 @@ async function sendTextToBot(Bot, chat, text, opt)
 	res=err;
   }
   return res;
-}
-//====================================================================
-//запускаем функции
-async function RassilkaFromCron() 
-{	
-try{
-  WriteLogFile('\nНачинаем Рассылку:');
-  
-  //ежик
-  if(RunList.Eg===true) await send_Eg();
-  
-  //расписание
-  if(RunList.Raspis===true) await send_Raspis();
-  
-  //публикуем тексты
-  if(RunList.Text===true) await send_Text();
-  
-  //публикуем фото
-  if(RunList.Image===true) await send_Images();
-
-}catch(err){WriteLogFile(err+'\nfrom RassilkaFromCron()','вчат');}
 }
 //====================================================================
 function getTimeStr() {return moment().format('DD-MM-YY HH:mm:ss:ms ');}
@@ -4204,3 +4247,16 @@ function clearTempWait(chatId)
 	if(TempPost[chatId]) delete TempPost[chatId];
 	numOfDelete[chatId]='';
 }
+//====================================================================
+// Обработчики событий очереди
+queue.on('error', (error) => {WriteLogFile(error);});
+//queue.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь: ${item.id}`);});
+//queue.on('sent', (item) => {WriteLogFile(`Сообщение отправлено: ${item.id}`);});
+queue.on('failed', (item, error) => {WriteLogFile('Ошибка отправки '+item.id+':\n'+error.message);});
+queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
+queue.on('connected', () => {WriteLogFile('bot connected');});
+queue.on('disconnected', (error) => {WriteLogFile(error+'\nbot disconnected');});
+//queue.on('processing_started', (item) => {WriteLogFile('processing_started, queue length = '+item);});
+//queue.on('processing_finished', () => {WriteLogFile('processing_finished');});
+//queue.on('cleared', (item) => {WriteLogFile('cleared = '+item);});
+//====================================================================
