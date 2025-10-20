@@ -6,7 +6,7 @@ class TelegramQueue extends EventEmitter {
         this.bot = bot;
         this.queue = [];
         this.isProcessing = false;
-        this.isConnected = true; // При polling: true изначально считаем соединение активным
+        this.isConnected = true; // При polling: true изначально считаем соединение активным.
         
         // Настройки
         this.maxRetries = options.maxRetries || 3;
@@ -32,10 +32,10 @@ class TelegramQueue extends EventEmitter {
             this.consecutiveErrors++;
             console.error(`Bot error (${this.consecutiveErrors}):`, error.message);
             
-            if (this.consecutiveErrors >= this.maxConsecutiveErrors || 
-                this._isNetworkError(error)) {
-                this.isConnected = false;
-                this.emit('disconnected', error);
+            if (this.consecutiveErrors >= this.maxConsecutiveErrors || this._isNetworkError(error)) 
+			{	this.isConnected = false;
+                error.message = '(queue error)=> '+error.message;
+				this.emit('disconnected', error);
             }
             
             this._scheduleReconnection();
@@ -45,9 +45,10 @@ class TelegramQueue extends EventEmitter {
             this.consecutiveErrors++;
             console.error(`Polling error (${this.consecutiveErrors}):`, error.message);
             
-            if (error.code === 'EFATAL' || this._isNetworkError(error)) {
-                this.isConnected = false;
-                this.emit('disconnected', error);
+            if (error.code === 'EFATAL' || this._isNetworkError(error)) 
+			{	this.isConnected = false;
+                error.message = '(queue polling_error)=> '+error.message;
+				this.emit('disconnected', error);
             }
             
             this._scheduleReconnection();
@@ -142,7 +143,7 @@ class TelegramQueue extends EventEmitter {
         };
 
         this.queue.push(queueItem);
-        this.emit('queued', queueItem);
+        this.emit('queued', queueItem.id);
         
         // Пытаемся обработать очередь сразу
         if (this.isConnected && !this.isProcessing) {
