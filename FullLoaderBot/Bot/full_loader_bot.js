@@ -185,6 +185,8 @@ var Cron1 = cron.schedule(timeCron, async function()
 		if(RunList.Eg===true) await send_Eg();
 		//расписание
 		if(RunList.Raspis===true) await send_Raspis();
+		
+		WriteLogFile('Далее рассылка текстов и картинок:');
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
 //установим службу публикаций по времени, каждую нечетную мин
@@ -3131,7 +3133,7 @@ try{
     {	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
 		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
 		let date = !!obj.date?obj.date:'';//запись даты
-		WriteLogFile(obj.type+' "Срочно" => день='+day+'; дата='+date+timestr);
+		WriteLogFile(obj.type+' "Срочно" в очередь => день='+day+'; дата='+date+timestr);
 	 for(let i=0;i<chat_news.length;i++) 
 	 {	try{
 		  let chatId = '', threadId = '';
@@ -3826,7 +3828,7 @@ async function send_Eg()
 		if(fs.existsSync(FileEg)) eg = fs.readFileSync(FileEg).toString();
 		if(!eg) {WriteLogFile(getTimeStr()+'файл с ежиком отсутствует'); return;}
 		let good = 0;
-		WriteLogFile('Рассылка Ежика в каналы:');
+		WriteLogFile('Рассылка Ежика в каналы через очередь:');
 		for(let i=0;i<chat_news.length;i++) 
 		{  try{	
 			let chatId = '', threadId = '', opt = {};
@@ -3884,7 +3886,7 @@ async function send_Raspis()
 			if(Object.hasOwn(obj, 'mode')) mode = obj.mode;
 		}
 		
-		WriteLogFile('Рассылка Расписания в каналы:');
+		WriteLogFile('Рассылка Расписания в каналы через очередь:');
 		let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 		for(let i=0;i<chat_news.length;i++) 
 		{  try{
@@ -4011,7 +4013,7 @@ async function send_Images(now)
 			}
           }
 		  let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
-		  if(flag>0) {WriteLogFile('image "'+key+'"'+' => день='+day+'; дата='+date+timestr);made++;}
+		  if(flag>0) {WriteLogFile('image "'+key+'"'+' в очередь => день='+day+'; дата='+date+timestr);made++;}
           
           //публикуем файлы
           if(flag) 
@@ -4163,7 +4165,7 @@ async function send_Text(now)
 			}
           }
 		  let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
-		  if(flag>0) {WriteLogFile('text "'+key+'"'+' => день='+day+'; дата='+date+timestr);made++;}
+		  if(flag>0) {WriteLogFile('text "'+key+'"'+' в очередь => день='+day+'; дата='+date+timestr);made++;}
           
           //публикуем текст
 		  if(flag)
@@ -4265,9 +4267,9 @@ queue.on('error', (error) => {WriteLogFile(error);});
 //queue.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь: ${item.id}`);});
 //queue.on('sent', (item) => {WriteLogFile(`Сообщение отправлено: ${item.id}`);});
 queue.on('failed', (item, error) => {WriteLogFile('Ошибка отправки '+item.id+':\n'+error.message);});
-queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
-queue.on('connected', () => {WriteLogFile('bot connected');});
-queue.on('disconnected', (error) => {WriteLogFile(error+'\nbot disconnected');});
+//queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
+queue.on('connected', () => {WriteLogFile('=> bot connected');});
+queue.on('disconnected', (error) => {WriteLogFile(error+'; => bot disconnected');});
 //queue.on('processing_started', (item) => {WriteLogFile('processing_started, queue length = '+item);});
 //queue.on('processing_finished', () => {WriteLogFile('processing_finished');});
 //queue.on('cleared', (item) => {WriteLogFile('cleared = '+item);});
