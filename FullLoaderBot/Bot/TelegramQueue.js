@@ -190,6 +190,7 @@ class TelegramQueue extends EventEmitter {
 				{	queueItem.attempts++;
                     this.consecutiveErrors++;
 					this.emit('failed', queueItem, error);//отправка с ошибкой
+					if(!this.isConnected) {return;}//если пропала связь, то выходим
                 }
 				//удаляем из очереди в любом случае
                 this.queue.shift();
@@ -281,7 +282,8 @@ class TelegramQueue extends EventEmitter {
      * Уничтожение модуля
      */
     async destroy()
-	{	this.isConnected = false;// Прекращаем обработку новых сообщений
+	{ return new Promise(async(resolve) => {
+		this.isConnected = false;// Прекращаем обработку новых сообщений
 		let checkInterval;
 		//ждем завершения текущей передачи
 		await Promise.race ([
@@ -303,7 +305,9 @@ class TelegramQueue extends EventEmitter {
         //this.bot.removeAllListeners('channel_post');
 		this.removeAllListeners();
 		clearTimeout(this.connectTimer);
-    }
+		resolve();
+      });
+	}
 	//====================================================================
 	/**
      * Ожидает полного опустошения очереди
@@ -319,7 +323,7 @@ class TelegramQueue extends EventEmitter {
             let timeoutId;
 
             const checkCondition = () => {
-                if (this.queue.length === 0 && !this.isProcessing) {
+                if ((this.queue.length===0 && !this.isProcessing) || !this.isConnected) {
                     cleanup();
                     resolve();
                 }

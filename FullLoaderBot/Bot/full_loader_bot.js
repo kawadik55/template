@@ -1013,7 +1013,8 @@ try{
 			 }
 			 else await sendPhoto(LoaderBot, chatId, List[num].path, opt);
 			}
-			
+			//ждем выполнения очереди
+			try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			sendMessage(chatId, '👆 Удаляем этот пост? 👆', klava(keyboard['7']));
 		}
 		else await sendMessage(chatId, 'В списке такого номера нет!', klava(begin(chatId)));
@@ -1039,6 +1040,8 @@ try{
 			 else if(ImagesList[num].type=='album') {await sendAlbum(LoaderBot, chatId, ImagesList[num].media);}
 			}
 			else await sendPhoto(LoaderBot, chatId, ImagesList[num].path, opt);
+			//ждем выполнения очереди
+			try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			sendMessage(chatId, '👆 Удаляем этот файл? 👆', klava(keyboard['8']));
 		}
 		else await sendMessage(chatId, 'В списке такого номера нет!', klava(begin(chatId)));
@@ -1079,6 +1082,8 @@ try{
 			 else if(ModerImagesList[num].type=='album') {await sendAlbum(LoaderBot, chatId, ModerImagesList[num].media);}
 			}
 			else await sendPhoto(LoaderBot, chatId, ModerImagesList[num].path, opt);
+			//ждем выполнения очереди
+			try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			sendMessage(chatId, '👆 Удаляем этот файл? 👆', klava(keyboard['103']));
 		}
 		else await sendMessage(chatId, 'В списке такого номера нет!', klava(get_keyb100()));
@@ -1133,6 +1138,8 @@ try{
 			}
 		} catch (e) {console.log(e);}
 		delete ModerImagesList[numOfDelete[chatId]];//удаляем запись в списке
+		//ждем выполнения очереди
+		try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 		await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(get_keyb100()));
 		ModerImagesList = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
 		WriteFileJson(FileModerImagesList,ModerImagesList);//сохраняем вычищенный список
@@ -1217,7 +1224,9 @@ try{
 					WaitFlag[chatId]=3;//взводим флаг ожидания номера от юзера
 				}
                 else str += '*Упс... А список то пустой!*\n';
-                await sendMessage(chatId, str, klava(keyboard['3']));//В Начало
+                //ждем выполнения очереди
+				try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+				await sendMessage(chatId, str, klava(keyboard['3']));//В Начало
 			}
 			// кнопка Хостинг картинок
 			if(button=='Хостинг картинок')
@@ -1504,6 +1513,8 @@ try{
 					WaitFlag[chatId]=11;//взводим флаг ожидания номера от юзера
 				}
 				else str = '*Упс... А список то пустой!*\n';
+				//ждем выполнения очереди
+				try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 				await sendMessage(chatId, str, klava(keyboard['102']));//Назад	
 			}
 			else if(button=='Публиковать Файлы')
@@ -1511,6 +1522,8 @@ try{
 				{
 					await showModerImagesList(chatId, 0);
 					let str = 'Публикуем эти файлы?';
+					//ждем выполнения очереди
+					try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 					await sendMessage(chatId, str, klava(keyboard['105']));//Да-Нет
 				}
 				else
@@ -1610,6 +1623,8 @@ try{
 					  else if(ModerImagesList[key].type == 'album') {await sendAlbum(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].media);}
 					 }
 					 else await sendPhoto(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].path, opt);
+					 //ждем выполнения очереди
+					 try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 					 await sendMessage(ModerImagesList[key].chatId, '👍🏻 Ура! Этот файл прошел модерацию и будет опубликован!!');
 					}
 					if(!!ModerImagesList[key].path)//одиночный файл
@@ -2511,10 +2526,8 @@ catch(err){
 	{	fs.writeFileSync(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2));
 		clearInterval(timer);
 		await queue.destroy();// Корректно уничтожаем очередь
-		if(queue.queue.length>0)
-		{	//await WriteFileJson(currentDir+'/queue.json', queue.queue);
-			//fs.writeFile(currentDir+'/queue.json', queue.queue);
-			const state = {
+		if(queue.queue.length>0)//Записываем остатки в файл
+		{	const state = {
 				queue: queue.queue.map(item => ({
 					id: item.id,
 					timestamp: item.timestamp,
@@ -2526,11 +2539,8 @@ catch(err){
 					bot: item.bot==NewsBot ? 'NewsBot' : (item.bot==logBot ? 'logBot' : 'LoaderBot')
 				}))
 			};
-			
-			
 			await WriteFileJson(currentDir+'/queue.json', state);
 			await WriteLogFile('Остатки очереди='+queue.queue.length+', записали в queue.json');
-			//console.log(queue.queue);
 		}
 		await WriteLogFile('выход из процесса по '+event);
 		process.exit();
@@ -2665,7 +2675,7 @@ try{
 				}
 				else await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);
 				//ждем выполнения очереди
-				try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+				//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			}
 			else if(Object.hasOwn(List[mas[i]], 'media'))//это альбом
 			{	let opt = new Object();
@@ -2681,7 +2691,7 @@ try{
 				 else if(List[mas[i]].type=='album') {await sendAlbum(LoaderBot, chatId, List[mas[i]].media, opt);}
 				}
 				//ждем выполнения очереди
-				try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+				//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			}
 		}
 	}
@@ -2739,7 +2749,7 @@ try{
 			}
 			else await sendPhoto(LoaderBot, chatId, ImagesList[key].path, opt);
 			//ждем выполнения очереди
-			try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+			//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
@@ -2773,7 +2783,7 @@ try{
 			}
 			else await sendPhoto(LoaderBot, chatId, ModerImagesList[key].path, opt);
 			//ждем выполнения очереди
-			try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+			//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
@@ -3172,6 +3182,8 @@ try{
 			else if(obj.type=='video') {await sendVideo(LoaderBot, chat_coordinatorWhatsApp, obj.path, opt);}//если видео
 			else if(obj.type=='audio') {await sendAudio(LoaderBot, chat_coordinatorWhatsApp, obj.path, opt);}//если audio
 			else if(obj.type=='document') {await sendDocument(LoaderBot, chat_coordinatorWhatsApp, obj.path, opt);}//если document
+			//ждем выполнения очереди
+			try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			await sendMessage(chat_coordinatorWhatsApp, '👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻👆🏻\n'+obj.date+' - '+obj.dayOfWeek);
 			flag++;
 		}
