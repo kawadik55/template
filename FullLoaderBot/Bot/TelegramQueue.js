@@ -104,7 +104,8 @@ class TelegramQueue extends EventEmitter {
                 300000 // Максимум 5 минут
             );
             console.log(`Schedule reconnection in ${delay}ms`);
-            this.connectTimer = setTimeout(() => this._checkConnection(), delay);
+            clearTimeout(this.connectTimer);
+			this.connectTimer = setTimeout(() => this._checkConnection(), delay);
         }
     }
 	//====================================================================
@@ -132,11 +133,11 @@ class TelegramQueue extends EventEmitter {
      */
     addToQueue(messageData) {
         const queueItem = {
-            id: Date.now() + Math.random().toString(36).substr(2, 9),
-            timestamp: Date.now(),
-			type: messageData.type || 'sendMessage',
-			data: messageData.data,
-			options: messageData.options,
+            id: Date.now() + Math.random().toString(36).substr(2, 9),//идентификатор
+            timestamp: Date.now(),//время
+			type: messageData.type || 'sendMessage',//тип
+			data: messageData.data,//само сообщение, путь или media
+			options: messageData.options || '',
 			chatId: messageData.chatId,
             attempts: 0,
 			bot: messageData.bot || this.bot // по умолчанию основной бот
@@ -160,7 +161,7 @@ class TelegramQueue extends EventEmitter {
         if (this.isProcessing || !this.isConnected || this.queue.length === 0) {return;}
 
         this.isProcessing = true;
-        this.emit('processing_started', this.queue.length);
+        //this.emit('processing_started', this.queue.length);
 
         try {
             while (this.queue.length > 0 && this.isConnected)
@@ -191,7 +192,9 @@ class TelegramQueue extends EventEmitter {
 				{	queueItem.attempts++;
                     this.consecutiveErrors++;
 					this.emit('failed', queueItem, error);//отправка с ошибкой
-					if(!this.isConnected) {return;}//если пропала связь, то выходим
+					await this._delay(10);
+					//если пропала связь, то выходим
+					if (error.code === 'EFATAL' || this._isNetworkError(error) || !this.isConnected) {return;}
                 }
 				//удаляем из очереди в любом случае
                 this.queue.shift();
