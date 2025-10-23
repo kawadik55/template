@@ -355,7 +355,7 @@ else
  WriteFileJson(FileAdminList,AdminList);
 }
 
-WriteLogFile('Запуск бота @'+namebot+'.');
+WriteLogFile('\nЗапуск бота @'+namebot);
 if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic+'Z'+moment().format('Z'));
 
 //загружаем очередь, если сохраняли
