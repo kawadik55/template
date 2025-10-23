@@ -472,7 +472,7 @@ try
 });
 //====================================================================
 Bot.on('polling_error', (error) => {WriteLogFile(error+'\nfrom Bot.on("polling_error"');});
-Bot.on('error', (error) => {WriteLogFile(error+'\nfrom Bot.on("error"');});
+Bot.on('error', (error) => {WriteLogFile(error+'\nfrom Bot.on("error"'); });
 //====================================================================
 // Команда Послать всем подписчикам
 Bot.onText(/^\/Public.+$/, async (msg) => 
