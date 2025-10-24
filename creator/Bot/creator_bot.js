@@ -4996,7 +4996,7 @@ try{
 function getKeyByValue(object, value) {return Object.keys(object).find(key => object[key] === value);
 }
 //====================================================================
-/*function setTimezoneByOffset(offsetMinutes)
+function setTimezoneByOffset(offsetMinutes)
 {	
 	// Ищем подходящую временную зону
     const allZones = moment.tz.names();
@@ -5036,5 +5036,5 @@ function getKeyByValue(object, value) {return Object.keys(object).find(key => ob
 			return null;
 		}
     }
-}*/
+}
 //====================================================================
