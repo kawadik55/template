@@ -88,6 +88,20 @@ try {GrandCount = JSON.parse(fs.readFileSync(FileGrandCount));}
 catch (err) {GrandCount = initObjCount(); fs.writeFileSync(FileGrandCount, JSON.stringify(GrandCount,null,2));}
 //проверим наличие файла историй, если файл отсутствует, то создадим его 
 try {let history = JSON.parse(fs.readFileSync(FileHistory));} catch (err) {WriteFileJson(FileHistory,new Object());}
+//проверим наличие файла конфига, если файл отсутствует, то создадим его 
+let config = {};
+try 
+{	config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
+	if(!config.community_text) {config.community_text = "чистого времени"; WriteFileJson(currentDir+"/config.json",config);}
+	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
+} 
+catch (err) 
+{config = {"community_text":"чистого времени","utcOffset":String(moment().utcOffset())};
+ WriteFileJson(currentDir+'/config.json',config);
+}
+if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset');}
+utcOffset = Number(config.utcOffset);
+setTimezoneByOffset(utcOffset);//устанавливаем локальную таймзону.
 //проверим наличие файла лога, если файл отсутствует, то создадим его
 try 
 {var oldmask = process.umask(0);
@@ -162,21 +176,6 @@ try
  if(!DISTANCE) {DISTANCE=1; WriteFileJson(currentDir+'/privat.json',{"privat":PRIVAT, "distance":DISTANCE});}
 } 
 catch (err) {WriteFileJson(currentDir+'/privat.json',{"privat":PRIVAT, "distance":DISTANCE});}
-//проверим наличие файла конфига, если файл отсутствует, то создадим его 
-let config = {};
-try 
-{	config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
-	if(!config.community_text) {config.community_text = "чистого времени"; WriteFileJson(currentDir+"/config.json",config);}
-	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
-} 
-catch (err) 
-{config = {"community_text":"чистого времени","utcOffset":String(moment().utcOffset())};
- WriteFileJson(currentDir+'/config.json',config);
-}
-if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset');}
-utcOffset = Number(config.utcOffset);
-setTimezoneByOffset(utcOffset);//устанавливаем локальную таймзону.
-
 //загрузим вопросы из файла tenstep.txt
 try {TenList = fs.readFileSync(FileTen).toString().split('\n');} catch (err) {WriteLogFile(err,'no'); TenList.push('Файл вопросов отсутствует!');}
 if(TenList.length==0) WriteLogFile('Список TenList пуст!');

@@ -4218,15 +4218,20 @@ function setTimezoneByOffset(offsetMinutes)
 {	
 	// Ищем подходящую временную зону
     const allZones = moment.tz.names();
-    let suitableZones = allZones.filter(zone => 
+    let rus = ['Europe/Kaliningrad','Europe/Moscow','Europe/Samara','Asia/Yekaterinburg','Asia/Omsk','Asia/Novosibirsk','Asia/Irkutsk','Asia/Chita','Asia/Vladivostok'];
+	let suitableZones = allZones.filter(zone => 
 	{	const zoneOffset = moment.tz(zone).utcOffset();
         return zoneOffset === offsetMinutes;
     });
     if(suitableZones.length > 0) 
-	{	// Берем первую подходящую зону
-        moment.tz.setDefault(suitableZones[0]);
-        //WriteLogFile('Установлена зона: '+suitableZones[0]+', смещение: '+moment().format('Z'));
-        return suitableZones[0];
+	{	let res;
+		//ищем российские зоны сначала
+		let rusZona = suitableZones.find(item => rus.includes(item));
+		if(!!rusZona) res = rusZona;// берем русскую, если есть
+		else res = suitableZones[0];// Берем первую подходящую зону
+		moment.tz.setDefault(res);//устанавливаем зону
+        //WriteLogFile('Установлена зона: '+res+', смещение: '+moment().format('Z'), 'нет');
+        return res;
     }
 	else
 	{	// Если точной зоны нет, то ищем наиболее подходящую
