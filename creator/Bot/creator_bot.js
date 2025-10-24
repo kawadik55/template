@@ -4852,10 +4852,11 @@ function setContextFiles()
 		{	fs.copyFileSync(cBot+'/config.json',currentDir+'/config.json');
 		}
 		if(fs.existsSync(currentDir+'/config.json'))
-		{	//let obj;
-			//try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
-			//if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+'/config.json',obj);}
-			//if(!Object.hasOwn(obj,'community_text')) {obj.community_text='чистого времени'; WriteFileJson(currentDir+'/config.json',obj);}
+		{	let obj;
+			try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
+			let offset = moment().utcOffset();
+			//if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = offset>0?'+'+String(offset):String(offset)); WriteFileJson(currentDir+'/config.json',obj);}
+			if(!Object.hasOwn(obj,'community_text')) {obj.community_text='чистого времени'; WriteFileJson(currentDir+'/config.json',obj);}
 		}
 		//если запрошено изменение текста сообщества
 		if(!!COMMUNITY_TEXT_QW)
