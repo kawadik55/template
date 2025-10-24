@@ -175,7 +175,8 @@ catch (err)
 }
 if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset');}
 utcOffset = Number(config.utcOffset);
-//setTimezoneByOffset(utcOffset);//устанавливаем локальную таймзону
+setTimezoneByOffset(utcOffset);//устанавливаем локальную таймзону
+
 //загрузим вопросы из файла tenstep.txt
 try {TenList = fs.readFileSync(FileTen).toString().split('\n');} catch (err) {WriteLogFile(err,'no'); TenList.push('Файл вопросов отсутствует!');}
 if(TenList.length==0) WriteLogFile('Список TenList пуст!');
