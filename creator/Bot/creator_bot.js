@@ -167,10 +167,10 @@ let config = {};
 try 
 {	config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
 	if(!config.community_text) {config.community_text = "чистого времени"; WriteFileJson(currentDir+"/config.json",config);}
-	//if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
+	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
 } 
 catch (err) 
-{config = {"community_text":"чистого времени"/*,"utcOffset":String(moment().utcOffset())*/};
+{config = {"community_text":"чистого времени","utcOffset":String(moment().utcOffset())};
  WriteFileJson(currentDir+'/config.json',config);
 }
 //if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset');}
