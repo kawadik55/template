@@ -1,6 +1,6 @@
 ﻿process.env["NTBA_FIX_350"] = 1;
 const fs = require('fs');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
 const homedir = require('os').homedir();
@@ -75,6 +75,7 @@ let COMMUNITY_TEXT = '';//текст для счетчика чистого вр
 let MediaList=new Object();//массив группы медиа файлов
 let Stickers=new Object();//объект стикеров
 let SignOff = 0;
+let utcOffset = moment().utcOffset();//пока системное смещение
 
 //проверим наличие файла дерева кнопок, если файл отсутствует, то создадим его 
 try {Tree = JSON.parse(fs.readFileSync(FileTree));} 
@@ -162,10 +163,19 @@ try
 } 
 catch (err) {WriteFileJson(currentDir+'/privat.json',{"privat":PRIVAT, "distance":DISTANCE});}
 //проверим наличие файла конфига, если файл отсутствует, то создадим его 
+let config = {};
 try 
-{COMMUNITY_TEXT = JSON.parse(fs.readFileSync(currentDir+'/config.json')).community_text;
+{	config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
+	if(!config.community_text) {config.community_text = "чистого времени"; WriteFileJson(currentDir+"/config.json",config);}
+	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
 } 
-catch (err) {WriteFileJson(currentDir+'/config.json',{"community_text":"чистого времени"});}
+catch (err) 
+{config = {"community_text":"чистого времени","utcOffset":String(moment().utcOffset())};
+ WriteFileJson(currentDir+'/config.json',config);
+}
+if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset');}
+utcOffset = Number(config.utcOffset);
+//setTimezoneByOffset(utcOffset);//устанавливаем локальную таймзону
 //загрузим вопросы из файла tenstep.txt
 try {TenList = fs.readFileSync(FileTen).toString().split('\n');} catch (err) {WriteLogFile(err,'no'); TenList.push('Файл вопросов отсутствует!');}
 if(TenList.length==0) WriteLogFile('Список TenList пуст!');
@@ -4838,7 +4848,14 @@ function setContextFiles()
 			WriteFileJson(currentDir+'/privat.json',obj);
 		}
 		if(!fs.existsSync(currentDir+'/config.json') && fs.existsSync(cBot+'/config.json'))
-		{fs.copyFileSync(cBot+'/config.json',currentDir+'/config.json');}
+		{	fs.copyFileSync(cBot+'/config.json',currentDir+'/config.json');
+		}
+		if(fs.existsSync(currentDir+'/config.json'))
+		{	let obj;
+			try{obj = JSON.parse(fs.readFileSync(currentDir+'/config.json'));}catch(err){console.log(err);}
+			if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+'/config.json',obj);}
+			if(!Object.hasOwn(obj,'community_text')) {obj.community_text='чистого времени'; WriteFileJson(currentDir+'/config.json',obj);}
+		}
 		//если запрошено изменение текста сообщества
 		if(!!COMMUNITY_TEXT_QW)
 		{	let obj;
@@ -4977,5 +4994,47 @@ try{
 }
 //====================================================================
 function getKeyByValue(object, value) {return Object.keys(object).find(key => object[key] === value);
+}
+//====================================================================
+function setTimezoneByOffset(offsetMinutes)
+{	
+	// Ищем подходящую временную зону
+    const allZones = moment.tz.names();
+    let suitableZones = allZones.filter(zone => 
+	{	const zoneOffset = moment.tz(zone).utcOffset();
+        return zoneOffset === offsetMinutes;
+    });
+    if(suitableZones.length > 0) 
+	{	// Берем первую подходящую зону
+        moment.tz.setDefault(suitableZones[0]);
+        WriteLogFile('Установлена зона: '+suitableZones[0]+', смещение: '+moment().format('Z'), 'нет');
+        return suitableZones[0];
+    }
+	else
+	{	// Если точной зоны нет, то ищем наиболее подходящую
+		const sign = offsetMinutes >= 0 ? '+' : '-';
+		let hours = Math.floor(Math.abs(offsetMinutes) / 60);
+		let minutes = Math.abs(offsetMinutes) % 60;
+		if(minutes<30) minutes = 0;
+		else {minutes = 0; hours++;}
+		if(hours>12) hours = 12;
+		let localOffset = hours*60 + minutes;
+		if(sign=='-') localOffset = -localOffset;
+		// Ищем подходящую временную зону
+		suitableZones = allZones.filter(zone => 
+		{	const zoneOffset = moment.tz(zone).utcOffset();
+			return zoneOffset === localOffset;
+		});
+		if(suitableZones.length > 0) 
+		{	// Берем первую подходящую зону
+			moment.tz.setDefault(suitableZones[0]);
+			WriteLogFile('Установлена зона: '+suitableZones[0]+', смещение: '+moment().format('Z'), 'нет');
+			return suitableZones[0];
+		}
+		else 
+		{	WriteLogFile('Таймзона не установлена! Смещение: '+moment().format('Z'),'нет');
+			return null;
+		}
+    }
 }
 //====================================================================
