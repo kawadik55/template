@@ -4853,7 +4853,7 @@ function setContextFiles()
 		}
 		if(fs.existsSync(currentDir+'/config.json'))
 		{	let obj;
-			try{obj = JSON.parse(fs.readFileSync(currentDir+'/config.json'));}catch(err){console.log(err);}
+			try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
 			if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+'/config.json',obj);}
 			if(!Object.hasOwn(obj,'community_text')) {obj.community_text='чистого времени'; WriteFileJson(currentDir+'/config.json',obj);}
 		}
