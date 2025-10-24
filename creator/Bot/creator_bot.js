@@ -4796,6 +4796,7 @@ function setContextFiles()
 	let PATHEG = (process.env.PATHEG) ? process.env.PATHEG : '';//путь к файлу Ежика из ENV
 	let PATHRASPIS = (process.env.PATHRASPIS) ? process.env.PATHRASPIS : '';//путь к файлу Расписания из ENV
 	let COMMUNITY_TEXT_QW = (process.env.COMMUNITY_TEXT) ? process.env.COMMUNITY_TEXT : '';//путь к файлу Расписания из ENV
+	let TIMEZONE_MINUTES = (process.env.TIMEZONE_MINUTES) ? process.env.TIMEZONE_MINUTES : '';
 	if(!fs.existsSync(TokenDir)) {fs.mkdirSync(TokenDir);}//создадим папку, если ее нет
 	if(fs.existsSync(cBot))
 	{	//текстовые файлы переписываем принудительно
@@ -4862,8 +4863,16 @@ function setContextFiles()
 		if(!!COMMUNITY_TEXT_QW)
 		{	let obj;
 			try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
-			if(typeof(obj) != 'object') {obj={}; obj.community_text='чистого времени';}
+			if(typeof(obj) != 'object') {obj={}; obj.community_text='чистого времени'; obj.utcOffset='+180';}
 			obj.community_text = COMMUNITY_TEXT_QW;
+			WriteFileJson(currentDir+'/config.json',obj);
+		}
+		//если запрошено изменение таймзоны
+		if(!!TIMEZONE_MINUTES)
+		{	let obj;
+			try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
+			if(typeof(obj) != 'object') {obj={}; obj.community_text='чистого времени'; obj.utcOffset='+180';}
+			obj.utcOffset = TIMEZONE_MINUTES;
 			WriteFileJson(currentDir+'/config.json',obj);
 		}
 		if(fs.existsSync(cBot+'/gif/Salut.gif'))
@@ -5002,15 +5011,20 @@ function setTimezoneByOffset(offsetMinutes)
 {	
 	// Ищем подходящую временную зону
     const allZones = moment.tz.names();
-    let suitableZones = allZones.filter(zone => 
+    let rus = ['Europe/Kaliningrad','Europe/Moscow','Europe/Samara','Asia/Yekaterinburg','Asia/Omsk','Asia/Novosibirsk','Asia/Irkutsk','Asia/Chita','Asia/Vladivostok'];
+	let suitableZones = allZones.filter(zone => 
 	{	const zoneOffset = moment.tz(zone).utcOffset();
         return zoneOffset === offsetMinutes;
     });
     if(suitableZones.length > 0) 
-	{	// Берем первую подходящую зону
-        moment.tz.setDefault(suitableZones[0]);
-        WriteLogFile('Установлена зона: '+suitableZones[0]+', смещение: '+moment().format('Z'), 'нет');
-        return suitableZones[0];
+	{	let res;
+		//ищем российские зоны сначала
+		let rusZona = suitableZones.find(item => rus.includes(item));
+		if(!!rusZona) res = rusZona;// берем русскую, если есть
+		else res = suitableZones[0];// Берем первую подходящую зону
+		moment.tz.setDefault(res);//устанавливаем зону
+        WriteLogFile('Установлена зона: '+res+', смещение: '+moment().format('Z'), 'нет');
+        return res;
     }
 	else
 	{	// Если точной зоны нет, то ищем наиболее подходящую
