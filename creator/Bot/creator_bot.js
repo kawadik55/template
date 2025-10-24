@@ -173,8 +173,8 @@ catch (err)
 {config = {"community_text":"чистого времени","utcOffset":String(moment().utcOffset())};
  WriteFileJson(currentDir+'/config.json',config);
 }
-//if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset');}
-//utcOffset = Number(config.utcOffset);
+if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset');}
+utcOffset = Number(config.utcOffset);
 //setTimezoneByOffset(utcOffset);//устанавливаем локальную таймзону
 //загрузим вопросы из файла tenstep.txt
 try {TenList = fs.readFileSync(FileTen).toString().split('\n');} catch (err) {WriteLogFile(err,'no'); TenList.push('Файл вопросов отсутствует!');}
