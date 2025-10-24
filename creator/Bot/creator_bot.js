@@ -4855,7 +4855,7 @@ function setContextFiles()
 		{	let obj;
 			try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
 			let offset = moment().utcOffset();
-			//if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = offset>0?'+'+String(offset):String(offset)); WriteFileJson(currentDir+'/config.json',obj);}
+			if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = offset>0?'+'+String(offset):String(offset); WriteFileJson(currentDir+'/config.json',obj);}
 			if(!Object.hasOwn(obj,'community_text')) {obj.community_text='чистого времени'; WriteFileJson(currentDir+'/config.json',obj);}
 		}
 		//если запрошено изменение текста сообщества
