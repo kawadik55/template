@@ -471,7 +471,7 @@ try
 } catch(err){WriteLogFile(err+'\nfrom callback_query()');}
 });
 //====================================================================
-Bot.on('polling_error', (error) => {WriteLogFile(error+'\nfrom Bot.on("polling_error"');});
+Bot.on('polling_error', (error) => {WriteLogFile(error+'\nfrom Bot.on("polling_error")','нет');});
 Bot.on('error', (error) => {WriteLogFile(error+'\nfrom Bot.on("error"'); });
 //====================================================================
 // Команда Послать всем подписчикам
@@ -1792,12 +1792,12 @@ async function sendMessage(chatId,str,option,index)
 try{
 	let res;
 	if(!isValidChatId(chatId))//если не число, то не пускаем 
-	{	res = '\nfrom sendMessage("'+chatId+'")=>if(!isValidChatId(chatId))';
+	{	res = '\nfrom sendMessage("'+chatId+'")=>если не число, то не пускаем';
 		WriteLogFile(res,'непосылать');
 		return res;
 	}
 	if(Number(chatId)<0)//отрицательные chatId не пускаем
-	{	res = '\nfrom sendMessage("'+chatId+'")=>if(Number(chatId)<0)';
+	{	res = '\nfrom sendMessage("'+chatId+'")=>отрицательные chatId не пускаем';
 		WriteLogFile(res,'непосылать');
 		return res;
 	}
