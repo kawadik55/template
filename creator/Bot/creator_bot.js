@@ -75,7 +75,7 @@ let COMMUNITY_TEXT = '';//текст для счетчика чистого вр
 let MediaList=new Object();//массив группы медиа файлов
 let Stickers=new Object();//объект стикеров
 let SignOff = 0;
-//let utcOffset = moment().utcOffset();//пока системное смещение
+let utcOffset = moment().utcOffset();//пока системное смещение
 
 //проверим наличие файла дерева кнопок, если файл отсутствует, то создадим его 
 try {Tree = JSON.parse(fs.readFileSync(FileTree));} 
