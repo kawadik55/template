@@ -1,6 +1,6 @@
 ﻿process.env["NTBA_FIX_350"] = 1;
 const fs = require('fs');
-const moment = require('moment-timezone');
+const moment = require('moment');
 const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
 const homedir = require('os').homedir();

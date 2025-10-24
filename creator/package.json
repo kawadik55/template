@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "moment-timezone": "^0.6.0",
+    "moment": "^2.29.4",
     "node-telegram-bot-api": "latest"
   }
 }
