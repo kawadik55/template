@@ -75,7 +75,7 @@ let COMMUNITY_TEXT = '';//текст для счетчика чистого вр
 let MediaList=new Object();//массив группы медиа файлов
 let Stickers=new Object();//объект стикеров
 let SignOff = 0;
-let utcOffset = moment().utcOffset();//пока системное смещение
+//let utcOffset = moment().utcOffset();//пока системное смещение
 
 //проверим наличие файла дерева кнопок, если файл отсутствует, то создадим его 
 try {Tree = JSON.parse(fs.readFileSync(FileTree));} 
@@ -167,14 +167,14 @@ let config = {};
 try 
 {	config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
 	if(!config.community_text) {config.community_text = "чистого времени"; WriteFileJson(currentDir+"/config.json",config);}
-	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
+	//if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
 } 
 catch (err) 
-{config = {"community_text":"чистого времени","utcOffset":String(moment().utcOffset())};
+{config = {"community_text":"чистого времени"/*,"utcOffset":String(moment().utcOffset())*/};
  WriteFileJson(currentDir+'/config.json',config);
 }
-if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset');}
-utcOffset = Number(config.utcOffset);
+//if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset');}
+//utcOffset = Number(config.utcOffset);
 //setTimezoneByOffset(utcOffset);//устанавливаем локальную таймзону
 //загрузим вопросы из файла tenstep.txt
 try {TenList = fs.readFileSync(FileTen).toString().split('\n');} catch (err) {WriteLogFile(err,'no'); TenList.push('Файл вопросов отсутствует!');}
@@ -4853,7 +4853,7 @@ function setContextFiles()
 		if(fs.existsSync(currentDir+'/config.json'))
 		{	let obj;
 			try{obj = JSON.parse(fs.readFileSync(currentDir+'/config.json'));}catch(err){console.log(err);}
-			if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+'/config.json',obj);}
+			//if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+'/config.json',obj);}
 			if(!Object.hasOwn(obj,'community_text')) {obj.community_text='чистого времени'; WriteFileJson(currentDir+'/config.json',obj);}
 		}
 		//если запрошено изменение текста сообщества
@@ -4996,7 +4996,7 @@ try{
 function getKeyByValue(object, value) {return Object.keys(object).find(key => object[key] === value);
 }
 //====================================================================
-function setTimezoneByOffset(offsetMinutes)
+/*function setTimezoneByOffset(offsetMinutes)
 {	
 	// Ищем подходящую временную зону
     const allZones = moment.tz.names();
@@ -5036,5 +5036,5 @@ function setTimezoneByOffset(offsetMinutes)
 			return null;
 		}
     }
-}
+}*/
 //====================================================================
