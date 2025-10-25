@@ -76,6 +76,7 @@ let MediaList=new Object();//массив группы медиа файлов
 let Stickers=new Object();//объект стикеров
 let SignOff = 0;
 let utcOffset = moment().utcOffset();//пока системное смещение
+let localTimeZona = '';
 
 //проверим наличие файла дерева кнопок, если файл отсутствует, то создадим его 
 try {Tree = JSON.parse(fs.readFileSync(FileTree));} 
@@ -99,9 +100,10 @@ catch (err)
 {config = {"community_text":"чистого времени","utcOffset":String(moment().utcOffset())};
  WriteFileJson(currentDir+'/config.json',config);
 }
+//устанавливаем локальную таймзону
 if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset');}
 utcOffset = Number(config.utcOffset);
-setTimezoneByOffset(utcOffset);//устанавливаем локальную таймзону.
+localTimeZona = setTimezoneByOffset(utcOffset);
 //проверим наличие файла лога, если файл отсутствует, то создадим его
 try 
 {var oldmask = process.umask(0);
@@ -110,6 +112,8 @@ try
  process.umask(oldmask);
  WriteLogFile('=======================================================', 'непосылать');
  WriteLogFile('запуск процесса '+path.basename(__filename), 'непосылать');
+ if(!!localTimeZona) WriteLogFile('Установлена таймзона: '+localTimeZona+', смещение: '+moment().format('Z'), 'нет');
+ else WriteLogFile('Таймзона не установлена! Смещение: '+moment().format('Z'),'нет');
 } catch (err) {console.log(err);}
 //прочитаем сохраненный файл LastMessId.txt, если файл отсутствует, то создадим его
 try {LastMessId = JSON.parse(fs.readFileSync(currentDir+"/LastMessId.txt"));} 
@@ -5022,7 +5026,7 @@ function setTimezoneByOffset(offsetMinutes)
 		if(!!rusZona) res = rusZona;// берем русскую, если есть
 		else res = suitableZones[0];// Берем первую подходящую зону
 		moment.tz.setDefault(res);//устанавливаем зону
-        WriteLogFile('Установлена зона: '+res+', смещение: '+moment().format('Z'), 'нет');
+        //WriteLogFile('Установлена зона: '+res+', смещение: '+moment().format('Z'), 'нет');
         return res;
     }
 	else
@@ -5043,11 +5047,11 @@ function setTimezoneByOffset(offsetMinutes)
 		if(suitableZones.length > 0) 
 		{	// Берем первую подходящую зону
 			moment.tz.setDefault(suitableZones[0]);
-			WriteLogFile('Установлена зона: '+suitableZones[0]+', смещение: '+moment().format('Z'), 'нет');
+			//WriteLogFile('Установлена зона: '+suitableZones[0]+', смещение: '+moment().format('Z'), 'нет');
 			return suitableZones[0];
 		}
 		else 
-		{	WriteLogFile('Таймзона не установлена! Смещение: '+moment().format('Z'),'нет');
+		{	//WriteLogFile('Таймзона не установлена! Смещение: '+moment().format('Z'),'нет');
 			return null;
 		}
     }
