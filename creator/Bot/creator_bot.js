@@ -3,6 +3,7 @@ const fs = require('fs');
 const moment = require('moment-timezone');
 const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
+const TelegramQueue = require('./TelegramQueue');
 const homedir = require('os').homedir();
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше.
@@ -53,6 +54,13 @@ try{tokenLog = require(TokenDir+"/logs_bot.json").token;}catch(err){}
 //if(!!tokenLog && tokenLog=='ТокенБотаЛогов') tokenLog = null;
 var logBot;
 if(!!tokenLog){try{logBot = new TelegramBot(tokenLog, {polling: false});}catch(err){logBot=null;}}//бот для вывода лог-сообщений 
+// Создаем очередь для Bot
+const queue = new TelegramQueue(Bot, {
+    maxRetries: 5,
+    retryDelay: 10000,
+    messagesPerSecond: 10,
+	maxConsecutiveErrors: 5
+});
 //---------------------------------------------------
 let LastMessId=new Object();//массив для хранения последнего message_id, и не только
 let FileId=new Object();//массив для хранения последнего file_id
@@ -522,6 +530,18 @@ async function resumeBot()
 }
 
 Bot.on('error', (error) => {WriteLogFile(error+'\nfrom Bot.on("error"','вчат'); });
+//====================================================================
+// Обработчики событий очереди
+//queue.on('error', (error) => {WriteLogFile(error);});
+//queue.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь: ${item.id}`);});
+//queue.on('sent', (item) => {WriteLogFile(`Сообщение отправлено: ${item.id}`);});
+queue.on('failed', (item, error) => {WriteLogFile('Ошибка отправки '+item.id+':\n'+error.message);});
+//queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
+queue.on('connected', () => {WriteLogFile('=> bot connected');});
+queue.on('disconnected', (error) => {WriteLogFile(error+'; => bot disconnected');});
+//queue.on('processing_started', (item) => {WriteLogFile('processing_started, queue length = '+item);});
+//queue.on('processing_finished', () => {WriteLogFile('processing_finished');});
+//queue.on('cleared', (item) => {WriteLogFile('cleared = '+item);});
 //====================================================================
 // Команда Послать всем подписчикам
 Bot.onText(/^\/Public.+$/, async (msg) => 
@@ -4640,6 +4660,7 @@ let time_interval2 = 30*60;//в сек
 var interval2 = setInterval(checkTime, time_interval2*1000);//заведем часы
 checkTime();//выполним при запуске скрипта, вдруг уже в интервале...
 
+//посылаем через очередь, чтоб при потере связи не потерялись сообщения
 async function checkTime()
 {	
 try{
@@ -4656,15 +4677,15 @@ try{
 			{	let user = Object.keys(AdminList);//создаем массив ключей из списка админов
 				for(let i in user)
 				{	let chatId = user[i].toString();
-					await sendMessage(chatId, mess, {parse_mode:"markdown"});
-					//await sleep(1000);
+					await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
+					//await sendMessage(chatId, mess, {parse_mode:"markdown"});
 				}
 				user = Object.keys(UserList);//создаем массив ключей из списка юзеров
 				if(user.length)
 				{	for(let i in user)
 					{	let chatId = user[i].toString();
-						await sendMessage(chatId, mess, {parse_mode:"markdown"});
-						//await sleep(1000);
+						await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
+						//await sendMessage(chatId, mess, {parse_mode:"markdown"});
 					}
 				}
 			}
@@ -4698,25 +4719,26 @@ try{
 						{for(let k in files) 
 						 {	//посылаем салют(ы)
 							if(files[k].toLowerCase().indexOf('.gif')+1) 
-							{	let res = await sendDocument(chatId, files[k]);
+							{	//let res = await sendDocument(chatId, files[k]);
+								let res = await queue.addToQueue({type:'sendDocument', chatId:chatId, data:files[k], options:{}, bot:Bot});
 								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_srok');
 								else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_srok');
-								//await sleep(2000);
 							}
 						 }
 						}
 						if(!!Stickers.ubik && Stickers.ubik.length>0)//если есть стикеры
 						{	for(let k in Stickers.ubik)
-							{	let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
+							{	//let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
+								let res = await queue.addToQueue({type:'sendSticker', chatId:chatId, data:Stickers.ubik[k], options:{}, bot:Bot});
 								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_srok');
 								else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_srok');
 							}
 						}
 					}
-					let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
+					//let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
+					let res = await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
 					if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_srok');
 					else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_srok');
-					//await sleep(1000);
 				}
 			}
 			}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_srok)','вчат');}
@@ -4744,7 +4766,8 @@ try{
 						{for(let k in files) 
 						 {	//посылаем салют
 							if(files[k].toLowerCase().indexOf('.gif')+1) 
-							{	let res = await sendDocument(chatId, files[k]);
+							{	//let res = await sendDocument(chatId, files[k]);
+								let res = await queue.addToQueue({type:'sendDocument', chatId:chatId, data:files[k], options:{}, bot:Bot});
 								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_smoke');
 								else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_smoke');
 								//await sleep(2000);
@@ -4753,13 +4776,14 @@ try{
 						}
 						if(!!Stickers.ubik && Stickers.ubik.length>0)//если есть стикеры
 						{	for(let k in Stickers.ubik)
-							{	let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
-								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_smoke');
+							{	//let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
+								let res = await queue.addToQueue({type:'sendSticker', chatId:chatId, data:Stickers.ubik[k], options:{}, bot:Bot});if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_smoke');
 								else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_smoke');
 							}
 						}
 					}
-					let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
+					//let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
+					let res = await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
 					if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_smoke');
 					else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_smoke');
 					//await sleep(1000);
