@@ -46,7 +46,8 @@ const filenamebot = '/' + require(currentDir+"/filename_bot.json").filename;//и
 const tokenBot = require(TokenDir+filenamebot).token;//рабочий бот
 var nameBot = 'my_bot'; try{nameBot = require(TokenDir+filenamebot).comment} catch (err) {}//имя бота
 const LogFile = PathToLog+'/'+nameBot+'.log';
-const Bot = new TelegramBot(tokenBot, {polling: true});
+var Bot = new TelegramBot(tokenBot, {polling: true});
+Bot.isPolling = true;//доп свойство
 let tokenLog;
 try{tokenLog = require(TokenDir+"/logs_bot.json").token;}catch(err){}
 //if(!!tokenLog && tokenLog=='ТокенБотаЛогов') tokenLog = null;
@@ -110,10 +111,10 @@ try
  if(!fs.existsSync(PathToLog)) fs.mkdirSync(PathToLog, 0777);//создадим папку, если нет
  try {let bl = fs.readFileSync(LogFile).toString();} catch (err) {fs.writeFileSync(LogFile, '\n');}
  process.umask(oldmask);
- WriteLogFile('=======================================================', 'непосылать');
- WriteLogFile('запуск процесса '+path.basename(__filename), 'непосылать');
- if(!!localTimeZona) WriteLogFile('Установлена таймзона: '+localTimeZona+', смещение: '+moment().format('Z'), 'нет');
- else WriteLogFile('Таймзона не установлена! Смещение: '+moment().format('Z'),'нет');
+ WriteLogFile('=======================================================');
+ WriteLogFile('запуск процесса '+path.basename(__filename));
+ if(!!localTimeZona) WriteLogFile('Установлена таймзона: '+localTimeZona+', смещение: '+moment().format('Z'));
+ else WriteLogFile('Таймзона не установлена! Смещение: '+moment().format('Z'));
 } catch (err) {console.log(err);}
 //прочитаем сохраненный файл LastMessId.txt, если файл отсутствует, то создадим его
 try {LastMessId = JSON.parse(fs.readFileSync(currentDir+"/LastMessId.txt"));} 
@@ -130,7 +131,7 @@ try
  }
  if(flag) WriteFileJson(FileAdminList,AdminList);//записываем файл
 }
-catch(err){WriteFileJson(FileAdminList,{}); WriteLogFile(err);}
+catch(err){WriteFileJson(FileAdminList,{}); WriteLogFile(err,'вчат');}
 //проверим наличие файла Служенцев, если файл отсутствует, то создадим его 
 try 
 {UserList = JSON.parse(fs.readFileSync(FileUserList));
@@ -181,8 +182,8 @@ try
 } 
 catch (err) {WriteFileJson(currentDir+'/privat.json',{"privat":PRIVAT, "distance":DISTANCE});}
 //загрузим вопросы из файла tenstep.txt
-try {TenList = fs.readFileSync(FileTen).toString().split('\n');} catch (err) {WriteLogFile(err,'no'); TenList.push('Файл вопросов отсутствует!');}
-if(TenList.length==0) WriteLogFile('Список TenList пуст!');
+try {TenList = fs.readFileSync(FileTen).toString().split('\n');} catch (err) {WriteLogFile(err,'вчат'); TenList.push('Файл вопросов отсутствует!');}
+if(TenList.length==0) WriteLogFile('Список TenList пуст!','вчат');
 //загрузим ответы из временного файла answer.txt
 if(fs.existsSync(currentDir+'/answer.txt'))
 {try {AnswerList = JSON.parse(fs.readFileSync(currentDir+'/answer.txt'));
@@ -269,7 +270,7 @@ try{
 	option.disable_notification = true;//все кнопочные сообщения - без уведомления
 	//console.log(JSON.stringify(option,null,2));
 	return option;
-} catch (err){WriteLogFile(err+'\nfrom klava()');}
+} catch (err){WriteLogFile(err+'\nfrom klava()','вчат');}
 }
 //====================================================================
 // обработка ответов от кнопок
@@ -435,7 +436,7 @@ try
 			LastMessId[chatId].indexTen = index;//будем использовать ключ от 10го шага
 			let Barrels = [];
 			fs.readFile(FileBarrels, 'utf8', async (err, data) => 
-			{	if(err) {WriteLogFile(err,'no'); data = 'Файл бочонков отсутствует!';}
+			{	if(err) {WriteLogFile(err); data = 'Файл бочонков отсутствует!';}
 				Barrels = data.toString().split('\n');
 				//сгенерируем случайное число по длине массива строк
 				let min = 0;
@@ -482,11 +483,45 @@ try
 		GrandCount[index]++;
 	}
 	
-} catch(err){WriteLogFile(err+'\nfrom callback_query()');}
+} catch(err){WriteLogFile(err+'\nfrom callback_query()','вчат');}
 });
 //====================================================================
-Bot.on('polling_error', (error) => {WriteLogFile(error+'\nfrom Bot.on("polling_error")','нет');});
-Bot.on('error', (error) => {WriteLogFile(error+'\nfrom Bot.on("error"'); });
+Bot.on('polling_error', async (error) => 
+{	WriteLogFile(error+'\nfrom Bot.on("polling_error")');
+	if(error.code === 'EFATAL' || error.message.includes('502'))
+	{	if(!Bot.isPolling) Bot.isPolling = true;
+		await pauseBot(5000);
+	}
+});
+
+async function pauseBot(duration = 10000)
+{	if(!Bot.isPolling) return;
+    WriteLogFile('Останавливаем бот на '+duration/1000+'сек');
+    try {
+		await Bot.stopPolling();
+        Bot.isPolling = false;
+        WriteLogFile('Polling stopped');
+        // Автоматическое возобновление
+        setTimeout(() => {resumeBot();}, duration);
+    } catch (error) {
+        WriteLogFile('Error stopping polling: '+error);
+    }
+}
+async function resumeBot() 
+{	if(Bot.isPolling) return;
+	WriteLogFile('Запускаем бот после паузы');
+    try {
+        await Bot.startPolling();
+        Bot.isPolling = true;
+        WriteLogFile('Polling resumed');
+    } catch (error) {
+        WriteLogFile('Error resuming polling: '+error);
+        // Повторная попытка через 30 секунд
+        setTimeout(() => resumeBot(), 30000);
+    }
+}
+
+Bot.on('error', (error) => {WriteLogFile(error+'\nfrom Bot.on("error"','вчат'); });
 //====================================================================
 // Команда Послать всем подписчикам
 Bot.onText(/^\/Public.+$/, async (msg) => 
@@ -507,7 +542,7 @@ try{
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
-}catch(err){WriteLogFile(err+'\nfrom Public()');}
+}catch(err){WriteLogFile(err+'\nfrom Public()','вчат');}
 });
 //====================================================================
 // Команда Редактировать что либо
@@ -532,7 +567,7 @@ try{
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
-}catch(err){WriteLogFile(err+'\nfrom callback_Public()');}
+}catch(err){WriteLogFile(err+'\nfrom callback_Public()','вчат');}
 });
 //====================================================================
 // Команда Удалить что либо
@@ -560,7 +595,7 @@ try{
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
-}catch(err){WriteLogFile(err+'\nfrom Del()');}
+}catch(err){WriteLogFile(err+'\nfrom Del()','вчат');}
 });
 //====================================================================
 // Команда Добавить что либо
@@ -601,7 +636,7 @@ try{
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
-}catch(err){WriteLogFile(err+'\nfrom Add()');}
+}catch(err){WriteLogFile(err+'\nfrom Add()','вчат');}
 });
 //====================================================================
 // Команда Переместить кнопку
@@ -622,7 +657,7 @@ try{
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
-}catch(err){WriteLogFile(err+'\nfrom Move()');}
+}catch(err){WriteLogFile(err+'\nfrom Move()','вчат');}
 });
 //====================================================================
 // Команда Вырезать кнопку
@@ -654,7 +689,7 @@ try{
 		await sendMessage(chatId, str, klava(LastKey[chatId],null, chatId));//на прежнем уровне
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
-}catch(err){WriteLogFile(err+'\nfrom CutButton()');}
+}catch(err){WriteLogFile(err+'\nfrom CutButton()','вчат');}
 });
 //====================================================================
 // Команда Вставить кнопку
@@ -686,7 +721,7 @@ try{
 		delete CutList[chatId];
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
-}catch(err){WriteLogFile(err+'\nfrom InsertButton()');}
+}catch(err){WriteLogFile(err+'\nfrom InsertButton()','вчат');}
 });
 //====================================================================
 // Команда Статистики
@@ -710,7 +745,7 @@ try{
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
-}catch(err){WriteLogFile(err+'\nfrom Stat()');}
+}catch(err){WriteLogFile(err+'\nfrom Stat()','вчат');}
 });
 //====================================================================
 // Команда Удалить 'мертвых' пользователей
@@ -754,7 +789,7 @@ try{
 		else await sendMessage(chatId, '*Мертвых* подписчиков не обнаружено!', {parse_mode:"markdown"});
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
-}catch(err){WriteLogFile(err+'\nfrom DeadUsers()');}
+}catch(err){WriteLogFile(err+'\nfrom DeadUsers()','вчат');}
 });
 //====================================================================
 // СТАРТ
@@ -777,7 +812,7 @@ try{
 		Tree[index].text += '/help - выдаст полный список команд';
     }
 	await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].entities, chatId), index);
-}catch(err){WriteLogFile(err+'\nfrom Start()');}
+}catch(err){WriteLogFile(err+'\nfrom Start()','вчат');}
 });
 //====================================================================
 // СТОП
@@ -793,7 +828,7 @@ try{
 	//удаляем юзера из массива
 	if(Object.hasOwn(LastMessId, chatId)) delete LastMessId[chatId];
 	await sendMessage(chatId, 'Вы отписались от бота!\n\nПришли мне любую букву, и подписка возобновится!');
-}catch(err){WriteLogFile(err+'\nfrom off()');}
+}catch(err){WriteLogFile(err+'\nfrom off()','вчат');}
 });
 //====================================================================
 // Команда Закрыть подписку новых юзеров
@@ -817,7 +852,7 @@ try{
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
-}catch(err){WriteLogFile(err+'\nfrom callback_Public()');}
+}catch(err){WriteLogFile(err+'\nfrom callback_Public()','вчат');}
 });
 //====================================================================
 // Команда help
@@ -854,7 +889,7 @@ try{
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
-}catch(err){WriteLogFile(err+'\nfrom help()');}
+}catch(err){WriteLogFile(err+'\nfrom help()','вчат');}
 });
 //====================================================================
 // ловим текст
@@ -1000,7 +1035,7 @@ try{
 			await fs.promises.unlink(NewList[msg.text]);//удаляем файл из папки
 			while(Object.hasOwn(opt, filename)) delete opt[filename];//стираем подпись
 			WriteFileJson(PathToDoc+'/'+file_key+'/'+'FileCaption.json', opt);//сохраняем файл
-			WriteLogFile(NewList[msg.text]+' was Deleted','непосылать');
+			WriteLogFile(NewList[msg.text]+' was Deleted');
 			//надо удалить запись из FileId, если там есть
 			while(Object.hasOwn(FileId, filename)) {delete FileId[filename]; WriteFileJson(currentDir+'/FileId.txt',FileId);}
 			await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(LastKey[chatId],null, chatId));
@@ -1011,7 +1046,7 @@ try{
 			if(!!NewList && Object.hasOwn(NewList, msg.text))
 			{	while(Object.hasOwn(opt, NewList[msg.text])) delete opt[NewList[msg.text]];//стираем подпись
 				WriteFileJson(PathToDoc+'/'+file_key+'/'+'FileCaption.json', opt);//сохраняем файл
-				WriteLogFile(NewList[msg.text]+' was Deleted','непосылать');
+				WriteLogFile(NewList[msg.text]+' was Deleted');
 				//надо удалить запись из FileId, если там есть
 				while(Object.hasOwn(FileId, NewList[msg.text])) {delete FileId[NewList[msg.text]]; WriteFileJson(currentDir+'/FileId.txt',FileId);}
 				await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(LastKey[chatId],null, chatId));
@@ -1061,7 +1096,7 @@ try{
 			await fs.promises.unlink(NewList[msg.text]);//удаляем файл из папки
 			while(Object.hasOwn(opt, filename)) delete opt[filename];//стираем подпись
 			WriteFileJson(PathToVideo+'/'+video_key+'/'+'FileCaption.json', opt);//сохраняем файл
-			WriteLogFile(NewList[msg.text]+' was Deleted','непосылать');
+			WriteLogFile(NewList[msg.text]+' was Deleted');
 			//надо удалить запись из FileId, если там есть
 			while(Object.hasOwn(FileId, filename)) {delete FileId[filename]; WriteFileJson(currentDir+'/FileId.txt',FileId);}
 			await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(LastKey[chatId],null, chatId));
@@ -1072,7 +1107,7 @@ try{
 			if(!!NewList && Object.hasOwn(NewList, msg.text))
 			{	while(Object.hasOwn(opt, NewList[msg.text])) delete opt[NewList[msg.text]];//стираем подпись
 				WriteFileJson(PathToVideo+'/'+video_key+'/'+'FileCaption.json', opt);//сохраняем файл
-				WriteLogFile(NewList[msg.text]+' was Deleted','непосылать');
+				WriteLogFile(NewList[msg.text]+' was Deleted');
 				//надо удалить запись из FileId, если там есть
 			while(Object.hasOwn(FileId, NewList[msg.text])) {delete FileId[NewList[msg.text]]; WriteFileJson(currentDir+'/FileId.txt',FileId);}
 			await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(LastKey[chatId],null, chatId));
@@ -1122,7 +1157,7 @@ try{
 			await fs.promises.unlink(NewList[msg.text]);//удаляем файл из папки
 			while(Object.hasOwn(opt, filename)) delete opt[filename];//стираем подпись
 			WriteFileJson(PathToAudio+'/'+audio_key+'/'+'FileCaption.json', opt);//сохраняем файл
-			WriteLogFile(NewList[msg.text]+' was Deleted','непосылать');
+			WriteLogFile(NewList[msg.text]+' was Deleted');
 			//надо удалить запись из FileId, если там есть
 			while(Object.hasOwn(FileId, filename)) {delete FileId[filename]; WriteFileJson(currentDir+'/FileId.txt',FileId);}
 			await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(LastKey[chatId],null, chatId));
@@ -1133,7 +1168,7 @@ try{
 			if(!!NewList && Object.hasOwn(NewList, msg.text))
 			{	while(Object.hasOwn(opt, NewList[msg.text])) delete opt[NewList[msg.text]];//стираем подпись
 				WriteFileJson(PathToAudio+'/'+audio_key+'/'+'FileCaption.json', opt);//сохраняем файл
-				WriteLogFile(NewList[msg.text]+' was Deleted','непосылать');
+				WriteLogFile(NewList[msg.text]+' was Deleted');
 				//надо удалить запись из FileId, если там есть
 				while(Object.hasOwn(FileId, NewList[msg.text])) {delete FileId[NewList[msg.text]]; WriteFileJson(currentDir+'/FileId.txt',FileId);}
 				await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(LastKey[chatId],null, chatId));
@@ -1298,7 +1333,7 @@ try{
 		}
 		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
 	}
-}catch(err){WriteLogFile(err+'\nfrom ловим message');}
+}catch(err){WriteLogFile(err+'\nfrom ловим message','вчат');}
 });
 //====================================================================
 // ловим ФОТО
@@ -1352,7 +1387,7 @@ try{
 			opt[name].caption = caption;
 			opt[name].caption_entities = caption_entities;
 			WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', opt);//сохраняем подписи в файл
-			WriteLogFile("New photo was loaded to "+path+ " by "+firstname, 'не посылать');
+			WriteLogFile("New photo was loaded to "+path+ " by "+firstname);
 			if(!LastKey[chatId]) LastKey[chatId] = '0';
 			Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
 			await sendMessage(chatId, 'Поздравляю! Фотка '+name+' загружена!', klava('Назад',null, chatId));
@@ -1384,7 +1419,7 @@ try{
 				opt[media_group_id].type = MediaList[media_group_id].type;
 				opt[media_group_id].media = sortMedia(opt[media_group_id].media);
 				WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', opt);//сохраняем подписи в файл
-				WriteLogFile("New album was loaded to "+PathToPhoto+'/'+key+ " by "+firstname, 'не посылать');
+				WriteLogFile("New album was loaded to "+PathToPhoto+'/'+key+ " by "+firstname);
 				if(!LastKey[chatId]) LastKey[chatId] = '0';
 				Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
 				await sendMessage(chatId, 'Поздравляю! Альбом '+media_group_id+' загружен!', klava('Назад',null, chatId));
@@ -1459,7 +1494,7 @@ try{
 		await sendMessage(chatId, 'Что-то пошло не так!\n'+smilik, klava('Назад',null, chatId));
 		WaitEditText[chatId]=0;
 	}
-}catch(err){WriteLogFile(err+'\nfrom ловим ФОТО');}
+}catch(err){WriteLogFile(err+'\nfrom ловим ФОТО','вчат');}
 });
 //====================================================================
 // ловим ДОКУМЕНТ
@@ -1527,7 +1562,7 @@ try{
 		//переименуем файл
 		let newpath = path.replace(name,filename);
 		fs.renameSync(path, newpath);
-		WriteLogFile("New doc was loaded to "+newpath+" by "+firstname, 'не посылать');
+		WriteLogFile("New doc was loaded to "+newpath+" by "+firstname);
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
 		Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
 		await sendMessage(chatId, 'Поздравляю! Файл '+filename+' загружен!', klava('Назад',null, chatId));
@@ -1584,7 +1619,7 @@ try{
 			WriteFileJson(currentDir+'/FileId.txt',FileId);
 		}
 	}
-}catch(err){WriteLogFile(err+'\nfrom ловим ДОКУМЕНТ');}
+}catch(err){WriteLogFile(err+'\nfrom ловим ДОКУМЕНТ','вчат');}
 });
 //====================================================================
 // ловим ВИДЕО
@@ -1659,7 +1694,7 @@ try{
 			opt[media_group_id].type = MediaList[media_group_id].type;
 			opt[media_group_id].media = sortMedia(opt[media_group_id].media);
 			WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', opt);//сохраняем подписи в файл
-			WriteLogFile("New album was loaded to "+PathToPhoto+'/'+key+ " by "+firstname, 'не посылать');
+			WriteLogFile("New album was loaded to "+PathToPhoto+'/'+key+ " by "+firstname);
 			if(!LastKey[chatId]) LastKey[chatId] = '0';
 			Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
 			await sendMessage(chatId, 'Поздравляю! Альбом '+media_group_id+' загружен!', klava('Назад',null, chatId));
@@ -1704,7 +1739,7 @@ try{
 		//переименуем файл
 		let newpath = path.replace(name,filename);
 		fs.renameSync(path, newpath);
-		WriteLogFile("New video was loaded to "+newpath+" by "+firstname, 'не посылать');
+		WriteLogFile("New video was loaded to "+newpath+" by "+firstname);
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
 		Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
 		await sendMessage(chatId, 'Поздравляю! Файл '+filename+' загружен!', klava('Назад',null, chatId));
@@ -1717,7 +1752,7 @@ try{
 			WriteFileJson(currentDir+'/FileId.txt',FileId);
 		}
 	}
-}catch(err){WriteLogFile(err+'\nfrom ловим ВИДЕО');}
+}catch(err){WriteLogFile(err+'\nfrom ловим ВИДЕО','вчат');}
 });
 //====================================================================
 // ловим АУДИО
@@ -1785,7 +1820,7 @@ try{
 		//переименуем файл
 		let newpath = path.replace(name,filename);
 		fs.renameSync(path, newpath);
-		WriteLogFile("New audio was loaded to "+newpath+newpath+" by "+firstname, 'не посылать');
+		WriteLogFile("New audio was loaded to "+newpath+newpath+" by "+firstname);
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
 		Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
 		await sendMessage(chatId, 'Поздравляю! Файл '+filename+' загружен!', klava('Назад',null, chatId));
@@ -1798,7 +1833,7 @@ try{
 			WriteFileJson(currentDir+'/FileId.txt',FileId);
 		}
 	}	
-}catch(err){WriteLogFile(err+'\nfrom ловим АУДИО');}
+}catch(err){WriteLogFile(err+'\nfrom ловим АУДИО','вчат');}
 });
 //====================================================================
 async function sendMessage(chatId,str,option,index)
@@ -1807,12 +1842,12 @@ try{
 	let res;
 	if(!isValidChatId(chatId))//если не число, то не пускаем 
 	{	res = '\nfrom sendMessage("'+chatId+'")=>если не число, то не пускаем';
-		WriteLogFile(res,'непосылать');
+		WriteLogFile(res);
 		return res;
 	}
 	if(Number(chatId)<0)//отрицательные chatId не пускаем
 	{	res = '\nfrom sendMessage("'+chatId+'")=>отрицательные chatId не пускаем';
-		WriteLogFile(res,'непосылать');
+		WriteLogFile(res);
 		return res;
 	}
 	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
@@ -1834,8 +1869,8 @@ try{
 		if(String(err).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
 		else if(String(err).indexOf('bot was blocked by the user')+1) delete LastMessId[chatId];//удаляем ушедшего
 		else if(String(err).indexOf('chat not found')+1) delete LastMessId[chatId];//удаляем ушедшего
-		else if(String(err).indexOf('Too Many Requests:')+1) WriteLogFile(err+'\nfrom Bot.sendMessage');
-		else WriteLogFile(err+'\nfrom Bot.sendMessage("'+chatId+'")'+'\nstr = '+str+'\noption = '+JSON.stringify(option,null,2));
+		else if(String(err).indexOf('Too Many Requests:')+1) WriteLogFile(err+'\nfrom Bot.sendMessage','вчат');
+		else WriteLogFile(err+'\nfrom Bot.sendMessage("'+chatId+'")'+'\nstr = '+str+'\noption = '+JSON.stringify(option,null,2),'вчат');
 		return err;	
 	}
 	
@@ -1857,7 +1892,7 @@ try{
 	return res;
 	
 }catch(err){
-	WriteLogFile(err+'\nfrom sendMessage("'+chatId+'")');
+	WriteLogFile(err+'\nfrom sendMessage("'+chatId+'")','вчат');
 	return err;	
 }
 }
@@ -1868,12 +1903,12 @@ try{
 	let res;
 	if(!isValidChatId(chatId))//если не число, то не пускаем 
 	{	res = '\nfrom sendMessageImage("'+chatId+'")=>if(!isValidChatId(chatId))';
-		WriteLogFile(res,'непосылать');
+		WriteLogFile(res);
 		return res;
 	}
 	if(Number(chatId)<0)//отрицательные chatId не пускаем
 	{	res = '\nfrom sendMessageImage("'+chatId+'")=>if(Number(chatId)<0)';
-		WriteLogFile(res,'непосылать');
+		WriteLogFile(res);
 		return res;
 	}
 	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
@@ -1892,8 +1927,8 @@ try{
 		if(String(err).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
 		else if(String(err).indexOf('bot was blocked by the user')+1) delete LastMessId[chatId];//удаляем ушедшего
 		else if(String(err).indexOf('chat not found')+1) delete LastMessId[chatId];//удаляем ушедшего
-		else if(String(err).indexOf('Too Many Requests:')+1) WriteLogFile(err+'\nfrom Bot.sendMessage');
-		else WriteLogFile(err+'\nfrom Bot.sendMessageImage("'+chatId+'")'+'\nstr = '+path+'\noption = '+JSON.stringify(option,null,2));
+		else if(String(err).indexOf('Too Many Requests:')+1) WriteLogFile(err+'\nfrom Bot.sendMessage','вчат');
+		else WriteLogFile(err+'\nfrom Bot.sendMessageImage("'+chatId+'")'+'\nstr = '+path+'\noption = '+JSON.stringify(option,null,2),'вчат');
 		return err;	
 	}
 	
@@ -1915,7 +1950,7 @@ try{
 	return res;
 	
 }catch(err){
-	WriteLogFile(err+'\nfrom sendMessageImage("'+chatId+'")');
+	WriteLogFile(err+'\nfrom sendMessageImage("'+chatId+'")','вчат');
 	return err;	
 }
 }
@@ -1926,13 +1961,13 @@ try{return await Bot.deleteMessage(chatId, messId);}
 catch(err){ 
 	if(String(err).indexOf("message can't be deleted")+1)
 	{	try{await Bot.editMessageText("!",{chat_id:chatId, message_id:messId});}
-		catch(err1){/*WriteLogFile('Ошибка: не могу исправить старое сообщение\n'+err1, 'непосылать');*/}
+		catch(err1){/*WriteLogFile('Ошибка: не могу исправить старое сообщение\n'+err1);*/}
 		try{await Bot.deleteMessage(chatId, messId);}
-		catch(err1){/*WriteLogFile('Ошибка: не могу удалить старое сообщение\n'+err1, 'непосылать');*/}
+		catch(err1){/*WriteLogFile('Ошибка: не могу удалить старое сообщение\n'+err1);*/}
 	}
 	else
 	{	if(String(err).indexOf("message to delete not found")+1 == 0)//если другое
-		{WriteLogFile(err+'\nfrom remove_message("'+chatId+'")'/*, 'непосылать'*/);
+		{WriteLogFile(err+'\nfrom remove_message("'+chatId+'")','вчат');
 		}
 	}
 	return err;
@@ -2037,7 +2072,7 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 	}
 	return true;
 	
-}catch(err){WriteLogFile(err+'\nfrom sendFiles("'+chatId+'")'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom sendFiles("'+chatId+'")','вчат'); return err;}
 }
 //====================================================================
 //послать видео из-под кнопки с видео index
@@ -2134,7 +2169,7 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 	}
 	return true;
 	
-}catch(err){WriteLogFile(err+'\nfrom sendVideos("'+chatId+'")'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom sendVideos("'+chatId+'")','вчат'); return err;}
 }
 //====================================================================
 //послать аудио из-под кнопки с аудио index
@@ -2230,7 +2265,7 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 		else await sendMessage(chatId, "Слушайте на здоровье! ❤️", klava(index,null, chatId), index);//для кнопки Назад
 	}
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendAudios("'+chatId+'")'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom sendAudios("'+chatId+'")','вчат'); return err;}
 }
 //====================================================================
 async function sendPhotos(chatId, flag, index)
@@ -2338,7 +2373,7 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 		else await sendMessage(chatId, '👆 '+Tree[index].name+' 👆', klava(index,null, chatId), index);
 	}
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendPhotos("'+chatId+'")'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom sendPhotos("'+chatId+'")','вчат'); return err;}
 }
 //====================================================================
 async function sendAlbum(chatId, media, opt)
@@ -2386,7 +2421,7 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 		else await sendMessage(chatId, str, klava('Назад',null, chatId));
 	}
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendEvents()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom sendEvents()','вчат'); return err;}
 }
 //====================================================================
 async function sendDocument(chatId, path, option)
@@ -2394,12 +2429,12 @@ async function sendDocument(chatId, path, option)
 try{	let res;
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendDocument("'+chatId+'")=>if(!isValidChatId(chatId))';
-			WriteLogFile(res,'непосылать');
+			WriteLogFile(res);
 			return res;
 		}
 		if(Number(chatId)<0)//отрицательные chatId не пускаем
 		{	res = '\nfrom sendDocument("'+chatId+'")=>if(Number(chatId)<0)';
-			WriteLogFile(res,'непосылать');
+			WriteLogFile(res);
 			return res;
 		}
 		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
@@ -2412,12 +2447,12 @@ try{	let res;
 			if(String(err).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
 			else if(String(err).indexOf('bot was blocked by the user')+1) delete LastMessId[chatId];//удаляем ушедшего
 			else if(String(err).indexOf('chat not found')+1) delete LastMessId[chatId];//удаляем ушедшего
-			else WriteLogFile(err+'\nfrom Bot.sendDocument("'+chatId+'")');
+			else WriteLogFile(err+'\nfrom Bot.sendDocument("'+chatId+'")','вчат');
 			return err;	
 		}
 		return res;
 }catch(err)
-{	WriteLogFile(err+'\nfrom sendDocument("'+chatId+'")');
+{	WriteLogFile(err+'\nfrom sendDocument("'+chatId+'")','вчат');
 	return err;
 }
 }
@@ -2427,12 +2462,12 @@ async function sendAudio(chatId, path, option)
 try{	let res;
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendAudio("'+chatId+'")=>if(!isValidChatId(chatId))';
-			WriteLogFile(res,'непосылать');
+			WriteLogFile(res);
 			return res;
 		}
 		if(Number(chatId)<0)//отрицательные chatId не пускаем
 		{	res = '\nfrom sendAudio("'+chatId+'")=>if(Number(chatId)<0)';
-			WriteLogFile(res,'непосылать');
+			WriteLogFile(res);
 			return res;
 		}
 		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
@@ -2445,12 +2480,12 @@ try{	let res;
 			if(String(err).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
 			else if(String(err).indexOf('bot was blocked by the user')+1) delete LastMessId[chatId];//удаляем ушедшего
 			else if(String(err).indexOf('chat not found')+1) delete LastMessId[chatId];//удаляем ушедшего
-			else WriteLogFile(err+'\nfrom Bot.sendAudio("'+chatId+'")');
+			else WriteLogFile(err+'\nfrom Bot.sendAudio("'+chatId+'")','вчат');
 			return err;	
 		}
 		return res;
 }catch(err)
-{	WriteLogFile(err+'\nfrom sendAudio("'+chatId+'")');
+{	WriteLogFile(err+'\nfrom sendAudio("'+chatId+'")','вчат');
 	return err;
 }
 }
@@ -2460,12 +2495,12 @@ async function sendVideo(chatId, path, option)
 try{	let res;
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendVideo("'+chatId+'")=>if(!isValidChatId(chatId))';
-			WriteLogFile(res,'непосылать');
+			WriteLogFile(res);
 			return res;
 		}
 		if(Number(chatId)<0)//отрицательные chatId не пускаем
 		{	res = '\nfrom sendVideo("'+chatId+'")=>if(Number(chatId)<0)';
-			WriteLogFile(res,'непосылать');
+			WriteLogFile(res);
 			return res;
 		}
 		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
@@ -2478,12 +2513,12 @@ try{	let res;
 			if(String(err).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
 			else if(String(err).indexOf('bot was blocked by the user')+1) delete LastMessId[chatId];//удаляем ушедшего
 			else if(String(err).indexOf('chat not found')+1) delete LastMessId[chatId];//удаляем ушедшего
-			else WriteLogFile(err+'\nfrom Bot.sendVideo("'+chatId+'")');
+			else WriteLogFile(err+'\nfrom Bot.sendVideo("'+chatId+'")','вчат');
 			return err;	
 		}
 		return res;
 }catch(err)
-{	WriteLogFile(err+'\nfrom sendVideo("'+chatId+'")');
+{	WriteLogFile(err+'\nfrom sendVideo("'+chatId+'")','вчат');
 	return err;
 }
 }
@@ -2493,12 +2528,12 @@ async function sendPhoto(chatId, path, option)
 try{	let res;
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendPhoto("'+chatId+'")=>if(!isValidChatId(chatId))';
-			WriteLogFile(res,'непосылать');
+			WriteLogFile(res);
 			return res;
 		}
 		if(Number(chatId)<0)//отрицательные chatId не пускаем
 		{	res = '\nfrom sendPhoto("'+chatId+'")=>if(Number(chatId)<0)';
-			WriteLogFile(res,'непосылать');
+			WriteLogFile(res);
 			return res;
 		}
 		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
@@ -2511,12 +2546,12 @@ try{	let res;
 			if(String(err).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
 			else if(String(err).indexOf('bot was blocked by the user')+1) delete LastMessId[chatId];//удаляем ушедшего
 			else if(String(err).indexOf('chat not found')+1) delete LastMessId[chatId];//удаляем ушедшего
-			else WriteLogFile(err+'\nfrom Bot.sendPhoto("'+chatId+'")');
+			else WriteLogFile(err+'\nfrom Bot.sendPhoto("'+chatId+'")','вчат');
 			return err;	
 		}
 		return res;
 }catch(err)
-{	WriteLogFile(err+'\nfrom sendPhoto("'+chatId+'")');
+{	WriteLogFile(err+'\nfrom sendPhoto("'+chatId+'")','вчат');
 	return err;
 }
 }
@@ -2547,7 +2582,7 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 		LastMessId[chatId].countTen++;
 	}
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendTenStep()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom sendTenStep()','вчат'); return err;}
 }
 //====================================================================
 async function getQuestionsFromUser(chatId,index)
@@ -2570,7 +2605,7 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 	await sendMessage(chatId, str, obj, index);
 	WaitEditText[chatId] = 'questions';//ожидаем список вопросов
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendTenStep()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom sendTenStep()','вчат'); return err;}
 }
 //====================================================================
 // периодически будем сохранять файл LastMessId
@@ -2600,8 +2635,8 @@ try{//а также DayCount в недельном файле только но�
 		for(let i in LastMessId) {if(Object.hasOwn(LastMessId[i], 'countTen')) LastMessId[i].countTen = -1;}
     }
 	
-	fs.writeFile(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2), (err) => {if(err){WriteLogFile(err+'\nfrom setInterval()');}});
-}catch(err){WriteLogFile(err+'\nfrom setInterval()');}
+	fs.writeFile(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2), (err) => {if(err){WriteLogFile(err+'\nfrom setInterval()','вчат');}});
+}catch(err){WriteLogFile(err+'\nfrom setInterval()','вчат');}
 },time_interval1*1000);
 //====================================================================
 //подписка на выход из скрипта
@@ -2614,7 +2649,7 @@ try{//а также DayCount в недельном файле только но�
         WeekCount[index] = new Object();
         WeekCount[index] = DayCount;//добавляем суточный счетчик
         fs.writeFileSync(FileWeekCount, JSON.stringify(WeekCount,null,2));
-        await WriteLogFile('выход из процесса по '+event, 'непосылать');
+        await WriteLogFile('выход из процесса по '+event);
         fs.writeFileSync(FileGrandCount, JSON.stringify(GrandCount,null,2));
         if(event==`uncaughtException`) console.log(event);
         fs.writeFileSync(currentDir+"/answer.txt", JSON.stringify(AnswerList));
@@ -2635,7 +2670,7 @@ function WriteFileJson(path,arr)
 function AppendFileJson(path,arr)
 {
 	fs.appendFile(path, JSON.stringify(arr,null,2), (err) => 
-	{if(err) {WriteLogFile(err+'\nfrom AppendFileJson()');}
+	{if(err) {WriteLogFile(err+'\nfrom AppendFileJson()','вчат');}
 	});
 }
 //====================================================================
@@ -2657,7 +2692,7 @@ async function WriteLogFile(arr, flag)
 	let str=moment().format('DD.MM.YY HH:mm:ss.ms')+' - '+arr+'\n';
     await fs.promises.appendFile(LogFile, str);
 	try{
-		if(!!logBot && !flag) 
+		if(!!logBot && !!flag) 
 		{str='From '+nameBot+'\n'+str;
 		 await logBot.sendMessage(chat_Supervisor, str);
 		}
@@ -2675,7 +2710,7 @@ try{
     delete mas["Назад"];//удалим кнопку Назад
     delete mas["0"];//удалим нулевой уровень
     return mas;
-}catch(err){WriteLogFile(err+'\nfrom initObjCount()');}
+}catch(err){WriteLogFile(err+'\nfrom initObjCount()','вчат');}
 }
 //====================================================================
 //получить дневной счетчик из недельного
@@ -2692,7 +2727,7 @@ try{
 		//DayCount = JSON.parse(JSON.stringify(WeekCount[index]));
 	}
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom getDayCount()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom getDayCount()','вчат'); return err;}
 }
 //====================================================================
 async function addNode(num,parent,name,type,url)
@@ -2723,7 +2758,7 @@ async function addNode(num,parent,name,type,url)
 	 await WriteFileJson(FileGrandCount,GrandCount);
 	}
 	return true;
-  } catch(err){WriteLogFile(err+'\nfrom addNode()'); return err;}
+  } catch(err){WriteLogFile(err+'\nfrom addNode()','вчат'); return err;}
 }
 //====================================================================
 async function delNode(num)
@@ -2752,7 +2787,7 @@ async function delNode(num)
 	delete GrandCount[String(num)];
 	await WriteFileJson(FileGrandCount,GrandCount);
 	return true;
-  } catch(err){WriteLogFile(err+'\nfrom delNode()'); return err;}
+  } catch(err){WriteLogFile(err+'\nfrom delNode()','вчат'); return err;}
 }
 //====================================================================
 async function delDir(num)
@@ -2802,7 +2837,7 @@ async function delDir(num)
 				fs.rmSync(PathToAudio+'/'+String(num), { recursive: true });
 			}
 			return true;
-  } catch(err){WriteLogFile(err+'\nfrom delDir()'); return err;}
+  } catch(err){WriteLogFile(err+'\nfrom delDir()','вчат'); return err;}
 }
 //====================================================================
 // Команда Редактировать Текст
@@ -2842,7 +2877,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom EditText()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom EditText()','вчат'); return err;}
 }
 //====================================================================
 // Команда EditButtonName
@@ -2881,7 +2916,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom EditButtonName()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom EditButtonName()','вчат'); return err;}
 }
 //====================================================================
 // Команда EditButtonName
@@ -2909,7 +2944,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom EditBackName()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom EditBackName()','вчат'); return err;}
 }
 //====================================================================
 // Команда EditButtonUrl
@@ -2949,7 +2984,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom EditButtonUrl()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom EditButtonUrl()','вчат'); return err;}
 }
 //====================================================================
 // Команда EditButtonEg
@@ -2989,7 +3024,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom EditButtonEg()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom EditButtonEg()','вчат'); return err;}
 }
 //====================================================================
 // Команда EditButtonRaspis
@@ -3029,7 +3064,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom EditButtonRaspis()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom EditButtonRaspis()','вчат'); return err;}
 }
 //====================================================================
 // Команда DelPhoto
@@ -3062,7 +3097,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom DelPhoto()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom DelPhoto()','вчат'); return err;}
 }
 //====================================================================
 // Команда DelFile
@@ -3095,7 +3130,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom DelFile()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom DelFile()','вчат'); return err;}
 }
 //====================================================================
 // Команда DelVideo
@@ -3128,7 +3163,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom DelVideo()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom DelVideo()','вчат'); return err;}
 }
 //====================================================================
 // Команда DelAudio
@@ -3161,7 +3196,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom DelAudio()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom DelAudio()','вчат'); return err;}
 }
 //====================================================================
 // Команда DelEvent
@@ -3179,7 +3214,7 @@ try{
 	Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 	await sendEvents(chatId, true, LastKey[chatId]);//показываем все события с номерами
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom DelEvent()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom DelEvent()','вчат'); return err;}
 }
 //====================================================================
 // Команда DelHistory
@@ -3196,7 +3231,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom DelHistory()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom DelHistory()','вчат'); return err;}
 }
 //====================================================================
 // Команда DelButton
@@ -3231,7 +3266,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom DelButton()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom DelButton()','вчат'); return err;}
 }
 //====================================================================
 // Команда DelAdmin
@@ -3246,7 +3281,7 @@ try{
 	{	//читаем файл админов
 		try {AdminList = JSON.parse(await fs.promises.readFile(FileAdminList));/*if(!AdminList[chat_Supervisor]) {AdminList[chat_Supervisor] = "root";}*/}
 		//catch (err) {if(!AdminList[chat_Supervisor]) {AdminList[chat_Supervisor] = "root";} WriteFileJson(FileAdminList,AdminList);}
-		catch(err){WriteLogFile(err);}
+		catch(err){WriteLogFile(err,'вчат');}
 		let id = match[1];
 		if(id==chat_Supervisor) return true;//рута удалять не будем
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
@@ -3264,7 +3299,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom DelAdmin()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom DelAdmin()','вчат'); return err;}
 }
 //====================================================================
 // Команда DelUser
@@ -3295,7 +3330,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom DelUser()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom DelUser()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddPhoto
@@ -3333,7 +3368,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddPhoto()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddPhoto()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddFile
@@ -3371,7 +3406,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddFile()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddFile()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddVideo
@@ -3409,7 +3444,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddVideo()');return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddVideo()','вчат');return err;}
 }
 //====================================================================
 // Команда AddAudio
@@ -3447,7 +3482,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddAudio()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddAudio()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddHistory
@@ -3463,7 +3498,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddHistory()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddHistory()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonText
@@ -3492,7 +3527,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonText()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonText()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonAdmin
@@ -3521,7 +3556,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonAdmin()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonAdmin()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonTen
@@ -3550,7 +3585,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonTen()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonTen()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonBarrels
@@ -3579,7 +3614,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonTen()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonTen()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonQuestions
@@ -3608,7 +3643,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonQuestions()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonQuestions()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonUrl 
@@ -3643,7 +3678,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0'));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonUrl()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonUrl()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonPhoto
@@ -3674,7 +3709,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0'));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonPhoto()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonPhoto()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonFile
@@ -3705,7 +3740,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonFile()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonFile()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonVideo
@@ -3736,7 +3771,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonVideo()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonVideo()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonAudio
@@ -3767,7 +3802,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonAudio()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonAudio()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonTime
@@ -3801,7 +3836,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonTime()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonTime()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonRaspis
@@ -3838,7 +3873,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonRaspis()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonRaspis()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonEg
@@ -3875,7 +3910,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonEg()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonEg()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddButtonHistory
@@ -3904,7 +3939,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonHistory()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonHistory()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddAdmin
@@ -3923,7 +3958,7 @@ try{
 	{	//читаем файл админов
 		try {AdminList = JSON.parse(await fs.promises.readFile(FileAdminList));/*if(!AdminList[chat_Supervisor]) {AdminList[chat_Supervisor] = "root";}*/}
 		//catch (err) {if(!AdminList[chat_Supervisor]) {AdminList[chat_Supervisor] = "root";} WriteFileJson(FileAdminList,AdminList);}
-		catch(err){WriteLogFile(err);}
+		catch(err){WriteLogFile(err,'вчат');}
 		//если только показать
 		if(match[0]=='show')
 		{
@@ -3955,7 +3990,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddAdmin()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddAdmin()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddUser
@@ -4004,7 +4039,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddUser()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddUser()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddEvent
@@ -4059,7 +4094,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddEvent()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddEvent()','вчат'); return err;}
 }
 //====================================================================
 // Команда MoveButtonUp 
@@ -4099,7 +4134,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom MoveButtonUp()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom MoveButtonUp()','вчат'); return err;}
 }
 //====================================================================
 // Команда MoveButtonDown 
@@ -4139,7 +4174,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom MoveButtonDown()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom MoveButtonDown()','вчат'); return err;}
 }
 //====================================================================
 // Команда StatWeek
@@ -4185,7 +4220,7 @@ async function StatWeek(msg)
 		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
 		await sendMessage(chatId, str, klava('Назад', {parse_mode:"markdown"}, chatId));
 		return true;
-  }catch(err){WriteLogFile(err+'\nfrom StatWeek()'); return err;}
+  }catch(err){WriteLogFile(err+'\nfrom StatWeek()','вчат'); return err;}
 }
 //====================================================================
 // Команда StatGrand
@@ -4220,7 +4255,7 @@ async function StatGrand(msg)
 		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
 		await sendMessage(chatId, str, klava('Назад', {parse_mode:"markdown"}, chatId));
 		return true;
-  }catch(err){WriteLogFile(err+'\nfrom StatGrand()'); return err;}
+  }catch(err){WriteLogFile(err+'\nfrom StatGrand()','вчат'); return err;}
 }
 //====================================================================
 //состояние сервера: диск и память
@@ -4249,7 +4284,7 @@ async function StatServer(msg)
 	if(!LastKey[chatId]) LastKey[chatId] = '0';
 	Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
 	await sendMessage(chatId, str, klava('Назад', {parse_mode:"markdown"}));
-}catch(err){WriteLogFile(err+'\nfrom StatServer()'); return err;}*/
+}catch(err){WriteLogFile(err+'\nfrom StatServer()','вчат'); return err;}*/
 }
 //====================================================================
 // Команда PublicText
@@ -4265,7 +4300,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom PublicText()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom PublicText()','вчат'); return err;}
 }
 //====================================================================
 // Команда PublicTextAdmin
@@ -4281,7 +4316,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom PublicText()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom PublicText()','вчат'); return err;}
 }
 //====================================================================
 // Команда PublicMessUser
@@ -4314,7 +4349,7 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddUser()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddUser()','вчат'); return err;}
 }
 //====================================================================
 async function sleep(ms) {return new Promise(resolve => setTimeout(resolve, ms));}
@@ -4347,7 +4382,7 @@ try{//загрузим массив chatId подписчиков
 		await sendMessage(mas[i], obj.text, option);
 	}
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendPublicText()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom sendPublicText()','вчат'); return err;}
 }
 //====================================================================
 async function sendPublicTextAdmin(obj) 
@@ -4369,7 +4404,7 @@ try{//загрузим массив chatId Админов
 		await sendMessage(mas[i], obj.text, option);
 	}
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom sendPublicTextAdmin()'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom sendPublicTextAdmin()','вчат'); return err;}
 }
 //====================================================================
 async function srok(chatId,index)
@@ -4400,7 +4435,7 @@ try{
 	else await sendMessage(chatId, mess, {parse_mode:"markdown"});
 	return true;
 	
-}catch(err){WriteLogFile(err+'\nfrom srok("'+chatId+'")'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom srok("'+chatId+'")','вчат'); return err;}
 }
 //====================================================================
 function get_srok(chatId)
@@ -4470,7 +4505,7 @@ try{
 		}
 		return mess;
 	
-	}catch(err){WriteLogFile(err+'\nfrom get_srok("'+chatId+'")'); return '';}
+	}catch(err){WriteLogFile(err+'\nfrom get_srok("'+chatId+'")','вчат'); return '';}
 }
 //====================================================================
 function get_smoke(chatId)
@@ -4536,7 +4571,7 @@ try{
 		}
 		return mess;
 
-	}catch(err){WriteLogFile(err+'\nfrom smoke("'+chatId+'")'); return '';}
+	}catch(err){WriteLogFile(err+'\nfrom smoke("'+chatId+'")','вчат'); return '';}
 }
 //====================================================================
 function get_event()
@@ -4574,7 +4609,7 @@ try{
 		}
 		return mess;
 
-	}catch(err){WriteLogFile(err+'\nfrom get_event'); return '';}
+	}catch(err){WriteLogFile(err+'\nfrom get_event','вчат'); return '';}
 }
 //====================================================================
 //вычисляем Юбик, если есть, то возвращаем true, иначе false
@@ -4597,7 +4632,7 @@ try{
 		if(days==10 || days==20 || days==30 || days==60 || days==90 || (days%100==0 && days!=0)) {return true;}//по дням
 		if(d==0 && months > 0) {return true;}//месяцы и годы
 		return false;
-	}catch(err){WriteLogFile(err+'\nfrom ubik()'); return false;}		
+	}catch(err){WriteLogFile(err+'\nfrom ubik()','вчат'); return false;}		
 }
 //====================================================================
 // с 8.05 до 8.35 будем проверять всех подписанных на Юбик
@@ -4634,12 +4669,12 @@ try{
 				}
 			}
 		}
-		}catch(err){WriteLogFile(err+'\nfrom checkTime()=>events');}
+		}catch(err){WriteLogFile(err+'\nfrom checkTime()=>events','вчат');}
 		
 		//загружаем список файлов из /gif - полный путь
 		const isFile = fileName => {return fs.lstatSync(fileName).isFile()};
 		let files = fs.readdirSync(PathToGif).map(fileName => {return path.join(PathToGif, fileName)}).filter(isFile);
-		if(!files) WriteLogFile('Ошибка файла салюта');
+		if(!files) WriteLogFile('Ошибка файла салюта','вчат');
 		
 		//создаем массив ключей из списка юзеров
 		let user = Object.keys(LastMessId);
@@ -4664,8 +4699,8 @@ try{
 						 {	//посылаем салют(ы)
 							if(files[k].toLowerCase().indexOf('.gif')+1) 
 							{	let res = await sendDocument(chatId, files[k]);
-								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_srok','непосылать');
-								else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_srok','непосылать');
+								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_srok');
+								else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_srok');
 								//await sleep(2000);
 							}
 						 }
@@ -4673,18 +4708,18 @@ try{
 						if(!!Stickers.ubik && Stickers.ubik.length>0)//если есть стикеры
 						{	for(let k in Stickers.ubik)
 							{	let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
-								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_srok','непосылать');
-								else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_srok','непосылать');
+								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_srok');
+								else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_srok');
 							}
 						}
 					}
 					let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
-					if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_srok','непосылать');
-					else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_srok','непосылать');
+					if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_srok');
+					else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_srok');
 					//await sleep(1000);
 				}
 			}
-			}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_srok)');}
+			}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_srok)','вчат');}
 		}
 		
 		//создаем массив ключей из списка юзеров
@@ -4710,8 +4745,8 @@ try{
 						 {	//посылаем салют
 							if(files[k].toLowerCase().indexOf('.gif')+1) 
 							{	let res = await sendDocument(chatId, files[k]);
-								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_smoke','непосылать');
-								else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_smoke','непосылать');
+								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_smoke');
+								else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_smoke');
 								//await sleep(2000);
 							}
 						 }
@@ -4719,21 +4754,21 @@ try{
 						if(!!Stickers.ubik && Stickers.ubik.length>0)//если есть стикеры
 						{	for(let k in Stickers.ubik)
 							{	let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
-								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_smoke','непосылать');
-								else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_smoke','непосылать');
+								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_smoke');
+								else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_smoke');
 							}
 						}
 					}
 					let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
-					if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_smoke','непосылать');
-					else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_smoke','непосылать');
+					if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_smoke');
+					else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_smoke');
 					//await sleep(1000);
 				}	
 			}
-			}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_smoke)');}
+			}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_smoke)','вчат');}
 		}
     }
-}catch(err) {WriteLogFile(err+'\nfrom checkTime()');}
+}catch(err) {WriteLogFile(err+'\nfrom checkTime()','вчат');}
 }
 //====================================================================
 function shiftObject(obj)
@@ -4779,7 +4814,7 @@ try{
 	if(!(path.indexOf(homedir+'/js')+1)&&!(path.indexOf(homedir+'/telegram')+1)) return false;
 	if((path.indexOf('/Token')+1)||(path.indexOf('.js')+1)||(path.indexOf('.sh')+1)) return false;//запретный путь
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom checkPath()');}
+}catch(err){WriteLogFile(err+'\nfrom checkPath()','вчат');}
 }
 //====================================================================
 //если бот запускается в пустой папке местности, то нужно создать папки и файлы по-умолчанию
@@ -5004,7 +5039,7 @@ try{
 		return true;
 	}
 	return false;
-}catch(err){WriteLogFile(err+'\nfrom deleteMediaFiles()');}
+}catch(err){WriteLogFile(err+'\nfrom deleteMediaFiles()','вчат');}
 }
 //====================================================================
 function getKeyByValue(object, value) {return Object.keys(object).find(key => object[key] === value);
@@ -5026,7 +5061,7 @@ function setTimezoneByOffset(offsetMinutes)
 		if(!!rusZona) res = rusZona;// берем русскую, если есть
 		else res = suitableZones[0];// Берем первую подходящую зону
 		moment.tz.setDefault(res);//устанавливаем зону
-        //WriteLogFile('Установлена зона: '+res+', смещение: '+moment().format('Z'), 'нет');
+        //WriteLogFile('Установлена зона: '+res+', смещение: '+moment().format('Z'));
         return res;
     }
 	else
@@ -5047,11 +5082,11 @@ function setTimezoneByOffset(offsetMinutes)
 		if(suitableZones.length > 0) 
 		{	// Берем первую подходящую зону
 			moment.tz.setDefault(suitableZones[0]);
-			//WriteLogFile('Установлена зона: '+suitableZones[0]+', смещение: '+moment().format('Z'), 'нет');
+			//WriteLogFile('Установлена зона: '+suitableZones[0]+', смещение: '+moment().format('Z'));
 			return suitableZones[0];
 		}
 		else 
-		{	//WriteLogFile('Таймзона не установлена! Смещение: '+moment().format('Z'),'нет');
+		{	//WriteLogFile('Таймзона не установлена! Смещение: '+moment().format('Z'));
 			return null;
 		}
     }
