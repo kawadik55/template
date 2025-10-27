@@ -36,8 +36,7 @@ let ListGroups = {};
 //парсер расписания закрытых собраний
 async function parser_raspis_closed()
 {
-  //var URL = 'https://na-kzn.ru/';
-  var URL = 'https://na-kzn.ru/indexICONS.html';
+  var URL = 'https://na-kzn.ru/';
   
   try
   {
@@ -82,9 +81,7 @@ async function parser_raspis_closed()
                  //адрес
                  tmp = mas[i].getElementsByClassName('place');
                  adres = tmp[0].innerHTML.replace(/^\s+|\s+$/g, '').replace(/\n/g, ' ');//s символы в начале, конце строки. и переводы строки всередине
-                 adres = adres.replace('&#9855;', '');//спецсимвол, если есть
-				 console.log(adres);
-				 adres = adres.replace(/(?=( ))\1{2,}/g, ' ');//удаляем пробелы, которые встречаются 2 и более раз
+                 adres = adres.replace(/(?=( ))\1{2,}/g, ' ');//удаляем пробелы, которые встречаются 2 и более раз
                  adres = adres.replace('target="_blank"', '');
                  adres = adres.replace('<span>', '');
                  adres = adres.replace('</span>', '');
