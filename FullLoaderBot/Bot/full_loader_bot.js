@@ -7,7 +7,7 @@ const { execFile } = require('child_process');
 const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const PathToImages = currentDir+'/images';//путь к файлам на выполнение.
+const PathToImages = currentDir+'/images';//путь к файлам на выполнение
 const PathToImagesModer = currentDir+'/moder';//путь к файлам на выполнение
 const FileUserList = currentDir+"/UserList.txt";//имя файла белого листа
 const FileBlackList = currentDir+"/BlackList.txt";//имя файла черного листа
@@ -4272,7 +4272,8 @@ queue.on('error', (error) => {WriteLogFile(error);});
 //queue.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь: ${item.id}`);});
 //queue.on('sent', (item) => {WriteLogFile(`Сообщение отправлено: ${item.id}`);});
 queue.on('failed', (item, error) => 
-{try{WriteLogFile('Ошибка отправки сообщения из очереди: '+error.message+'\n'+JSON.stringify(item,null,2));}catch(err){WriteLogFile('Не могу распарсить item из ошибки очереди');}
+{if(!!item.bot) delete item.bot;
+ try{WriteLogFile('Ошибка отправки сообщения из очереди: '+error.message+'\n'+JSON.stringify(item,null,2));}catch(err){WriteLogFile('Не могу распарсить item из ошибки очереди');}
 });
 //queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 queue.on('connected', () => {WriteLogFile('=> bot connected');});
