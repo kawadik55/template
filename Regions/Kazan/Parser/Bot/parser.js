@@ -40,7 +40,7 @@ async function parser_raspis_closed()
   
   try
   {
-  let promise = new Promise((resolve, reject) => {
+  return await new Promise((resolve, reject) => {
   needle.get(URL, async function(err, response) 
   {
     if(response.statusCode==200)
@@ -197,8 +197,7 @@ async function parser_raspis_closed()
     {console.log(err); reject('NO');
     }
   });
-  });//конец промиса
-  return await promise;
+  });
   
   } catch(err) {console.log('Ошибка в parser_parser_raspis_closed()\n'+err.message);}//
 }
