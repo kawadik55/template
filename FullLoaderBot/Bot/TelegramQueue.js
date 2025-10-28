@@ -1,4 +1,5 @@
 const { EventEmitter } = require('events');
+const moment = require('moment-timezone');
 
 class TelegramQueue extends EventEmitter {
     constructor(bot, options = {}) {
@@ -133,7 +134,7 @@ class TelegramQueue extends EventEmitter {
      */
     addToQueue(messageData) {
         const queueItem = {
-            id: Date.now() + Math.random().toString(36).substr(2, 9),//идентификатор
+            id: moment().format('DD_MM-HH_mm_ss') + Math.random().toString(36).substr(2, 9),//идентификатор
             timestamp: Date.now(),//время
 			type: messageData.type || 'sendMessage',//тип
 			data: messageData.data,//само сообщение, путь или media

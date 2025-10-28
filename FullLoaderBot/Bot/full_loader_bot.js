@@ -4271,7 +4271,9 @@ function clearTempWait(chatId)
 queue.on('error', (error) => {WriteLogFile(error);});
 //queue.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь: ${item.id}`);});
 //queue.on('sent', (item) => {WriteLogFile(`Сообщение отправлено: ${item.id}`);});
-queue.on('failed', (item, error) => {WriteLogFile('Ошибка отправки '+item.id+':\n'+error.message);});
+queue.on('failed', (item, error) => 
+{try{WriteLogFile('Ошибка отправки сообщения из очереди: '+error.message+'\n'+JSON.stringify(item,null,2));}catch(err){WriteLogFile('Не могу распарсить item из ошибки очереди');}
+});
 //queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 queue.on('connected', () => {WriteLogFile('=> bot connected');});
 queue.on('disconnected', (error) => {WriteLogFile(error+'; => bot disconnected');});
