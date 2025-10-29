@@ -1,4 +1,5 @@
 const { EventEmitter } = require('events');
+const moment = require('moment-timezone');
 
 class TelegramQueue extends EventEmitter {
     constructor(bot, options = {}) {
@@ -6,7 +7,7 @@ class TelegramQueue extends EventEmitter {
         this.bot = bot;
         this.queue = [];
         this.isProcessing = false;
-        this.isConnected = true; // При polling: true изначально считаем соединение активным
+        this.isConnected = true; // При polling: true изначально считаем соединение активным.
         
         // Настройки
         this.maxRetries = options.maxRetries || 3;
@@ -133,7 +134,7 @@ class TelegramQueue extends EventEmitter {
      */
     addToQueue(messageData) {
         const queueItem = {
-            id: Date.now() + Math.random().toString(36).substr(2, 9),//идентификатор
+            id: moment().format('DD_MM-HH_mm_ss') + Math.random().toString(36).substr(2, 9),//идентификатор
             timestamp: Date.now(),//время
 			type: messageData.type || 'sendMessage',//тип
 			data: messageData.data,//само сообщение, путь или media
@@ -238,9 +239,6 @@ class TelegramQueue extends EventEmitter {
             case 'sendMediaGroup':
                 return await bot.sendMediaGroup(chatId, data, options);
             
-			case 'sendSticker':
-                return await bot.sendSticker(chatId, data, options);
-			
             default:
                 throw new Error(`Unsupported message type: ${type}`);
           }
