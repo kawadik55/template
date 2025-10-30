@@ -68,7 +68,7 @@ build_Creator:
     DIR: 'creator'
     NAME: 'kawadiyk/creatorbot'
   script:
-    # Копируем общий модуль в папку проекта
+    # Копируем модуль очереди в папку проекта
     - cp ${CI_PROJECT_DIR}/TelegramQueue/TelegramQueue.js ${CI_PROJECT_DIR}/${DIR}/Bot/
     # строим новый образ
     - docker build -t ${NAME}:latest -f ${CI_PROJECT_DIR}/${DIR}/Dockerfile ${CI_PROJECT_DIR}/${DIR}
@@ -127,6 +127,8 @@ build_FullLoaderBot:
     DIR: 'FullLoaderBot'
     NAME: 'kawadiyk/fullloaderbot'
   script:
+    # Копируем модуль очереди в папку проекта
+    - cp ${CI_PROJECT_DIR}/TelegramQueue/TelegramQueue.js ${CI_PROJECT_DIR}/${DIR}/Bot/
     # строим новый образ
     - docker build -t ${NAME}:latest -f ${CI_PROJECT_DIR}/${DIR}/Dockerfile ${CI_PROJECT_DIR}/${DIR}
     - docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/slim build --include-path=/home/pi --target ${NAME}:latest --tag ${NAME}:slim --http-probe=false --continue-after=1
@@ -143,6 +145,9 @@ build_FullLoaderBot:
     - docker push ${NAME}:latest
     - docker logout
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+  after_script:
+    # Эта команда выполнится ВСЕГДА, даже если сборка упала
+    - rm -f ${CI_PROJECT_DIR}/${DIR}/Bot/TelegramQueue.js
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
