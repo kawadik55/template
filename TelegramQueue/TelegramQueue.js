@@ -239,7 +239,10 @@ class TelegramQueue extends EventEmitter {
             case 'sendMediaGroup':
                 return await bot.sendMediaGroup(chatId, data, options);
             
-            default:
+            case 'sendSticker':
+                return await bot.sendSticker(chatId, data, options);
+			
+			default:
                 throw new Error(`Unsupported message type: ${type}`);
           }
 		} 
