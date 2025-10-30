@@ -68,6 +68,10 @@ build_Creator:
     DIR: 'creator'
     NAME: 'kawadiyk/creatorbot'
   script:
+    # Создаем симлинк для общего модуля TelegramQueue
+    - cd ${CI_PROJECT_DIR}/${DIR}
+    - ln -sf ../TelegramQueue/TelegramQueue.js TelegramQueue.js
+    - cd ${CI_PROJECT_DIR}
     # строим новый образ
     - docker build -t ${NAME}:latest -f ${CI_PROJECT_DIR}/${DIR}/Dockerfile ${CI_PROJECT_DIR}/${DIR}
     - docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/slim build --include-path=/home/pi/context --target ${NAME}:latest --tag ${NAME}:slim --http-probe=false --continue-after=1
