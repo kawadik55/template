@@ -3,7 +3,7 @@ FROM node:18.17.1 as builder
 
 # Исходники
 WORKDIR /app
-COPY ./Bot/full_loader_bot.js ./../TelegramQueue/TelegramQueue.js package.json package-lock.json ./
+COPY ./Bot/full_loader_bot.js ../TelegramQueue/TelegramQueue.js package.json package-lock.json ./
 
 # Зависимости
 RUN npm i
