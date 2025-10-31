@@ -285,7 +285,7 @@ try{
 Bot.on('callback_query', async (msg) => 
 {	
 try
-{	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+{	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.message.chat.id.toString();
 	const messId = msg.message.message_id;
     const messText = msg.message.text;
@@ -551,7 +551,7 @@ queue.on('disconnected', (error) => {WriteLogFile(error+'; => bot disconnected')
 Bot.onText(/^\/Public.+$/, async (msg) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -574,7 +574,7 @@ try{
 Bot.onText(/^\/Edit.+$/, async (msg) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -600,7 +600,7 @@ try{
 Bot.onText(/^\/Del.+$/, async (msg) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -629,7 +629,7 @@ try{
 Bot.onText(/^\/Add.+$/, async (msg) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -671,7 +671,7 @@ try{
 Bot.onText(/^\/Move.+$/, async (msg) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -693,7 +693,7 @@ try{
 Bot.onText(/^\/CutButton (.+$)/, async (msg, match) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	if(match.length<2) return;
@@ -726,7 +726,7 @@ try{
 Bot.onText(/^\/InsertButton/, async (msg) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	if(msg.text!='/InsertButton' || !CutList[chatId]) return;
@@ -759,7 +759,7 @@ try{
 Bot.onText(/^\/Stat.+$/, async (msg) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	const user = '@'+msg.chat.username;
@@ -784,7 +784,7 @@ try{
 Bot.onText(/^\/DeadUsers/, async (msg) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	const user = '@'+msg.chat.username;
@@ -829,7 +829,7 @@ try{
 Bot.onText(/\/start/, async (msg) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	const user = '@'+msg.chat.username;
@@ -869,7 +869,7 @@ try{
 Bot.onText(/^\/SignOff.+$/, async (msg) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -894,7 +894,7 @@ try{
 Bot.onText(/\/help/, async (msg) => 
 {	
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	if(msg.text != '/help') return;//если не чисто команда
@@ -932,7 +932,7 @@ try{
 Bot.on('message', async (msg) => 
 {		
 try{	
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	let media_group_id = msg.media_group_id;
@@ -1377,7 +1377,7 @@ try{
 Bot.on('photo', async (msg) => 
 {		
 try{	
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
@@ -1539,7 +1539,7 @@ try{
 Bot.on('document', async (msg) => 
 {			
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
@@ -1665,7 +1665,7 @@ try{
 Bot.on('video', async (msg) => 
 {			
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
@@ -1799,7 +1799,7 @@ try{
 Bot.on('audio', async (msg) => 
 {			
 try{
-	if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
