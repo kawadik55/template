@@ -285,8 +285,9 @@ try{
 Bot.on('callback_query', async (msg) => 
 {	
 try
-{	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+{	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.message.chat.id.toString();
+	if(Number(chatId)<0) WriteLogFile(JSON.stringify(msg.message.chat,null,2));//для отладки
 	const messId = msg.message.message_id;
     const messText = msg.message.text;
     const messEnt = msg.message.entities;
@@ -551,7 +552,7 @@ queue.on('disconnected', (error) => {WriteLogFile(error+'; => bot disconnected')
 Bot.onText(/^\/Public.+$/, async (msg) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -574,7 +575,7 @@ try{
 Bot.onText(/^\/Edit.+$/, async (msg) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -600,7 +601,7 @@ try{
 Bot.onText(/^\/Del.+$/, async (msg) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -629,7 +630,7 @@ try{
 Bot.onText(/^\/Add.+$/, async (msg) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -671,7 +672,7 @@ try{
 Bot.onText(/^\/Move.+$/, async (msg) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -693,7 +694,8 @@ try{
 Bot.onText(/^\/CutButton (.+$)/, async (msg, match) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	if(match.length<2) return;
@@ -726,7 +728,8 @@ try{
 Bot.onText(/^\/InsertButton/, async (msg) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	if(msg.text!='/InsertButton' || !CutList[chatId]) return;
@@ -759,7 +762,7 @@ try{
 Bot.onText(/^\/Stat.+$/, async (msg) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	const user = '@'+msg.chat.username;
@@ -784,7 +787,7 @@ try{
 Bot.onText(/^\/DeadUsers/, async (msg) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	const user = '@'+msg.chat.username;
@@ -829,7 +832,7 @@ try{
 Bot.onText(/\/start/, async (msg) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	const user = '@'+msg.chat.username;
@@ -869,7 +872,7 @@ try{
 Bot.onText(/^\/SignOff.+$/, async (msg) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	
@@ -894,7 +897,7 @@ try{
 Bot.onText(/\/help/, async (msg) => 
 {	
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
 	if(msg.text != '/help') return;//если не чисто команда
@@ -932,8 +935,9 @@ try{
 Bot.on('message', async (msg) => 
 {		
 try{	
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
+	if(Number(chatId)<0) WriteLogFile(JSON.stringify(msg.chat,null,2));//для отладки
 	const firstname = msg.chat.first_name;
 	let media_group_id = msg.media_group_id;
 	if(!msg.text && !media_group_id) {return;}//если текста нет и не альбом
@@ -1377,7 +1381,7 @@ try{
 Bot.on('photo', async (msg) => 
 {		
 try{	
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
@@ -1539,7 +1543,7 @@ try{
 Bot.on('document', async (msg) => 
 {			
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
@@ -1665,7 +1669,7 @@ try{
 Bot.on('video', async (msg) => 
 {			
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
@@ -1799,7 +1803,7 @@ try{
 Bot.on('audio', async (msg) => 
 {			
 try{
-	//if((msg.from && msg.from.is_bot)||String(msg.message.chat.id).startsWith('-100')) return;//ботов и каналы не пускаем
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.chat.id.toString();
 	const firstname = msg.chat.first_name;
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
@@ -1886,11 +1890,6 @@ try{
 		WriteLogFile(res);
 		return res;
 	}
-	if(Number(chatId)<0)//отрицательные chatId не пускаем
-	{	res = '\nfrom sendMessage("'+chatId+'")=>отрицательные chatId не пускаем';
-		WriteLogFile(res);
-		return res;
-	}
 	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	
 	//сохраняем для посл.удаления
@@ -1944,11 +1943,6 @@ try{
 	let res;
 	if(!isValidChatId(chatId))//если не число, то не пускаем 
 	{	res = '\nfrom sendMessageImage("'+chatId+'")=>if(!isValidChatId(chatId))';
-		WriteLogFile(res);
-		return res;
-	}
-	if(Number(chatId)<0)//отрицательные chatId не пускаем
-	{	res = '\nfrom sendMessageImage("'+chatId+'")=>if(Number(chatId)<0)';
 		WriteLogFile(res);
 		return res;
 	}
@@ -2420,7 +2414,6 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 async function sendAlbum(chatId, media, opt)
 {
 try{
-	if(Number(chatId)<0) return;//отрицательные chatId не пускаем
 	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
 	let mas = [...media];
 	if(!!opt && !!opt.caption)
@@ -2473,11 +2466,6 @@ try{	let res;
 			WriteLogFile(res);
 			return res;
 		}
-		if(Number(chatId)<0)//отрицательные chatId не пускаем
-		{	res = '\nfrom sendDocument("'+chatId+'")=>if(Number(chatId)<0)';
-			WriteLogFile(res);
-			return res;
-		}
 		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 		if(!!option && !!option.caption) 
 		{if(option.caption.length > 1024) {option.caption = option.caption.substring(0,1023);}//обрезаем подпись
@@ -2503,11 +2491,6 @@ async function sendAudio(chatId, path, option)
 try{	let res;
 		if(!isValidChatId(chatId))//если не число, то не пускаем 
 		{	res = '\nfrom sendAudio("'+chatId+'")=>if(!isValidChatId(chatId))';
-			WriteLogFile(res);
-			return res;
-		}
-		if(Number(chatId)<0)//отрицательные chatId не пускаем
-		{	res = '\nfrom sendAudio("'+chatId+'")=>if(Number(chatId)<0)';
 			WriteLogFile(res);
 			return res;
 		}
@@ -2539,11 +2522,6 @@ try{	let res;
 			WriteLogFile(res);
 			return res;
 		}
-		if(Number(chatId)<0)//отрицательные chatId не пускаем
-		{	res = '\nfrom sendVideo("'+chatId+'")=>if(Number(chatId)<0)';
-			WriteLogFile(res);
-			return res;
-		}
 		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 		if(!!option && !!option.caption) 
 		{if(option && option.caption.length > 1024) {option.caption = option.caption.substring(0,1023);}//обрезаем подпись
@@ -2572,11 +2550,6 @@ try{	let res;
 			WriteLogFile(res);
 			return res;
 		}
-		if(Number(chatId)<0)//отрицательные chatId не пускаем
-		{	res = '\nfrom sendPhoto("'+chatId+'")=>if(Number(chatId)<0)';
-			WriteLogFile(res);
-			return res;
-		}
 		while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 		if(!!option && !!option.caption) 
 		{if(option && option.caption.length > 1024) {option.caption = option.caption.substring(0,1023);}//обрезаем подпись
@@ -2600,7 +2573,6 @@ try{	let res;
 async function sendTenStep(chatId)
 {	
 try{if(!isValidChatId(chatId)) return false;//если не число, то не пускаем
-	if(Number(chatId)<0) return false;//отрицательные chatId не пускаем
 	let index = LastMessId[chatId].indexTen;//индекс кнопки для возврата
 	//пробуем загрузить файл вопросов пользователя, если нету, то стандартный набор
 	let List = [];
@@ -2629,7 +2601,6 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 async function getQuestionsFromUser(chatId,index)
 {	
 try{if(!isValidChatId(chatId)) return false;//если не число, то не пускаем
-	if(Number(chatId)<0) return false;//отрицательные chatId не пускаем
 	let str = '';
 	//пробуем загрузить файл вопросов пользователя, если нету, то стандартный набор
 	let List = [];
@@ -4827,12 +4798,12 @@ function shiftObject(obj)
 //====================================================================
 function isValidChatId(value) 
 {
-    if(typeof(value)==='string')
-	{return /^-?\d+$/.test(value);//целые отрицательные можно
-	 //return /^\d+$/.test(value);//целые отрицательные нельзя
-	 //return /^-?\d+(\.\d+)?$/.test(value);//вещественные отрицательные можно
+    const id = Number(value);
+	if(!isNaN(id) && Number.isInteger(id)) 
+	{	if(id > 0) return true;//можно только положительные
+		else if(id < 0) return true;//можно и отрицательные тоже
+		else return false;//0 нельзя
 	}
-	else if(typeof(value)==='number') return true;
 	else return false;
 }
 //====================================================================
