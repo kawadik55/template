@@ -573,14 +573,14 @@ try{
 			{	name = line + (str.indexOf(out[town[i]][j][0])+1 ? '' : (out[town[i]][j][0]+'\n')) + line;
 				if(str.indexOf(out[town[i]][j][0])+1) name = '\n';
 				else name = line + out[town[i]][j][0] + '\n' + line;
-				let time = out[town[i]][j][1];
+				let time = '<i>'+out[town[i]][j][1]+'</i>';
 				let adres = out[town[i]][j][2]+'\n';
 				let day = out[town[i]][j][3]+'\n';
 				let karta = !!out[town[i]][j][4] ? (out[town[i]][j][4]+'\n') : '';
 				let comment = '';//out[town[i]][j][5];
 				//let format = out[town[i]][j][6];//пока формат не выводим
 				//соберем результат
-				str += '<strong>'+name+'</strong>'+day+adres+karta;
+				str += '<strong>'+name+'</strong>'+day+time+' - '+adres+karta;
 			}
 			str += '<b>'+line+'</b>';
 		}
