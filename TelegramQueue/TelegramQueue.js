@@ -134,7 +134,7 @@ class TelegramQueue extends EventEmitter {
      */
     addToQueue(messageData) {
         const queueItem = {
-            id: moment().format('DD_MM-HH_mm_ss') + Math.random().toString(36).substr(2, 9),//идентификатор
+            id: moment().format('DD/MM-HH_mm_ss_') + Math.random().toString(36).substr(2, 9),//идентификатор
             timestamp: Date.now(),//время
 			type: messageData.type || 'sendMessage',//тип
 			data: messageData.data,//само сообщение, путь или media
@@ -216,7 +216,9 @@ class TelegramQueue extends EventEmitter {
      * Отправка сообщения через бота
      */
     async _sendMessage(queueItem) {
-        const { type, data, chatId, options, bot = this.bot, ...messageData } = queueItem;
+        // Создаем копию options чтобы избежать мутаций
+		const options = queueItem.options ? JSON.parse(JSON.stringify(queueItem.options)) : {};
+		const { type, data, chatId, bot = this.bot} = queueItem;
 		// Проверяем, что бот доступен
 		if (!bot) {throw new Error('Bot instance is not available');}
 		try{
