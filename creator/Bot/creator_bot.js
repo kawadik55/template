@@ -540,6 +540,10 @@ Bot.on('error', (error) => {WriteLogFile(error+'\nfrom Bot.on("error"','вчат
 queue.on('failed', (item, error) => 
 {if(!!item.bot) delete item.bot;
  try{WriteLogFile('Ошибка отправки сообщения из очереди: '+error.message+'\n'+JSON.stringify(item,null,2));}catch(err){WriteLogFile('Не могу распарсить item из ошибки очереди');}
+ const chatId = item.chatId;
+ if(String(error).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
+ else if(String(error).indexOf('bot was blocked by the user')+1) delete LastMessId[chatId];//удаляем ушедшего
+ else if(String(error).indexOf('chat not found')+1) delete LastMessId[chatId];//удаляем ушедшего
 });
 //queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 queue.on('connected', () => {WriteLogFile('=> bot connected');});
