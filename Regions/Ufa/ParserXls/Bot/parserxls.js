@@ -1,6 +1,7 @@
 ﻿process.env["NTBA_FIX_350"] = 1;
 const fs = require('fs');
 const XLSX = require('xlsx');
+const {getNextDate} = require('./getNextDate');
 
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const wwwDir=currentDir+"/../www";//путь к папке www, на уровень выше
@@ -123,24 +124,7 @@ try{
 					floating.ref_data = sheets[name_list][num]['Дата'];
 					if(!floating.period || floating.period<1) {floating = {}; continue;}
 					//вычислим дату ближайшего собрания
-					let period = floating.period;//период в неделях
-					let ref_data = floating.ref_data;//опорная дата в строке
-					let mas = ref_data.split('.');
-					if(!period || mas.length!=3) continue;//ошибка
-					ref_data = mas[2]+'.'+mas[1]+'.'+mas[0];//перевернем дату для буржуйского представления
-					let date = new Date();//текущая дата
-					let date1 = new Date(ref_data);//опорная дата
-					let diff_days = Math.floor((date - date1)/(24*3600*1000));//разница в днях
-					if(diff_days<0) continue;//ошибка
-					let k = Math.ceil(diff_days/(period*7))*(period*7);//большее кратное периоду
-					date = new Date(date1.getTime()+new Date(k*24*3600*1000).getTime());//к опоре прибавляем дни по периоду
-					let year = date.getFullYear();
-					let month = date.getMonth()+1;
-					let day = date.getDate();
-					if(month<10) month = '0'+month;//делаем ведущий 0
-					if(day<10) day = '0'+day;//делаем ведущий 0
-					if(diff_days%(period*7)==0) floating.next_data = 'сегодня';
-					else floating.next_data = day+'.'+month+'.'+year;//дата ближайшего собрания
+					floating.next_data = getNextDate({"type":"floating","period":floating.period,"ref_data":floating.ref_data});
 				}catch(err){console.log(err);floating = {};}
 			}
 			if(stat.length==0 && !floating.period) {continue;}//если ошибки то пропускаем
@@ -186,6 +170,8 @@ try{
 				 if(!!comment) comment += ' (ближайшее: '+obj.next_data+')';
 				 else comment = '(ближайшее: '+obj.next_data+')';
 				}
+				//вычислим дату ближайшего собрания
+				if(obj.type == 'static') {if(!obj.next_data) obj.next_data = getNextDate(obj);}
 				if(!!tema) obj.tema = tema;
 				else obj.tema = 'Ежедневник';
 				if(!!adres) obj.address = adres;
@@ -512,6 +498,7 @@ try{
 				//если день недели имеется в записи
 				if(!!mas[n].day)
 				{	let time = mas[n].time;
+					let next_data = mas[n].next_data ? mas[n].next_data : '';
 					if(!out[town[i]]) out[town[i]] = [];
 					let cnt;
 					out[town[i]].push(new Array(7));//имя, время, адрес, день, карта, коммент, формат
@@ -535,7 +522,7 @@ try{
 					{	let period = mas[n].period;//массив периода - недели месяца
 						let str = '<i>'+mas[n].day+' - ';//начало курсива жиром
 						for(let k in period) {if(period[k]=='last') str += 'последняя '; else str += period[k]+'я, ';}
-						str += 'неделя месяца:</i>';//конец курсива
+						str += 'неделя месяца (ближайшее: '+next_data+'):</i>';//конец курсива
 						out[town[i]][cnt][3] = str;
 					}
 					else if(mas[n].type=='floating') //если период плавающий

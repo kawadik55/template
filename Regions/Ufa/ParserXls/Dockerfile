@@ -3,7 +3,7 @@ FROM node:18.17.1 as builder
 
 # Исходники, контекст изменен в команде запуска
 WORKDIR /app
-COPY ./Bot/parserxls.js package.json package-lock.json ./
+COPY ./Bot/parserxls.js ./Bot/getNextDate.js package.json package-lock.json ./
 
 # Зависимости
 RUN npm i
