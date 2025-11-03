@@ -180,7 +180,7 @@ if(!timeCron)//всегда выполняется
 //установим службу стандартных утренних публикаций в каналах
 var Cron1 = cron.schedule(timeCron, async function() 
 {	if(rassilka)//если рассылка включена
-	{	WriteLogFile('\nНачинаем стандартную Рассылку:');
+	{	WriteLogFile('Начинаем стандартную Рассылку:');
 		//ежик
 		if(RunList.Eg===true) await send_Eg();
 		//расписание
@@ -355,7 +355,8 @@ else
  WriteFileJson(FileAdminList,AdminList);
 }
 
-WriteLogFile('\nЗапуск бота @'+namebot);
+WriteLogFile('=======================================================');
+WriteLogFile('Запуск бота @'+namebot);
 if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic+'Z'+moment().format('Z'));
 
 //загружаем очередь, если сохраняли
