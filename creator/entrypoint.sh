@@ -7,4 +7,5 @@ if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "1000" ]; then
 fi
 
 # Переключаемся на пользователя pi и запускаем бинарник
-exec su - pi -c "$@"
+# exec su - pi -c "$@"
+exec setuidgid pi "$@"
