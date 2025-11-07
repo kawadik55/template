@@ -11,7 +11,6 @@ RUN npm i -g pkg
 
 # Компиляция
 RUN pkg creator_bot.js -o creator_bot
-#RUN chmod 777 /app/creator_bot
 
 # ------------------------------------------------
 # Образ основной
@@ -19,16 +18,20 @@ FROM ubuntu:22.04
 
 ENV TZ="Europe/Moscow"
 RUN apt-get update && \
-    apt-get install -yq tzdata && \
+    apt-get install -yq tzdata sudo && \
     ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
 # Заводим юзера pi
-RUN useradd -m pi
+#RUN useradd -m pi
+RUN useradd -m -u 1000 pi && echo "pi ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 # Копируем бинарник ДО смены пользователя
 COPY --from=builder /app/creator_bot /home/pi/creator_bot
 # Даем права на бинарник всем пользователям
 RUN chmod 755 /home/pi/creator_bot
+# Копируем entrypoint скрипт
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 # Теперь переключаемся на пользователя pi
 USER pi
 
@@ -40,5 +43,5 @@ ENV ENV CURRENT_DIR=$ENV CURRENT_DIR
 # Копируем нужные файлы в основной образ
 WORKDIR /home/pi
 COPY ./Bot/ ./context/Bot/
-#COPY ./Token/ ./context/Token/
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["./creator_bot"]
