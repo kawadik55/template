@@ -22,18 +22,12 @@ RUN apt-get update && \
     ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
-# Заводим юзера pi
-#RUN useradd -m pi
-RUN useradd -m -u 1000 pi
-# Копируем бинарник ДО смены пользователя
+# Создаем папку без юзера
+RUN mkdir -p /home/pi
+# Копируем бинарник
 COPY --from=builder /app/creator_bot /home/pi/creator_bot
 # Даем права на бинарник всем пользователям
 RUN chmod 755 /home/pi/creator_bot
-# Копируем entrypoint скрипт
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-# Теперь переключаемся на пользователя pi
-# USER pi
 
 ENV container="docker"
 # переменная окружения по-умолчанию, может быть переопределена в команде
@@ -43,5 +37,4 @@ ENV ENV CURRENT_DIR=$ENV CURRENT_DIR
 # Копируем нужные файлы в основной образ
 WORKDIR /home/pi
 COPY ./Bot/ ./context/Bot/
-ENTRYPOINT ["/entrypoint.sh"]
 CMD ["./creator_bot"]
