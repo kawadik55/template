@@ -72,7 +72,7 @@ build_Creator:
     - cp ${CI_PROJECT_DIR}/TelegramQueue/TelegramQueue.js ${CI_PROJECT_DIR}/${DIR}/Bot/
     # строим новый образ
     - docker build -t ${NAME}:latest -f ${CI_PROJECT_DIR}/${DIR}/Dockerfile ${CI_PROJECT_DIR}/${DIR}
-    - docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/slim build --include-path=/home/pi/context --include-bin=/usr/bin/sudo --include-bin=/usr/bin/usermod --include-bin=/usr/bin/groupmod --target ${NAME}:latest --tag ${NAME}:slim --http-probe=false --continue-after=1
+    - docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/slim build --include-path=/home/pi/context --target ${NAME}:latest --tag ${NAME}:slim --http-probe=false --continue-after=1
     # удаляем latest образ
     - docker rmi ${NAME}:latest
     # переименовываем slim образ в latest

@@ -18,13 +18,13 @@ FROM ubuntu:22.04
 
 ENV TZ="Europe/Moscow"
 RUN apt-get update && \
-    apt-get install -yq tzdata sudo && \
+    apt-get install -yq tzdata && \
     ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
 # Заводим юзера pi
 #RUN useradd -m pi
-RUN useradd -m -u 1000 pi && echo "pi ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN useradd -m -u 1000 pi
 # Копируем бинарник ДО смены пользователя
 COPY --from=builder /app/creator_bot /home/pi/creator_bot
 # Даем права на бинарник всем пользователям
@@ -33,7 +33,7 @@ RUN chmod 755 /home/pi/creator_bot
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 # Теперь переключаемся на пользователя pi
-USER pi
+# USER pi
 
 ENV container="docker"
 # переменная окружения по-умолчанию, может быть переопределена в команде
