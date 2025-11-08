@@ -7,7 +7,7 @@ const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirna
 const token = (process.env.TOKEN_BOT) ? process.env.TOKEN_BOT : 'токена нету';
 const chatId = (process.env.CHAT_ID) ? process.env.CHAT_ID : 'chatId нету';
 const mess = (process.env.MESSAGE) ? process.env.MESSAGE : 'сообщения нету';
-//console.log('token = '+token);
+//console.log('token = '+token);//
 //console.log('chatId = '+chatId);
 //console.log('mess = '+mess);
 //----------------------------------------------------
