@@ -1,6 +1,7 @@
 Тут находятся файлы бота-загрузчика контента для автоматической публикации в каналах/группах новостей.
 Теперь бот-загрузчик использует внутренний скрипт рассылки, установка дополнительного скрипта не требуется.
 Скрипт рассылки rassilka.js переехал внутрь загрузчика и был удален из репозитория.
+Исправлен запуск контейнера - теперь можно запускать от любого пользователя, не только pi.
 Бот-загрузчик помогает авторизованному пользователю загрузить форматированное текстовое сообщение или картинку (видео, документ, альбом), и выбрать необходимую
 периодичность публикаций загруженного материала. Периодичность может быть выбрана из: ежедневно, по дням недели, по дате наступления события.
 Выбор 'по Дню Недели' подразумевает публикацию только в этот день недели, вплоть до указанной даты.
@@ -66,7 +67,7 @@ logs_bot.json - бот для важных системных сообщений
 
 2. Теперь запустим контейнер с ботом, и он сам развернет в созданных папках все необходимые для своей работы файлы:
 
-docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/LoaderBot" kawadiyk/fullloaderbot:latest ./full_loader_bot
+docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/LoaderBot" "$(id -u):$(id -g)" kawadiyk/fullloaderbot:latest ./full_loader_bot
 и следом остановить контейнер командой:
 docker stop name_bot
 
@@ -104,13 +105,13 @@ docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --res
 -e 'CHAT_NEWS_OBJ=[{"Ваш канал в телеграме":"-1234567890","message_thread_id":"если нужен"}]' \
 -e 'BUTTONS_OBJ={"reply_markup":{ "inline_keyboard":[[{"text": "Духовные принципы на каждый день", "url": "https://t.me/+a8HO46bHu8MwZjZk"}]]}}' \
 -e 'RUN_OBJ={"Text": true,"Image": true,"Eg": true,"Raspis": true,"FileEg":"/../Rassilka/eg.txt","FileRaspis":"/../Rassilka/raspis.txt"}' \
-kawadiyk/fullloaderbot:latest ./full_loader_bot
+"$(id -u):$(id -g)" kawadiyk/fullloaderbot:latest ./full_loader_bot
 
 2.
 docker stop name_bot && docker rm name_bot
 
 3.
-docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" kawadiyk/fullloaderbot:latest ./full_loader_bot
+docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" "$(id -u):$(id -g)" kawadiyk/fullloaderbot:latest ./full_loader_bot
 
 Если не сделать перезагрузку контейнера после первой команды с настройками, то все последующие рестарты контейнера
 будут перезаписывать эти параметры вновь и вновь, а это не есть хорошо.
