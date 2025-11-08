@@ -2769,19 +2769,20 @@ async function addNode(num,parent,name,type,url)
 { try{	
 	if(Object.hasOwn(Tree, num)) return false;//если такой уже есть
 	Tree[num] = new Object();
-	Tree[num].parent = String(parent);//родитель
+	if(!!parent) Tree[num].parent = String(parent);//родитель
 	Tree[num].name = name;//текст на кнопке
 	Tree[num].child = [];//детей пока нет
 	Tree[num].type = type;//тип кнопки
 	if(type=='url' && url) Tree[num].url = url;//url кнопки
 	if(type=='text')//пока в текст -> дерево верхних кнопок
 	{	let str = Tree[num].name;//справа будет имя новой кнопки
+		if(!parent && num=='0') str = 'Тут пока ничего нет '+smilik;
 		let k = Tree[num].parent;
 		while(k && k!='0') {str = Tree[k].name+'/'+str; k = Tree[k].parent;}
 		Tree[num].text = str;
 		Tree[num].entities = [{"offset": 0,"length": str.length,"type": "bold"}];
 	}
-	if(Tree[parent])//если есть родитель
+	if(!!Tree[parent])//если есть родитель
 	{	//проверим, нет ли у родителя уже такого узла
 		if(Tree[parent].child.indexOf(Number(num))<0) Tree[parent].child[Tree[parent].child.length] = Number(num);//добавим ребенка родителю в последнюю позицию
 	}
