@@ -34,6 +34,7 @@ build_ArchBot:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
+        - ${DIR}/Dockerfile
   
 build_ArchGroupsBot:
   stage: build
@@ -61,6 +62,7 @@ build_ArchGroupsBot:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
+        - ${DIR}/Dockerfile
 
 build_Creator:
   stage: build
@@ -93,6 +95,7 @@ build_Creator:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
+        - ${DIR}/Dockerfile
 
 build_GitLabBot:
   stage: build
@@ -120,6 +123,7 @@ build_GitLabBot:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/*.{js}
+        - ${DIR}/Dockerfile
 
 build_FullLoaderBot:
   stage: build
@@ -152,6 +156,7 @@ build_FullLoaderBot:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
+        - ${DIR}/Dockerfile
 
 build_ParserEg:
   stage: build
@@ -179,6 +184,7 @@ build_ParserEg:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
+        - ${DIR}/Dockerfile
 
 build_ParserXls_Ufa:
   stage: build
@@ -206,6 +212,7 @@ build_ParserXls_Ufa:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
+        - ${DIR}/Dockerfile
 
 build_ParserXls_Kazan:
   stage: build
@@ -233,6 +240,7 @@ build_ParserXls_Kazan:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
+        - ${DIR}/Dockerfile
         
 build_Parser_Kazan:
   stage: build
@@ -260,6 +268,7 @@ build_Parser_Kazan:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
+        - ${DIR}/Dockerfile
         
 build_Parser_Kama:
   stage: build
@@ -287,6 +296,7 @@ build_Parser_Kama:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
+        - ${DIR}/Dockerfile
 
 build_Parser_Naninov:
   stage: build
@@ -313,5 +323,6 @@ build_Parser_Naninov:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
-        - ${DIR}/Bot/*.{js}      
+        - ${DIR}/Bot/*.{js}
+        - ${DIR}/Dockerfile        
         
