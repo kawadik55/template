@@ -11,7 +11,6 @@ RUN npm i -g pkg
 
 # Компиляция
 RUN pkg parserEg.js -o parserEg
-RUN chmod 777 /app/parserEg
 
 # ------------------------------------------------
 # Образ основной
@@ -23,18 +22,20 @@ RUN apt-get update && \
     ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
-# Заводим юзера pi
-RUN useradd -m pi
-USER pi
+# Создаем папку без юзера
+RUN mkdir -p /home/pi
+# Копируем бинарник
+COPY --from=builder /app/parserEg /home/pi/parserEg
+# Даем права на бинарник всем пользователям
+RUN chmod 755 /home/pi/parserEg
 
 ENV container="docker"
 # переменная окружения по-умолчанию, может быть переопределена в команде
 ARG ENV CURRENT_DIR=/home/pi/ParserEg
 ENV ENV CURRENT_DIR=$ENV CURRENT_DIR
 
-# Копируем исполнимый parserEg из верхнего образа в основной
+# Копируем нужные файлы в основной образ
 WORKDIR /home/pi
-COPY --from=builder /app/parserEg .
 COPY ./Bot/ ./context/Bot/
-#COPY ./Token/ ./context/Token/
+RUN chmod -R 755 ./context/Bot/
 CMD ["./parserEg"]

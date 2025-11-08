@@ -11,7 +11,6 @@ RUN npm i -g pkg
 
 # Компиляция
 RUN pkg arch_groups_bot.js -o arch_groups_bot
-RUN chmod 777 /app/arch_groups_bot
 
 # ------------------------------------------------
 # Образ основной
@@ -23,9 +22,12 @@ RUN apt-get update && \
     ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata
 
-# Заводим юзера pi
-RUN useradd -m pi
-USER pi
+# Создаем папку без юзера
+RUN mkdir -p /home/pi
+# Копируем бинарник
+COPY --from=builder /app/arch_groups_bot /home/pi/arch_groups_bot
+# Даем права на бинарник всем пользователям
+RUN chmod 755 /home/pi/arch_groups_bot
 
 ENV container="docker"
 # переменная окружения по-умолчанию, может быть переопределена в команде
@@ -34,7 +36,6 @@ ENV ENV CURRENT_DIR=$ENV CURRENT_DIR
 
 # Копируем нужные файлы в основной образ
 WORKDIR /home/pi
-COPY --from=builder /app/arch_groups_bot .
 COPY ./Bot/ ./context/Bot/
-#COPY ./Token/ ./context/Token/
+RUN chmod -R 755 ./context/Bot/
 CMD ["./arch_groups_bot"]

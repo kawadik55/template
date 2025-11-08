@@ -1,5 +1,6 @@
 Тут находятся файлы для бота-архивариуса.
 Бот позволяет загрузить/прочитать отчеты групп местности.
+Исправлен запуск контейнера - теперь можно запускать от любого пользователя, не только pi.
 Пользователи бота подразделяются на 2 группы - Читатели и Писатели. Пароли для этих групп различны.
 Читатели имеют право только для чтения, Писатели - чтение/запись.
 Правда, в этом боте для групп доступ разрешен всем, пароли не обязательны.
@@ -58,7 +59,7 @@ arch_groups_bot.js - основной скрипт бота.
 
 2. Теперь запустим контейнер с ботом, и он сам развернет в созданных папках все необходимые для своей работы файлы:
 
-docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" kawadiyk/archgroupsbot:latest ./arch_groups_bot
+docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" --user "$(id -u):$(id -g)" kawadiyk/archgroupsbot:latest ./arch_groups_bot
 и следом остановить контейнер командой:
 docker stop name_bot
 
@@ -91,13 +92,13 @@ docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --res
 -e "NAME_BOT=это_мой_bot или как хотите" \
 -e "TOKEN_LOG=токен для бота логов, если нужен" \
 -e "NAME_LOG=это_лог_bot или как хотите" \
-kawadiyk/archbot:latest ./arch_bot
+--user "$(id -u):$(id -g)" kawadiyk/archbot:latest ./arch_bot
 
 2.
 docker stop name_bot && docker rm name_bot
 
 3.
-docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" kawadiyk/archbot:latest ./arch_bot
+docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" --user "$(id -u):$(id -g)" kawadiyk/archbot:latest ./arch_bot
 
 Если не сделать перезагрузку контейнера после первой команды с настройками, то все последующие рестарты контейнера
 будут перезаписывать эти параметры вновь и вновь, а это не есть хорошо.
