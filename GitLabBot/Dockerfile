@@ -38,6 +38,4 @@ ENV ENV CURRENT_DIR=$ENV CURRENT_DIR
 
 # Копируем нужные файлы в основной образ
 WORKDIR /home/pi
-COPY ./Bot/ ./context/Bot/
-RUN chmod -R 755 ./context/Bot/
 CMD ["./gitlab_bot"]
