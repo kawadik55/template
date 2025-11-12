@@ -4788,7 +4788,7 @@ try{
 }
 //====================================================================
 // с 8.05 до 8.35 будем проверять всех подписанных на Юбик
-/*let time_interval2 = 30*60;//в сек
+let time_interval2 = 30*60;//в сек
 var interval2 = setInterval(checkTime, time_interval2*1000);//заведем часы
 checkTime();//выполним при запуске скрипта, вдруг уже в интервале...
 
@@ -4922,7 +4922,7 @@ try{
 		}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_smoke)','вчат');}
 	}
 }catch(err) {WriteLogFile(err+'\nfrom checkTime()','вчат');}
-}*/
+}
 //====================================================================
 function shiftObject(obj)
 {
