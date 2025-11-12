@@ -9,12 +9,8 @@ COPY ./Bot/creator_bot.js ./Bot/TelegramQueue.js package.json ./
 RUN npm i
 RUN npm i -g pkg
 
-# Проверь что geo-tz файлы на месте
-RUN find /app -name "*.geo.dat" | head -5
-RUN pwd && ls -la node_modules/geo-tz/data/
-
 # Компиляция
-RUN pkg creator_bot.js -o creator_bot --assets "/app/node_modules/geo-tz/data/**/*"
+RUN pkg creator_bot.js -o creator_bot
 
 # ------------------------------------------------
 # Образ основной
@@ -33,8 +29,8 @@ COPY --from=builder /app/creator_bot /home/pi/creator_bot
 # Даем права на бинарник всем пользователям
 RUN chmod 755 /home/pi/creator_bot
 # Копируем гео дату
-#COPY --from=builder /app/node_modules/geo-tz/data/ /home/pi/node_modules/geo-tz/data/
-#RUN chmod -R 755 /home/pi/node_modules/geo-tz/data/
+COPY --from=builder /app/node_modules/geo-tz/data/ /app/node_modules/geo-tz/data/
+RUN chmod -R 755 /app/node_modules/geo-tz/data/
 
 ENV container="docker"
 # переменная окружения по-умолчанию, может быть переопределена в команде
