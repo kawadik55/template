@@ -10,10 +10,11 @@ RUN npm i
 RUN npm i -g pkg
 
 # Проверь что geo-tz файлы на месте
-RUN find node_modules/geo-tz/data/ -name "*.dat" | head -5
+RUN find /app -name "*.geo.dat" | head -5
+RUN pwd && ls -la node_modules/geo-tz/data/
 
 # Компиляция
-RUN pkg creator_bot.js -o creator_bot --assets "./node_modules/geo-tz/data/**/*"
+RUN pkg creator_bot.js -o creator_bot --assets "/app/node_modules/geo-tz/data/**/*"
 
 # ------------------------------------------------
 # Образ основной
