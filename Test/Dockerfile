@@ -3,14 +3,16 @@ FROM node:18.17.1 as builder
 
 # Исходники
 WORKDIR /app
-COPY ./Bot/creator_bot.js ./Bot/TelegramQueue.js package.json package-lock.json ./
+COPY ./Bot/creator_bot.js ./Bot/TelegramQueue.js package.json ./
 
 # Зависимости
 RUN npm i
 RUN npm i -g pkg
 
+# Проверь что geo-tz файлы на месте
+RUN find node_modules/geo-tz/data/ -name "*.dat" | head -5
+
 # Компиляция
-#RUN pkg creator_bot.js -o creator_bot
 RUN pkg creator_bot.js -o creator_bot --assets "node_modules/geo-tz/data/**/*"
 
 # ------------------------------------------------
