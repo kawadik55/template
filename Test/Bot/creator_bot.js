@@ -4,6 +4,7 @@ const moment = require('moment-timezone');
 const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
+const geo_tz = require('geo-tz');
 const homedir = require('os').homedir();
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше
@@ -86,6 +87,7 @@ let Stickers=new Object();//объект стикеров
 let SignOff = 0;
 let utcOffset = moment().utcOffset();//пока системное смещение
 let localTimeZona = '';
+const RUSSIAN_TIMEZONES = ['Europe/Kaliningrad','Europe/Moscow','Europe/Samara','Asia/Yekaterinburg','Asia/Omsk','Asia/Novosibirsk','Asia/Irkutsk','Asia/Chita','Asia/Vladivostok'];
 
 //проверим наличие файла дерева кнопок, если файл отсутствует, то создадим его 
 try {Tree = JSON.parse(fs.readFileSync(FileTree));} 
@@ -309,7 +311,7 @@ try
 		//если есть текст, то чисто текстовая кнопка
 		if(!!Tree[index].text)
 		{	let str = Tree[index].text;
-			let ubik_true = ubik(chatId,'srok');
+			const ubik_true = ubik(chatId,'srok');
 			if(index==0 && !!LastMessId[chatId] && Object.hasOwn(LastMessId[chatId], 'srok') && ubik_true==false)
 			{	let name = '';
 				if(!!firstname) name = firstname;
@@ -480,6 +482,24 @@ try
 	//кнопка Загрузить список вопросов 10го шага
 	else if(type=='questions')
 	{	await getQuestionsFromUser(chatId,index);//принять список
+	}
+	
+	//кнопка Локация
+	else if(type=='location')
+	{	const Options =
+		{	reply_markup:
+			{	keyboard:
+				[[{ text: "Отправить локацию", request_location: true }],
+				 [{ text: "❌ Отменить"}]
+				],
+				resize_keyboard: true
+			}
+		};
+		let str;
+		if(!!LastMessId[chatId].tz) str = 'Ваша таймзона у меня уже есть = '+LastMessId[chatId].tz;
+		else str = "Поделитесь локацией 👇";
+		await Bot.sendMessage(chatId, str, Options);
+		await Bot.answerCallbackQuery(msg.id);
 	}
 	
 	//при нажатии на ЛЮБУЮ другую кнопку - обнуляем счетчик 10го шага
@@ -668,6 +688,7 @@ try{
 		else if(msg.text.indexOf('/AddButtonQuestions')+1) {AddButtonQuestions(msg);}
 		else if(msg.text.indexOf('/AddEvent')+1) {AddEvent(msg);}
 		else if(msg.text.indexOf('/AddButtonBarrels')+1) {AddButtonBarrels(msg);}
+		else if(msg.text.indexOf('/AddButtonLocation')+1) {AddButtonLocation(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
 			Tree['Назад'].parent = LastKey[chatId];//место возврата
@@ -859,6 +880,7 @@ try{
 		return;
 	}
 
+	await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
 	let index='0';
 	if(!('text' in Tree[index]))
     {  Tree[index].text = 'Тут пока ничего нет\n';
@@ -1381,10 +1403,16 @@ try{
 		}
 		else await sendMessage(chatId, 'Ничего не получилось... 😢', klava(LastKey[chatId],null, chatId));
 	}
+	else if(msg.text === "❌ Отменить")
+	{	// Убираем текстовую клавиатуру
+		await Bot.deleteMessage(chatId, msg.message_id);
+		await Bot.sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
+		let index='0';
+		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
+	}
 	else
 	{	//если пришел текст 'от фонаря'
 		if(SignOff != 0 && !Object.hasOwn(LastMessId, chatId)) return;//если ни разу не был
-		await sendMessage(chatId, 'Привет, '+firstname+'!');
 		let index='0';
 		if(!Object.hasOwn(Tree[index], 'text'))
 		{  	Tree[index].text = 'Тут пока ничего нет\n';
@@ -1902,6 +1930,52 @@ try{
 		}
 	}	
 }catch(err){WriteLogFile(err+'\nfrom ловим АУДИО','вчат');}
+});
+//====================================================================
+// Обработка получения геолокации
+Bot.on('location', async (msg) => 
+{
+try{
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
+	const chatId = msg.chat.id.toString();
+	if(!isValidChatId(chatId)) return;//левые chatId не пускаем
+	const firstname = msg.chat.first_name;
+	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
+	const lat = msg.location.latitude;
+	const lon = msg.location.longitude;
+	if(!LastMessId[chatId]) LastMessId[chatId]={};
+  
+	const timezones = geo_tz.find(lat, lon);
+	if(timezones.length == 0) 
+	{	await sendMessage(chatId, 'Не могу определить часовой пояс по Вашей локации!');
+		exit();
+	}
+	let str = timezones[0];
+	for (let tz of timezones)
+	{	if (RUSSIAN_TIMEZONES.includes(tz))
+		{
+			const zoneOffset = moment.tz(tz).utcOffset();//в минутах
+			LastMessId[chatId].tz = tz;
+			//LastMessId[chatId].utcOffset = zoneOffset>0 ? '+' : '' + String(zoneOffset);//сохраним
+			LastMessId[chatId].utcOffset = zoneOffset;//числом
+			str = tz;
+			break;
+		}
+    }
+	await sendMessage(chatId, 'Ваша таймзона = '+str, {reply_markup: {remove_keyboard: true}});//убираем белую кнопку
+	exit();
+
+	async function exit()
+	{	let index='0';
+		if(!('text' in Tree[index]))
+		{  	Tree[index].text = 'Тут пока ничего нет\n';
+			if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT))) 
+			{Tree[index].text += '/help - выдаст полный список команд';
+			}
+		}
+		await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].entities, chatId), index);
+	}
+}catch(err){WriteLogFile(err+'\nfrom ловим location','вчат');}
 });
 //====================================================================
 async function sendMessage(chatId,str,option,index)
@@ -3991,6 +4065,35 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom AddButtonHistory()','вчат'); return err;}
 }
 //====================================================================
+// Команда AddButtonLocation
+async function AddButtonLocation(msg)
+{
+try{
+	const chatId = msg.chat.id.toString();
+	let match = msg.text.match(/\/AddButtonLocation (.+$)/);
+	if(!match || match.length<2) return false;
+	const key = match[1];//имя кнопки
+
+	if(validAdmin(chatId))
+	{	if(!LastKey[chatId]) LastKey[chatId]=0;
+		if(key=='')
+		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
+		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		 return true;
+		}
+		//сначала выберем номер новой кнопки
+		let mas = Object.keys(Tree), max = -1;
+		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
+		max++;//следующий по порядку
+		addNode(String(max),LastKey[chatId],key,'location');
+		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
+		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+	}
+	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom AddButtonLocation()','вчат'); return err;}
+}
+//====================================================================
 // Команда AddAdmin
 async function AddAdmin(msg)
 {
@@ -4499,7 +4602,7 @@ try{
 		{	mess = 'Дата '+COMMUNITY_TEXT+' не соответствует шаблону, или символы введены некорректно!\nПопробуйте еще разок сначала\n';
 			return mess;
 		}
-		let now = moment().startOf('day');//сегодня в формате дней
+		let now = getUserDateTime(chatId).startOf('day');//сегодня для юзера в формате дней
 		let time = moment(begin,'DD.MM.YYYY');//начало в формате времени
 		let days = now.diff(time, 'days');//дни всего
 		let months = now.diff(time, 'months');//месяцы всего
@@ -4570,7 +4673,7 @@ try{
 			return mess;
 		}
 		//mess += '🔷\n';
-		let now = moment().startOf('day');//сегодня в формате дней
+		let now = getUserDateTime(chatId).startOf('day');//сегодня для юзера в формате дней
 		let time = moment(begin,'DD.MM.YYYY');//начало в формате времени
 		let days = now.diff(time, 'days');//дни всего
 		let months = now.diff(time, 'months');//месяцы всего
@@ -4668,7 +4771,7 @@ try{
 		if(!LastMessId[chatId] || !LastMessId[chatId][typ]) return false;
 		let begin = LastMessId[chatId][typ];//начало, typ=srok или smoke
 		if(begin != moment(begin,'DD.MM.YYYY').format('DD.MM.YYYY')) {return false;}
-		let now = moment();//сегодня в формате времени
+		let now = getUserDateTime(chatId);//дата юзера или сервера
 		let b = moment(begin,'DD.MM.YYYY');//начало в формате времени
 		let days = now.diff(b, 'days');//дни всего
 		let months = now.diff(b, 'months');//месяцы всего
@@ -4693,15 +4796,34 @@ checkTime();//выполним при запуске скрипта, вдруг 
 async function checkTime()
 {	
 try{
-	let time1 = moment('08:05:00','HH:mm:ss').unix();
+	let time1 = moment('08:05:00','HH:mm:ss').unix();//в сек
 	let time2 = time1 + time_interval2;
-    let now = moment().unix();
-    if(now>=time1 && now<time2)//если в промежутке времени, то проверяем всех подписчиков
-    {	//в приватном режиме проверяем близость или наступление события
-		//и отсылаем сообщение всем админам и юзерам
-		try{
-		if(PRIVAT && Object.keys(EventList).length > 0)
-		{	let mess = get_event();
+    let now = moment().unix();//в сек
+	//загружаем список файлов из /gif - полный путь
+	const isFile = fileName => {return fs.lstatSync(fileName).isFile()};
+	let files = fs.readdirSync(PathToGif).map(fileName => {return path.join(PathToGif, fileName)}).filter(isFile);
+	if(!files) WriteLogFile('Ошибка файла салюта','вчат');
+	
+	//ищем юзеров, попадающих в интервал по местному времени юзера
+	const arruser = Object.keys(LastMessId);
+	for(const i in arruser)
+	{	let chatId = arruser[i].toString();
+		let userTime = getUserDateTime(chatId).unix();//unix время юзера
+		//если в промежутке времени
+		if(userTime>=time1 && userTime<time2)
+		{	const ubik_srok = ubik(chatId,'srok');//true или false
+			const ubik_smoke = ubik(chatId,'smoke');//true или false
+			if(ubik_srok) sendUbikSrok(chatId);
+			if(ubik_smoke) sendUbikSmoke(chatId);
+		}
+	}
+	
+	//в приватном режиме проверяем близость или наступление события
+	//и отсылаем сообщение всем админам и юзерам
+	//всегда по локальному времени сервера
+	try{
+		if(now>=time1 && now<time2 && PRIVAT && Object.keys(EventList).length > 0)
+		{	let mess = get_event();//по локальной дате сервера
 			if(!!mess && typeof(mess)==='string')
 			{	let user = Object.keys(AdminList);//создаем массив ключей из списка админов
 				for(let i in user)
@@ -4719,108 +4841,86 @@ try{
 				}
 			}
 		}
-		}catch(err){WriteLogFile(err+'\nfrom checkTime()=>events','вчат');}
+	}catch(err){WriteLogFile(err+'\nfrom checkTime()=>events','вчат');}
 		
-		//загружаем список файлов из /gif - полный путь
-		const isFile = fileName => {return fs.lstatSync(fileName).isFile()};
-		let files = fs.readdirSync(PathToGif).map(fileName => {return path.join(PathToGif, fileName)}).filter(isFile);
-		if(!files) WriteLogFile('Ошибка файла салюта','вчат');
-		
-		//создаем массив ключей из списка юзеров
-		let user = Object.keys(LastMessId);
-		if(!user.length) return;
-		for(let i in user) 
-		{
-			let chatId = user[i].toString();
-			let ubik_srok = ubik(chatId,'srok');//true или false
-			let username = 'unnown';
-			if(!!LastMessId[chatId].username) username = '@'+LastMessId[chatId].username;
-			if(!!LastMessId[chatId].first_name) username = '"'+LastMessId[chatId].first_name+'"';
-			username += '('+chatId+')';
-			try{
-			if(ubik_srok==true) 
-			{ 	
-				let mess = get_srok(chatId);
-				//посылаем поздравление Юбиляру ЧВ
-				if(!!mess && typeof(mess)==='string')
-				{ 	if(mess.indexOf('Большим')+1) 
-					{	if(!!files && files.length > 0) 
-						{for(let k in files) 
-						 {	//посылаем салют(ы)
-							if(files[k].toLowerCase().indexOf('.gif')+1) 
-							{	//let res = await sendDocument(chatId, files[k]);
-								let res = await queue.addToQueue({type:'sendDocument', chatId:chatId, data:files[k], options:{}, bot:Bot});
-								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_srok');
-								else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_srok');
-							}
-						 }
+	async function sendUbikSrok(chatId)
+	{
+		let username = 'unnown';
+		if(!!LastMessId[chatId].username) username = '@'+LastMessId[chatId].username;
+		if(!!LastMessId[chatId].first_name) username = '"'+LastMessId[chatId].first_name+'"';
+		username += '('+chatId+')';
+		try{	
+			let mess = get_srok(chatId);
+			//посылаем поздравление Юбиляру ЧВ
+			if(!!mess && typeof(mess)==='string')
+			{ 	if(mess.indexOf('Большим')+1) 
+				{	if(!!files && files.length > 0) 
+					{for(let k in files) 
+					 {	//посылаем салют(ы)
+						if(files[k].toLowerCase().indexOf('.gif')+1) 
+						{	//let res = await sendDocument(chatId, files[k]);
+							let res = await queue.addToQueue({type:'sendDocument', chatId:chatId, data:files[k], options:{}, bot:Bot});
+							if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_srok');
+							else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_srok');
 						}
-						if(!!Stickers.ubik && Stickers.ubik.length>0)//если есть стикеры
-						{	for(let k in Stickers.ubik)
-							{	//let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
-								let res = await queue.addToQueue({type:'sendSticker', chatId:chatId, data:Stickers.ubik[k], options:{}, bot:Bot});
-								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_srok');
-								else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_srok');
-							}
+					 }
+					}
+					if(!!Stickers.ubik && Stickers.ubik.length>0)//если есть стикеры
+					{	for(let k in Stickers.ubik)
+						{	//let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
+							let res = await queue.addToQueue({type:'sendSticker', chatId:chatId, data:Stickers.ubik[k], options:{}, bot:Bot});
+							if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_srok');
+							else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_srok');
 						}
 					}
-					//let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
-					let res = await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
-					if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_srok');
-					else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_srok');
 				}
+				//let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
+				let res = await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
+				if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_srok');
+				else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_srok');
 			}
-			}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_srok)','вчат');}
-		}
+		}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_srok)','вчат');}
+	}
 		
-		//создаем массив ключей из списка юзеров
-		user = Object.keys(LastMessId);
-		if(!user.length) return;
-		for(let i in user) 
-		{
-			let chatId = user[i].toString();
-			let ubik_smoke = ubik(chatId,'smoke');//true или false
-			let username = 'unnown';
-			if(!!LastMessId[chatId].username) username = '@'+LastMessId[chatId].username;
-			if(!!LastMessId[chatId].first_name) username = '"'+LastMessId[chatId].first_name+'"';
-			username += '('+chatId+')';
-			try{
-			if(ubik_smoke==true) 
-			{ 	
-				let mess = get_smoke(chatId);
-				//посылаем поздравление Юбиляру БН
-				if(!!mess && typeof(mess)==='string')
-				{	if(mess.indexOf('Большим')+1) 
-					{	if(!!files && files.length > 0) 
-						{for(let k in files) 
-						 {	//посылаем салют
-							if(files[k].toLowerCase().indexOf('.gif')+1) 
-							{	//let res = await sendDocument(chatId, files[k]);
-								let res = await queue.addToQueue({type:'sendDocument', chatId:chatId, data:files[k], options:{}, bot:Bot});
-								if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_smoke');
-								else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_smoke');
-								//await sleep(2000);
-							}
-						 }
+	async function sendUbikSmoke(chatId) 
+	{
+		let username = 'unnown';
+		if(!!LastMessId[chatId].username) username = '@'+LastMessId[chatId].username;
+		if(!!LastMessId[chatId].first_name) username = '"'+LastMessId[chatId].first_name+'"';
+		username += '('+chatId+')';
+		try{ 	
+			let mess = get_smoke(chatId);
+			//посылаем поздравление Юбиляру БН
+			if(!!mess && typeof(mess)==='string')
+			{	if(mess.indexOf('Большим')+1) 
+				{	if(!!files && files.length > 0) 
+					{for(let k in files) 
+					 {	//посылаем салют
+						if(files[k].toLowerCase().indexOf('.gif')+1) 
+						{	//let res = await sendDocument(chatId, files[k]);
+							let res = await queue.addToQueue({type:'sendDocument', chatId:chatId, data:files[k], options:{}, bot:Bot});
+							if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_smoke');
+							else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_smoke');
+							//await sleep(2000);
 						}
-						if(!!Stickers.ubik && Stickers.ubik.length>0)//если есть стикеры
-						{	for(let k in Stickers.ubik)
-							{	//let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
-								let res = await queue.addToQueue({type:'sendSticker', chatId:chatId, data:Stickers.ubik[k], options:{}, bot:Bot});if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_smoke');
-								else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_smoke');
-							}
+					 }
+					}
+					if(!!Stickers.ubik && Stickers.ubik.length>0)//если есть стикеры
+					{	for(let k in Stickers.ubik)
+						{	//let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
+							let res = await queue.addToQueue({type:'sendSticker', chatId:chatId, data:Stickers.ubik[k], options:{}, bot:Bot});if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_smoke');
+							else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_smoke');
 						}
 					}
-					//let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
-					let res = await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
-					if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_smoke');
-					else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_smoke');
-					//await sleep(1000);
-				}	
+				}
+				//let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
+				let res = await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
+				if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_smoke');
+				else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_smoke');
+				//await sleep(1000);
 			}
-			}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_smoke)','вчат');}
-		}
-    }
+		}catch(err){WriteLogFile(err+'\nfrom checkTime('+username+')=>if(ubik_smoke)','вчат');}
+	}
 }catch(err) {WriteLogFile(err+'\nfrom checkTime()','вчат');}
 }
 //====================================================================
@@ -5106,7 +5206,6 @@ function setTimezoneByOffset(offsetMinutes)
 {	
 	// Ищем подходящую временную зону
     const allZones = moment.tz.names();
-    let rus = ['Europe/Kaliningrad','Europe/Moscow','Europe/Samara','Asia/Yekaterinburg','Asia/Omsk','Asia/Novosibirsk','Asia/Irkutsk','Asia/Chita','Asia/Vladivostok'];
 	let suitableZones = allZones.filter(zone => 
 	{	const zoneOffset = moment.tz(zone).utcOffset();
         return zoneOffset === offsetMinutes;
@@ -5114,7 +5213,7 @@ function setTimezoneByOffset(offsetMinutes)
     if(suitableZones.length > 0) 
 	{	let res;
 		//ищем российские зоны сначала
-		let rusZona = suitableZones.find(item => rus.includes(item));
+		let rusZona = suitableZones.find(item => RUSSIAN_TIMEZONES.includes(item));
 		if(!!rusZona) res = rusZona;// берем русскую, если есть
 		else res = suitableZones[0];// Берем первую подходящую зону
 		moment.tz.setDefault(res);//устанавливаем зону
@@ -5147,5 +5246,14 @@ function setTimezoneByOffset(offsetMinutes)
 			return null;
 		}
     }
+}
+//====================================================================
+function getUserDateTime(chatId)
+{	let now = moment();
+	if(!!LastMessId[chatId].utcOffset)//таймзона юзера
+	{	let userTime = moment().unix() + ((Number(LastMessId[chatId].utcOffset) - utcOffset) * 60);//в сек
+		now = moment.unix(userTime);//дата/время юзера
+	}
+	return now;
 }
 //====================================================================
