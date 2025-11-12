@@ -4,8 +4,7 @@ const moment = require('moment-timezone');
 const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
-//const geo_tz = require('geo-tz');
-const { geo_tz } = require('@geoarrow/geotz');
+const timespace = require('timespace');
 const homedir = require('os').homedir();
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше.
@@ -1946,7 +1945,7 @@ try{
 	const lon = msg.location.longitude;
 	if(!LastMessId[chatId]) LastMessId[chatId]={};
   
-	const timezones = geo_tz(lat, lon);
+	const timezones = timespace.getTimeZone(lat, lon);
 	if(timezones.length == 0) 
 	{	await sendMessage(chatId, 'Не могу определить часовой пояс по Вашей локации!');
 		exit();
