@@ -6,8 +6,7 @@
   },
   "pkg": {
     "assets": [
-      "node_modules/geo-tz/data/**/*.dat",
-      "node_modules/geo-tz/data/**/*.json"
+      "node_modules/geo-tz/data/**/*"
     ]
   }
 }
