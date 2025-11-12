@@ -4,7 +4,8 @@ const moment = require('moment-timezone');
 const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
-const timespace = require('timespace');
+//const timespace = require('timespace');
+const tzLookup = require('tz-lookup');
 const homedir = require('os').homedir();
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше.
@@ -1945,7 +1946,7 @@ try{
 	const lon = msg.location.longitude;
 	if(!LastMessId[chatId]) LastMessId[chatId]={};
   
-	const timezones = timespace.getTimeZone(lat, lon);
+	/*const timezones = timespace.getTzInfo(lat, lon).timezone;
 	if(timezones.length == 0) 
 	{	await sendMessage(chatId, 'Не могу определить часовой пояс по Вашей локации!');
 		exit();
@@ -1961,8 +1962,19 @@ try{
 			str = tz;
 			break;
 		}
-    }
-	await sendMessage(chatId, 'Ваша таймзона = '+str, {reply_markup: {remove_keyboard: true}});//убираем белую кнопку
+    }*/
+	// Возвращает СТРОКУ, не массив!
+	const tz = tzLookup(lat, lon);
+	if(!!tz)
+	{	const zoneOffset = moment.tz(tz).utcOffset();//в минутах
+		LastMessId[chatId].tz = tz;
+		LastMessId[chatId].utcOffset = zoneOffset;//числом
+		await sendMessage(chatId, 'Ваша таймзона = '+tz, {reply_markup: {remove_keyboard: true}});//убираем белую кнопку
+	}
+	else
+	{	await sendMessage(chatId, 'Не могу определить часовой пояс по Вашей локации!', {reply_markup: {remove_keyboard: true}});
+	}
+	
 	exit();
 
 	async function exit()
