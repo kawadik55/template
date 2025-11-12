@@ -3,5 +3,11 @@
     "moment-timezone": "^0.6.0",
     "node-telegram-bot-api": "latest",
 	"geo-tz": "^8.1.4"
+  },
+  "pkg": {
+    "assets": [
+      "node_modules/geo-tz/data/**/*.dat",
+      "node_modules/geo-tz/data/**/*.json"
+    ]
   }
 }
