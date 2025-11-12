@@ -29,8 +29,8 @@ COPY --from=builder /app/creator_bot /home/pi/creator_bot
 # Даем права на бинарник всем пользователям
 RUN chmod 755 /home/pi/creator_bot
 # Копируем гео дату
-COPY --from=builder /app/node_modules/geo-tz/ /app/node_modules/geo-tz/
-RUN chmod -R 755 /app/node_modules/geo-tz/
+COPY --from=builder /app/node_modules/geo-tz/data/ /home/pi/node_modules/geo-tz/data/
+RUN chmod -R 755 /home/pi/node_modules/geo-tz/data/
 
 ENV container="docker"
 # переменная окружения по-умолчанию, может быть переопределена в команде
