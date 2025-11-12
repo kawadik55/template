@@ -13,7 +13,7 @@ RUN npm i -g pkg
 RUN find node_modules/geo-tz/data/ -name "*.dat" | head -5
 
 # Компиляция
-RUN pkg creator_bot.js -o creator_bot --assets "node_modules/geo-tz/data/**/*"
+RUN pkg creator_bot.js -o creator_bot --assets "./node_modules/geo-tz/data/**/*"
 
 # ------------------------------------------------
 # Образ основной
