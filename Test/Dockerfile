@@ -10,7 +10,8 @@ RUN npm i
 RUN npm i -g pkg
 
 # Компиляция
-RUN pkg creator_bot.js -o creator_bot
+#RUN pkg creator_bot.js -o creator_bot
+RUN pkg creator_bot.js -o creator_bot --assets "node_modules/geo-tz/data/**/*"
 
 # ------------------------------------------------
 # Образ основной
