@@ -507,7 +507,7 @@ try
 		 str += "мне Ваши координаты. По ним я определю Ваш часовой пояс.\n";
 		 str += "Если этого не сделать, то я буду считать, что Вы находитесь в моей зоне "+localTimeZona+".";
 		}
-		await Bot.sendMessage(chatId, str, Options);
+		await sendMessage(chatId, str, Options);
 		await Bot.answerCallbackQuery(msg.id);
 	}
 	
@@ -1413,15 +1413,19 @@ try{
 		else await sendMessage(chatId, 'Ничего не получилось... 😢', klava(LastKey[chatId],null, chatId));
 	}
 	else if(msg.text === "❌ Отменить")
-	{	// Убираем текстовую клавиатуру
+	{	//Убираем предыдущее сообщение
+		if(!!LastMessId[chatId].messId) await Bot.deleteMessage(chatId, LastMessId[chatId].messId);
 		await Bot.deleteMessage(chatId, msg.message_id);
+		// Убираем текстовую клавиатуру
 		await Bot.sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
 		let index='0';
 		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
 	}
 	else if(msg.text === "Удалить мою локацию")
-	{	// Убираем текстовую клавиатуру
+	{	//Убираем предыдущее сообщение
+		if(!!LastMessId[chatId].messId) await Bot.deleteMessage(chatId, LastMessId[chatId].messId);
 		await Bot.deleteMessage(chatId, msg.message_id);
+		// Убираем текстовую клавиатуру
 		await Bot.sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
 		delete LastMessId[chatId].tz;
 		delete LastMessId[chatId].utcOffset;
