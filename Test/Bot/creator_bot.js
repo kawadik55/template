@@ -491,7 +491,7 @@ try
 		{	reply_markup:
 			{	keyboard:
 				[[{ text: "Отправить мою локацию", request_location: true }],
-				 [{ text: "Очистить мою локацию"}]
+				 [{ text: "Очистить мою локацию"}],
 				 [{ text: "❌ Отменить"}]
 				],
 				resize_keyboard: true
