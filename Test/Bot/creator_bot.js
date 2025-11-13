@@ -490,9 +490,9 @@ try
 	{	const Options =
 		{	reply_markup:
 			{	keyboard:
-				[[{ text: "Отправить мою локацию", request_location: true }],
-				 [{ text: "Удалить мою локацию"}],
-				 [{ text: "❌ Отменить"}]
+				[[{text:"Отправить мою локацию",request_location: true},{text:"Удалить мою локацию"}],
+				 //[{text: "Удалить мою локацию"}],
+				 [{text: "❌ Отменить"}]
 				],
 				resize_keyboard: true
 			}
@@ -1963,23 +1963,6 @@ try{
 	const lon = msg.location.longitude;
 	if(!LastMessId[chatId]) LastMessId[chatId]={};
   
-	/*const timezones = timespace.getTzInfo(lat, lon).timezone;
-	if(timezones.length == 0) 
-	{	await sendMessage(chatId, 'Не могу определить часовой пояс по Вашей локации!');
-		exit();
-	}
-	let str = timezones[0];
-	for (let tz of timezones)
-	{	if (RUSSIAN_TIMEZONES.includes(tz))
-		{
-			const zoneOffset = moment.tz(tz).utcOffset();//в минутах
-			LastMessId[chatId].tz = tz;
-			//LastMessId[chatId].utcOffset = zoneOffset>0 ? '+' : '' + String(zoneOffset);//сохраним
-			LastMessId[chatId].utcOffset = zoneOffset;//числом
-			str = tz;
-			break;
-		}
-    }*/
 	// Возвращает СТРОКУ, не массив!
 	const tz = tzLookup(lat, lon);
 	if(!!tz)
@@ -1987,12 +1970,11 @@ try{
 		LastMessId[chatId].tz = tz;
 		LastMessId[chatId].utcOffset = zoneOffset;//числом
 		await sendMessage(chatId, 'Ваша таймзона = '+tz, {reply_markup: {remove_keyboard: true}});//убираем белую кнопку
+		exit();
 	}
 	else
 	{	await sendMessage(chatId, 'Не могу определить часовой пояс по Вашей локации!', {reply_markup: {remove_keyboard: true}});
 	}
-	
-	exit();
 
 	async function exit()
 	{	let index='0';
