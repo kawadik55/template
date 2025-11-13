@@ -490,7 +490,8 @@ try
 	{	const Options =
 		{	reply_markup:
 			{	keyboard:
-				[[{ text: "Отправить локацию", request_location: true }],
+				[[{ text: "Отправить мою локацию", request_location: true }],
+				 [{ text: "Очистить мою локацию"}]
 				 [{ text: "❌ Отменить"}]
 				],
 				resize_keyboard: true
@@ -1414,6 +1415,15 @@ try{
 	{	// Убираем текстовую клавиатуру
 		await Bot.deleteMessage(chatId, msg.message_id);
 		await Bot.sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
+		let index='0';
+		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
+	}
+	else if(msg.text === "Очистить мою локацию")
+	{	// Убираем текстовую клавиатуру
+		await Bot.deleteMessage(chatId, msg.message_id);
+		await Bot.sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
+		delete LastMessId[chatId].tz;
+		delete LastMessId[chatId].utcOffset;
 		let index='0';
 		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
 	}
