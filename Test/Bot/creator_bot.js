@@ -491,7 +491,6 @@ try
 		{	reply_markup:
 			{	keyboard:
 				[[{text:"Отправить мою локацию",request_location: true},{text:"Удалить мою локацию"}],
-				 //[{text: "Удалить мою локацию"}],
 				 [{text: "❌ Отменить"}]
 				],
 				resize_keyboard: true
@@ -507,6 +506,7 @@ try
 		 str += "мне Ваши координаты. По ним я определю Ваш часовой пояс.\n";
 		 str += "Если этого не сделать, то я буду считать, что Вы находитесь в моей зоне "+localTimeZona+".";
 		}
+		LastMessId[chatId].loc_mess_id = 'запрос';//ставим запрос на сохранение id этого сообщения
 		await sendMessage(chatId, str, Options);
 		await Bot.answerCallbackQuery(msg.id);
 	}
@@ -889,7 +889,7 @@ try{
 		return;
 	}
 
-	await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
+	await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белые кнопки
 	let index='0';
 	if(!('text' in Tree[index]))
     {  Tree[index].text = 'Тут пока ничего нет\n';
@@ -1417,7 +1417,8 @@ try{
 		if(!!LastMessId[chatId].messId) await Bot.deleteMessage(chatId, LastMessId[chatId].messId);
 		await Bot.deleteMessage(chatId, msg.message_id);
 		// Убираем текстовую клавиатуру
-		await Bot.sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
+		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
+		try {await Bot.deleteMessage(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
 		let index='0';
 		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
 	}
@@ -1426,7 +1427,8 @@ try{
 		if(!!LastMessId[chatId].messId) await Bot.deleteMessage(chatId, LastMessId[chatId].messId);
 		await Bot.deleteMessage(chatId, msg.message_id);
 		// Убираем текстовую клавиатуру
-		await Bot.sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
+		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
+		try {await Bot.deleteMessage(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
 		delete LastMessId[chatId].tz;
 		delete LastMessId[chatId].utcOffset;
 		let index='0';
@@ -2030,6 +2032,12 @@ try{
 	{	if(index != null) LastKey[chatId]=index;
 	}
 	
+	//если есть id сообщений локации, то удаляем
+	if(!!LastMessId[chatId].loc_mess_id && LastMessId[chatId].loc_mess_id !== 'запрос')
+	{	remove_message(chat_id, LastMessId[chatId].loc_mess_id);
+		delete LastMessId[chatId].loc_mess_id;
+	}
+	
 	//сохраняем mess_id, если с кнопками
 	let off = (SignOff != 0 && !Object.hasOwn(LastMessId, chatId));//если ни разу не был, и подписка запрещена
 	if(Object.hasOwn(res, 'reply_markup') && Object.hasOwn(res.reply_markup, 'inline_keyboard') && !off)
@@ -2040,7 +2048,8 @@ try{
      //удаляем предыдущее сообщение с кнопками, если оно было
 	 if(!!mess_id) {await remove_message(chat_id, mess_id);}
 	}
-	
+	//сохраняем id от локации, если запрошено
+	if(!!LastMessId[chatId].loc_mess_id && LastMessId[chatId].loc_mess_id === 'запрос') LastMessId[chatId].loc_mess_id = res.message_id;
 	return res;
 	
 }catch(err){
@@ -2081,6 +2090,12 @@ try{
 	
 	if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId] != 1)//для Админа сохраним ключ строки 
 	{	if(index != null) LastKey[chatId]=index;
+	}
+	
+	//если есть id сообщений локации, то удаляем
+	if(!!LastMessId[chatId].loc_mess_id && LastMessId[chatId].loc_mess_id !== 'запрос')
+	{	remove_message(chat_id, LastMessId[chatId].loc_mess_id);
+		delete LastMessId[chatId].loc_mess_id;
 	}
 	
 	//сохраняем mess_id, если с кнопками
