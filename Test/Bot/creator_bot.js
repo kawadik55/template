@@ -391,13 +391,17 @@ try
 		{   let refpath;
 			if(Object.hasOwn(Tree[index], 'path')) refpath = currentDir + Tree[index].path;//путь из кнопки, если есть
 			else refpath = FileEg;//путь по-умолчанию
-			const tomorrowPath = path.join(path.dirname(refpath), 'tomorrow_' + path.basename(refpath));//с префиксом завтра
-			const yesterdayPath = path.join(path.dirname(refpath), 'yesterday_' + path.basename(refpath));//с префиксом вчера
 			const userDate = getUserDateTime(chatId).startOf('day');
 			const serverDate = moment().startOf('day');
 			const diffDays = serverDate.diff(userDate, 'days');//разница в днях
-			if(diffDays > 0) refpath = yesterdayPath;
-			if(diffDays < 0) refpath = tomorrowPath;			
+			if(diffDays > 0)
+			{	const yesterdayPath = path.join(path.dirname(refpath), 'yesterday_' + path.basename(refpath));//с префиксом вчера
+				if(fs.existsSync(yesterdayPath)) refpath = yesterdayPath;
+			}
+			else if(diffDays < 0)
+			{	const tomorrowPath = path.join(path.dirname(refpath), 'tomorrow_' + path.basename(refpath));//с префиксом завтра
+				if(fs.existsSync(tomorrowPath)) refpath = tomorrowPath;
+			}		
 			eg = (await fs.promises.readFile(refpath)).toString();//получаем "сегодняшний" для юзера Ежик 
 		}
 		catch(err) {console.error(err);}
