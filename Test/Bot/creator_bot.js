@@ -391,8 +391,8 @@ try
 		{   let refpath;
 			if(Object.hasOwn(Tree[index], 'path')) refpath = currentDir + Tree[index].path;//путь из кнопки, если есть
 			else refpath = FileEg;//путь по-умолчанию
-			const tomorrowPath = path.join(path.dirname(pathfile), 'tomorrow_' + path.basename(filePath));//с префиксом завтра
-			const yesterdayPath = path.join(path.dirname(pathfile), 'yesterday_' + path.basename(filePath));//с префиксом вчера
+			const tomorrowPath = path.join(path.dirname(refpath), 'tomorrow_' + path.basename(refpath));//с префиксом завтра
+			const yesterdayPath = path.join(path.dirname(refpath), 'yesterday_' + path.basename(refpath));//с префиксом вчера
 			const userDate = getUserDateTime(chatId).startOf('day');
 			const serverDate = moment().startOf('day');
 			const diffDays = serverDate.diff(userDate, 'days');//разница в днях
