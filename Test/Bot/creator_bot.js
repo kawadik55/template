@@ -4,7 +4,6 @@ const moment = require('moment-timezone');
 const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
-//const timespace = require('timespace');
 const tzLookup = require('tz-lookup');
 const homedir = require('os').homedir();
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
@@ -389,10 +388,17 @@ try
 	{	let eg = '';
 		let mode = 'markdown';
 		try
-		{   let path;
-			if(Object.hasOwn(Tree[index], 'path')) path = currentDir + Tree[index].path;//путь из кнопки, если есть
-			else path = FileEg;//путь по-умолчанию
-			eg = (await fs.promises.readFile(path)).toString();
+		{   let refpath;
+			if(Object.hasOwn(Tree[index], 'path')) refpath = currentDir + Tree[index].path;//путь из кнопки, если есть
+			else refpath = FileEg;//путь по-умолчанию
+			const tomorrowPath = path.join(path.dirname(pathfile), 'tomorrow_' + path.basename(filePath));//с префиксом завтра
+			const yesterdayPath = path.join(path.dirname(pathfile), 'yesterday_' + path.basename(filePath));//с префиксом вчера
+			const userDate = getUserDateTime(chatId).startOf('day');
+			const serverDate = moment().startOf('day');
+			const diffDays = serverDate.diff(userDate, 'days');//разница в днях
+			if(diffDays > 0) refpath = yesterdayPath;
+			if(diffDays < 0) refpath = tomorrowPath;			
+			eg = (await fs.promises.readFile(refpath)).toString();//получаем "сегодняшний" для юзера Ежик 
 		}
 		catch(err) {console.error(err);}
 		if(!eg || eg=='') eg = 'Извините, пока недоступно 🤷';
@@ -5278,6 +5284,7 @@ function setTimezoneByOffset(offsetMinutes)
     }
 }
 //====================================================================
+//возвращает таймстамп юзера в формате moment()
 function getUserDateTime(chatId)
 {	let now = moment();
 	if(!!LastMessId[chatId].utcOffset)//таймзона юзера
