@@ -367,7 +367,11 @@ try
 		try
 		{   let path;
 			let str;
-			if(Object.hasOwn(Tree[index], 'path')) path = currentDir + Tree[index].path;//путь из кнопки, если есть
+			if(Object.hasOwn(Tree[index], 'path')) 
+			{	let ownpath = currentDir + Tree[index].path;//путь из кнопки, если есть
+				const isFile = (() => { try { return fs.statSync(ownpath).isFile() } catch { return false } })();
+				if(isFile) path = ownpath;
+			}
 			else path = FileRaspis;//путь по-умолчанию
 			try{str = (await fs.promises.readFile(path)).toString();}catch(err){}
 			let obj = {};
@@ -389,7 +393,11 @@ try
 		let mode = 'markdown';
 		try
 		{   let refpath;
-			if(Object.hasOwn(Tree[index], 'path')) refpath = currentDir + Tree[index].path;//путь из кнопки, если есть
+			if(Object.hasOwn(Tree[index], 'path')) 
+			{	let ownpath = currentDir + Tree[index].path;//путь из кнопки, если есть
+				const isFile = (() => { try { return fs.statSync(ownpath).isFile() } catch { return false } })();
+				if(isFile) refpath = ownpath;
+			}
 			else refpath = FileEg;//путь по-умолчанию
 			const userDate = getUserDateTime(chatId).startOf('day');
 			const serverDate = moment().startOf('day');
