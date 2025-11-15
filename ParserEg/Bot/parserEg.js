@@ -5,7 +5,7 @@ const needle = require('needle');
 const {htmlToText} = require('html-to-text');//преобразователь html в текст
 
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const FilePaths = currentDir+'/paths.json';//файл со списком выходных файлов
+const FilePaths = currentDir+'/paths.json';//файл со списком выходных файлов.
 let PathsList={};//список выходных файлов
 //файл списка выходных путей и файлов
 try 
