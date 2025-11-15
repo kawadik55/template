@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "moment-timezone": "^0.6.0",
-    "node-telegram-bot-api": "latest"
+    "node-telegram-bot-api": "latest",
+	"tz-lookup": "^6.1.25"
   }
 }
