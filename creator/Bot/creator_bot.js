@@ -907,7 +907,7 @@ try{
 		return;
 	}
 
-	await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белые кнопки
+	//await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белые кнопки
 	let index='0';
 	if(!('text' in Tree[index]))
     {  Tree[index].text = 'Тут пока ничего нет\n';
@@ -2026,7 +2026,7 @@ try{
 	
 	//сохраняем для посл.удаления
 	let chat_id='', mess_id='';
-	if(!!LastMessId[chatId]) {chat_id=chatId; mess_id=LastMessId[chatId].messId;}
+	if(!!LastMessId[chatId]&&!!LastMessId[chatId].messId) {chat_id=chatId; mess_id=LastMessId[chatId].messId;}
 	if(!option) option = new Object();
 	let err='';
 	str = str.toString();
@@ -2051,7 +2051,7 @@ try{
 	}
 	
 	//если есть id сообщений локации, то удаляем
-	if(!!LastMessId[chatId].loc_mess_id && LastMessId[chatId].loc_mess_id !== 'запрос')
+	if(!!!!LastMessId[chatId] && !!LastMessId[chatId].loc_mess_id && LastMessId[chatId].loc_mess_id !== 'запрос')
 	{	remove_message(chat_id, LastMessId[chatId].loc_mess_id);
 		delete LastMessId[chatId].loc_mess_id;
 	}
