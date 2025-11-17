@@ -1692,7 +1692,7 @@ try{
 		str += '` /DelWhatsApp` - удалить Координатора Вотсап\n';
 		str += '` /DelUser chatID` - удалить Юзера\n';
 		str += '` /EditUrl новыйUrl` - изменить ссылку в Вопросах\n';
-		str += '` /EditLifeTime новыйСрок` - изменить срок действия регистрации юзеров\n';
+		str += '` /EditLifeTime новыйСрок` - изменить срок действия регистрации юзеров, в днях\n';
 		//str += '` /DelBan chatID` - удалить из Черного списка\n';
 		sendMessage(chatId, str, {parse_mode:"markdown"});
 	}
