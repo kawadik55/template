@@ -400,8 +400,8 @@ try
 			}
 			else refpath = FileEg;//путь по-умолчанию
 			const userDate = getUserDateTime(chatId).startOf('day');
-			const serverDate = moment().startOf('day');
-			const diffDays = serverDate.diff(userDate, 'days');//разница в днях
+			const todayDate = getEgDateTime(refpath).startOf('day'); //дата Ежика на сегодня
+			const diffDays = todayDate.diff(userDate, 'days');//разница в днях
 			if(diffDays > 0)
 			{	const yesterdayPath = path.join(path.dirname(refpath), 'yesterday_' + path.basename(refpath));//с префиксом вчера
 				if(fs.existsSync(yesterdayPath)) refpath = yesterdayPath;
@@ -5303,6 +5303,21 @@ function getUserDateTime(chatId)
 	{	let userTime = moment().unix() + ((Number(LastMessId[chatId].utcOffset) - utcOffset) * 60);//в сек
 		now = moment.unix(userTime);//дата/время юзера
 	}
+	return now;
+}
+//====================================================================
+//возвращает таймстамп файла Ежика на сегодня в формате moment()
+function getEgDateTime(refpath)
+{	let now = moment();//по-умолчанию
+	if(!fs.existsSync(refpath)) {WriteLogFile('getEgDateTime(refPath) - некорректный путь = '+refpath); return now;}
+	const timestampPath = path.join(path.dirname(refpath), 'timestamp.json');//к файлу с unixtimestamp
+	if(fs.existsSync(timestampPath))
+	{	try {const obj = JSON.parse(fs.readFileSync(timestampPath));
+			if(!!obj.UnixTime) now = moment.unix(obj.UnixTime);//дата/время создания файла Ежика
+		} 
+		catch (err) {console.log(err);}
+	}
+
 	return now;
 }
 //====================================================================
