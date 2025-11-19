@@ -6,6 +6,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const tzLookup = require('tz-lookup');
 const homedir = require('os').homedir();
+const needle = require('needle');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше.
 const FileAdminList = currentDir+"/AdminList.txt";//имя файла списка админов
@@ -515,7 +516,7 @@ try
 			}
 		};
 		let str;
-		if(!!LastMessId[chatId].tz) str = 'Ваша таймзона у меня уже есть = '+LastMessId[chatId].tz;
+		if(!!LastMessId[chatId].location&&!!LastMessId[chatId].location.tz) str = 'Ваша таймзона у меня уже есть = '+LastMessId[chatId].location.tz;
 		//else str = "Поделитесь локацией 👇";
 		else
 		{str = "Для корректного определения Вашей даты мне нужно точно знать Ваш часовой пояс. ";
@@ -527,6 +528,22 @@ try
 		LastMessId[chatId].loc_mess_id = 'запрос';//ставим запрос на сохранение id этого сообщения
 		await sendMessage(chatId, str, Options);
 		await Bot.answerCallbackQuery(msg.id);
+	}
+	
+	//кнопка Расписание с ЕС
+	else if(type=='raspisES')
+	{	let slug;
+		let str = '';
+		if(!!LastMessId[chatId].location && !!LastMessId[chatId].location.slug) slug = LastMessId[chatId].location.slug;
+		if(!!slug) str = 'Вот ссылка на расписание в Вашем городе:\n'+'https://na-russia.org/'+slug+'/meetings-today';
+		else
+		{	str = 'Прошу прощения, но я не могу прислать Вам ссылку на расписание собраний в Вашем городе. ';
+			str += 'Если не трудно, пришлите мне еще раз свою Локацию!\n';
+			str += 'А пока я дам Вам общую ссылку на сайт РЗФ:\n'+'https://na-russia.org';
+		}
+		if(!LastKey[chatId]) LastKey[chatId] = '0';
+		Tree['Назад'].parent = LastKey[chatId];//место возврата
+		await sendMessage(chatId, str, klava('Назад', null, chatId));
 	}
 	
 	//при нажатии на ЛЮБУЮ другую кнопку - обнуляем счетчик 10го шага
@@ -691,31 +708,34 @@ try{
 	const chatId = msg.chat.id.toString();
 	if(!isValidChatId(chatId)) return;//левые chatId не пускаем
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
+	const match = msg.text.match(/\S+/g)[0];
+	const comm = match ? match[0] : null;
 	
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
-	{	if(msg.text=='/AddHistory') {AddHistory(msg);}
-		else if(msg.text.indexOf('/AddPhoto')+1) {AddPhoto(msg);}
-		else if(msg.text.indexOf('/AddFile')+1) {AddFile(msg);}
-		else if(msg.text.indexOf('/AddVideo')+1) {AddVideo(msg);}
-		else if(msg.text.indexOf('/AddAudio')+1) {AddAudio(msg);}
-		else if(msg.text.indexOf('/AddButtonText')+1) {AddButtonText(msg);}
-		else if(msg.text.indexOf('/AddButtonAdmin')+1) {AddButtonAdmin(msg);}
-		else if(msg.text.indexOf('/AddButtonUrl')+1) {AddButtonUrl(msg);}
-		else if(msg.text.indexOf('/AddButtonPhoto')+1) {AddButtonPhoto(msg);}
-		else if(msg.text.indexOf('/AddButtonFile')+1) {AddButtonFile(msg);}
-		else if(msg.text.indexOf('/AddButtonVideo')+1) {AddButtonVideo(msg);}
-		else if(msg.text.indexOf('/AddButtonAudio')+1) {AddButtonAudio(msg);}
-		else if(msg.text.indexOf('/AddButtonRaspis')+1) {AddButtonRaspis(msg);}
-		else if(msg.text.indexOf('/AddButtonEg')+1) {AddButtonEg(msg);}
-		else if(msg.text.indexOf('/AddButtonHistory')+1) {AddButtonHistory(msg);}
-		else if(msg.text.indexOf('/AddButtonTime')+1) {AddButtonTime(msg);}
-		else if(msg.text.indexOf('/AddAdmin')+1) {AddAdmin(msg);}
-		else if(msg.text.indexOf('/AddUser')+1) {AddUser(msg);}
-		else if(msg.text.indexOf('/AddButtonTen')+1) {AddButtonTen(msg);}
-		else if(msg.text.indexOf('/AddButtonQuestions')+1) {AddButtonQuestions(msg);}
-		else if(msg.text.indexOf('/AddEvent')+1) {AddEvent(msg);}
-		else if(msg.text.indexOf('/AddButtonBarrels')+1) {AddButtonBarrels(msg);}
-		else if(msg.text.indexOf('/AddButtonLocation')+1) {AddButtonLocation(msg);}
+	{	if(comm=='/AddHistory') {AddHistory(msg);}
+		else if(comm=='/AddPhoto') {AddPhoto(msg);}
+		else if(comm=='/AddFile') {AddFile(msg);}
+		else if(comm=='/AddVideo') {AddVideo(msg);}
+		else if(comm=='/AddAudio') {AddAudio(msg);}
+		else if(comm=='/AddButtonText') {AddButtonText(msg);}
+		else if(comm=='/AddButtonAdmin') {AddButtonAdmin(msg);}
+		else if(comm=='/AddButtonUrl') {AddButtonUrl(msg);}
+		else if(comm=='/AddButtonPhoto') {AddButtonPhoto(msg);}
+		else if(comm=='/AddButtonFile') {AddButtonFile(msg);}
+		else if(comm=='/AddButtonVideo') {AddButtonVideo(msg);}
+		else if(comm=='/AddButtonAudio') {AddButtonAudio(msg);}
+		else if(comm=='/AddButtonRaspis') {AddButtonRaspis(msg);}
+		else if(comm=='/AddButtonEg') {AddButtonEg(msg);}
+		else if(comm=='/AddButtonHistory') {AddButtonHistory(msg);}
+		else if(comm=='/AddButtonTime') {AddButtonTime(msg);}
+		else if(comm=='/AddAdmin') {AddAdmin(msg);}
+		else if(comm=='/AddUser') {AddUser(msg);}
+		else if(comm=='/AddButtonTen') {AddButtonTen(msg);}
+		else if(comm=='/AddButtonQuestions') {AddButtonQuestions(msg);}
+		else if(comm=='/AddEvent') {AddEvent(msg);}
+		else if(comm=='/AddButtonBarrels') {AddButtonBarrels(msg);}
+		else if(comm=='/AddButtonLocation') {AddButtonLocation(msg);}
+		else if(comm=='/AddButtonRaspisES') {AddButtonRaspisES(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
 			Tree['Назад'].parent = LastKey[chatId];//место возврата
@@ -1447,8 +1467,7 @@ try{
 		// Убираем текстовую клавиатуру
 		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
 		try {await Bot.deleteMessage(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
-		delete LastMessId[chatId].tz;
-		delete LastMessId[chatId].utcOffset;
+		delete LastMessId[chatId].location;
 		let index='0';
 		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
 	}
@@ -1991,9 +2010,27 @@ try{
 	const tz = tzLookup(lat, lon);
 	if(!!tz)
 	{	const zoneOffset = moment.tz(tz).utcOffset();//в минутах
-		LastMessId[chatId].tz = tz;
-		LastMessId[chatId].utcOffset = zoneOffset;//числом
-		await sendMessage(chatId, 'Ваша таймзона = '+tz, {reply_markup: {remove_keyboard: true}});//убираем белую кнопку
+		delete LastMessId[chatId].tz;//старая
+		delete LastMessId[chatId].utcOffset;//старая
+		let obj = {};
+		obj.tz = tz;
+		obj.utcOffset = zoneOffset;//числом
+		obj.lat = lat;
+		obj.lon = lon;
+		//запрашиваем город на ЕС по локации
+		let url = 'https://na-russia.org/api/towns/closest/?lat='+lat+'&lon='+lon;
+		let res = await getObjFromES(url);
+		let slug, general_town;
+		if(res != 'NO')
+		{	slug = (!!res&&!!res.town&&!!res.town.slug) ? res.town.slug : '';
+			general_town = (!!res&&!!res.town&&!!res.town.general_town) ? res.town.general_town : '';
+			if(!!slug) obj.slug = slug;
+			if(!!general_town) obj.general_town = general_town;
+		}
+		LastMessId[chatId].location = obj;
+		//убираем белую кнопку
+		await sendMessage(chatId, 'Ваша таймзона = '+tz+(!!slug?' ('+slug+')':''), {reply_markup: {remove_keyboard: true}});
+		//await sendMessage(chatId, 'Ваша таймзона = '+tz, {reply_markup: {remove_keyboard: true}});
 		exit();
 	}
 	else
@@ -4142,6 +4179,35 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom AddButtonLocation()','вчат'); return err;}
 }
 //====================================================================
+// Команда AddButtonRaspisES
+async function AddButtonRaspisES(msg)
+{
+try{
+	const chatId = msg.chat.id.toString();
+	let match = msg.text.match(/\/AddButtonRaspisES (.+$)/);
+	if(!match || match.length<2) return false;
+	const key = match[1];//имя кнопки
+
+	if(validAdmin(chatId))
+	{	if(!LastKey[chatId]) LastKey[chatId]=0;
+		if(key=='')
+		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
+		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		 return true;
+		}
+		//сначала выберем номер новой кнопки
+		let mas = Object.keys(Tree), max = -1;
+		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
+		max++;//следующий по порядку
+		addNode(String(max),LastKey[chatId],key,'raspisES');
+		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
+		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+	}
+	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom AddButtonRaspisES()','вчат'); return err;}
+}
+//====================================================================
 // Команда AddAdmin
 async function AddAdmin(msg)
 {
@@ -5299,8 +5365,8 @@ function setTimezoneByOffset(offsetMinutes)
 //возвращает таймстамп юзера в формате moment()
 function getUserDateTime(chatId)
 {	let now = moment();
-	if(!!LastMessId[chatId].utcOffset)//таймзона юзера
-	{	let userTime = moment().unix() + ((Number(LastMessId[chatId].utcOffset) - utcOffset) * 60);//в сек
+	if(!!LastMessId[chatId].location&&!!LastMessId[chatId].location.utcOffset)//таймзона юзера
+	{	let userTime = moment().unix() + ((Number(LastMessId[chatId].location.utcOffset) - utcOffset) * 60);//в сек
 		now = moment.unix(userTime);//дата/время юзера
 	}
 	return now;
@@ -5321,3 +5387,21 @@ function getEgDateTime(refpath)
 	return now;
 }
 //====================================================================
+async function getObjFromES(URL)
+{	try
+	{
+		let promise = new Promise((resolve, reject) => 
+		{	needle.get(URL, async function(err, response) 
+			{ 	if(response.statusCode==200)
+				{
+					resolve (response.body);	
+				}
+				else {console.log(moment().format('DD-MM-YY HH:mm:ss:ms ')+'Страница '+URL+' не получена! ' +response.statusCode); resolve('NO');} 
+			});
+  
+		});//конец промиса
+		return await promise;
+	} catch(err) {console.log('Ошибка в parser_eg()\n'+err.message);}//
+}
+//====================================================================
+
