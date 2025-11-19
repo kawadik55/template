@@ -708,8 +708,9 @@ try{
 	const chatId = msg.chat.id.toString();
 	if(!isValidChatId(chatId)) return;//левые chatId не пускаем
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
-	const match = msg.text.match(/\S+/g)[0];
+	const match = msg.text.match(/\S+/g);
 	const comm = match ? match[0] : null;
+	console.log(match);
 	
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(comm=='/AddHistory') {AddHistory(msg);}
