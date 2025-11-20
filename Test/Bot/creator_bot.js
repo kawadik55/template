@@ -531,15 +531,19 @@ try
 	}
 	
 	//кнопка Расписание с ЕС
-	else if(type=='raspisES')
+	else if(type=='ESclosed'||type=='ESopened')
 	{	let slug;
 		let str = '';
 		if(!!LastMessId[chatId].location && !!LastMessId[chatId].location.slug) slug = LastMessId[chatId].location.slug;
-		if(!!slug) str = 'Вот ссылка на расписание в Вашем городе:\n'+'https://na-russia.org/'+slug+'/meetings-today';
+		if(!!slug)
+		{	if(type=='ESclosed') str = 'Вот ссылка на расписание в Вашем городе:\n'+'https://na-russia.org/'+slug+'/meetings-today';
+			if(type=='ESopened') str = 'Вот ссылка на расписание в Вашем городе:\n'+'https://na-russia.org/'+slug+'/schedule-pro';
+		}
 		else
 		{	str = 'Прошу прощения, но я не могу прислать Вам ссылку на расписание собраний в Вашем городе. ';
 			str += 'Если не трудно, пришлите мне еще раз свою Локацию!\n';
-			str += 'А пока я дам Вам общую ссылку на сайт РЗФ:\n'+'https://na-russia.org';
+			str += 'А пока я дам Вам общую ссылку на сайт РЗФ:\n'+'https://na-russia.org \n';
+			str += 'где Вы сможете в ручном режиме подыскать для себя ближайщие собрания!';
 		}
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
 		Tree['Назад'].parent = LastKey[chatId];//место возврата
@@ -736,7 +740,8 @@ try{
 		else if(comm=='/AddEvent') {AddEvent(msg);}
 		else if(comm=='/AddButtonBarrels') {AddButtonBarrels(msg);}
 		else if(comm=='/AddButtonLocation') {AddButtonLocation(msg);}
-		else if(comm=='/AddButtonRaspisES') {AddButtonRaspisES(msg);}
+		else if(comm=='/AddButtonESclosed') {AddButtonESclosed(msg);}
+		else if(comm=='/AddButtonESopened') {AddButtonESopened(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
 			Tree['Назад'].parent = LastKey[chatId];//место возврата
@@ -4180,12 +4185,12 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom AddButtonLocation()','вчат'); return err;}
 }
 //====================================================================
-// Команда AddButtonRaspisES
-async function AddButtonRaspisES(msg)
+// Команда AddButtonESclosed
+async function AddButtonESclosed(msg)
 {
 try{
 	const chatId = msg.chat.id.toString();
-	let match = msg.text.match(/\/AddButtonRaspisES (.+$)/);
+	let match = msg.text.match(/\/AddButtonESclosed (.+$)/);
 	if(!match || match.length<2) return false;
 	const key = match[1];//имя кнопки
 
@@ -4200,13 +4205,42 @@ try{
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
-		addNode(String(max),LastKey[chatId],key,'raspisES');
+		addNode(String(max),LastKey[chatId],key,'ESclosed');
 		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
 		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
-}catch(err){WriteLogFile(err+'\nfrom AddButtonRaspisES()','вчат'); return err;}
+}catch(err){WriteLogFile(err+'\nfrom AddButtonESclosed()','вчат'); return err;}
+}
+//====================================================================
+// Команда AddButtonESopened
+async function AddButtonESopened(msg)
+{
+try{
+	const chatId = msg.chat.id.toString();
+	let match = msg.text.match(/\/AddButtonESopened (.+$)/);
+	if(!match || match.length<2) return false;
+	const key = match[1];//имя кнопки
+
+	if(validAdmin(chatId))
+	{	if(!LastKey[chatId]) LastKey[chatId]=0;
+		if(key=='')
+		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
+		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		 return true;
+		}
+		//сначала выберем номер новой кнопки
+		let mas = Object.keys(Tree), max = -1;
+		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
+		max++;//следующий по порядку
+		addNode(String(max),LastKey[chatId],key,'ESopened');
+		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
+		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+	}
+	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom AddButtonESopened()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddAdmin
