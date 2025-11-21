@@ -6,6 +6,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const tzLookup = require('tz-lookup');
 const homedir = require('os').homedir();
+const needle = require('needle');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше.
 const FileAdminList = currentDir+"/AdminList.txt";//имя файла списка админов
@@ -222,11 +223,16 @@ sendMessage.count = 0;//обнулим счетчик сообщений в се
 function klava(num, obj, chatId)
 {  
 try{	
+	let backbutton;
 	let option = new Object();
 	if(!!obj) 
 	{	if(Object.hasOwn(obj, 'parse_mode')) option.parse_mode = obj.parse_mode;
 		else option.entities = obj;
 		if(Object.hasOwn(obj, 'disable_web_page_preview')) option.disable_web_page_preview = obj.disable_web_page_preview;
+		if(!!obj.backbutton)
+		{	backbutton = obj.backbutton;//если это кнопка Назад и есть
+			delete obj.backbutton; 
+		}
 	}
 	if(Object.hasOwn(Tree, num) && !!Tree[num].child && Tree[num].child.length>0)//если есть потомки
 	{	option.reply_markup = new Object();
@@ -262,7 +268,7 @@ try{
 		option.reply_markup.inline_keyboard[i][0].callback_data = num+'_next';//в колбек - номер той же кнопки
 	}
 	//добавляем кнопку Назад, если есть родитель
-	if(Object.hasOwn(Tree, num) && Tree[num].parent != null)
+	if((Object.hasOwn(Tree, num) && Tree[num].parent != null) || !!backbutton)
 	{	if(!option.reply_markup) 
 		{	option.reply_markup = new Object();
 			option.reply_markup.inline_keyboard = [];
@@ -270,7 +276,8 @@ try{
 		let i = option.reply_markup.inline_keyboard.length;//кол-во кнопок
 		option.reply_markup.inline_keyboard.push([new Object()]);
 		option.reply_markup.inline_keyboard[i][0].text = Tree['Назад'].name;//имя кнопки в последний индекс
-		option.reply_markup.inline_keyboard[i][0].callback_data = Tree[num].parent+'_'+Tree[Tree[num].parent].type;//в колбек - номер кнопки родителя и тип
+		if(!!backbutton) option.reply_markup.inline_keyboard[i][0].callback_data = backbutton+'_'+Tree[backbutton].type;//в колбек - номер кнопки родителя и тип
+		else option.reply_markup.inline_keyboard[i][0].callback_data = Tree[num].parent+'_'+Tree[Tree[num].parent].type;//в колбек - номер кнопки родителя и тип
 	}
 	//в текстовых кнопках добавляем превью, если есть
 	if(Object.hasOwn(Tree, num) && !!Tree[num].type && Tree[num].type == 'text' && Object.hasOwn(Tree[num], 'link_preview_options'))
@@ -515,7 +522,7 @@ try
 			}
 		};
 		let str;
-		if(!!LastMessId[chatId].tz) str = 'Ваша таймзона у меня уже есть = '+LastMessId[chatId].tz;
+		if(!!LastMessId[chatId].location&&!!LastMessId[chatId].location.tz) str = 'Ваша таймзона у меня уже есть = '+LastMessId[chatId].location.tz;
 		//else str = "Поделитесь локацией 👇";
 		else
 		{str = "Для корректного определения Вашей даты мне нужно точно знать Ваш часовой пояс. ";
@@ -527,6 +534,25 @@ try
 		LastMessId[chatId].loc_mess_id = 'запрос';//ставим запрос на сохранение id этого сообщения
 		await sendMessage(chatId, str, Options);
 		await Bot.answerCallbackQuery(msg.id);
+	}
+	
+	//кнопка Расписание с ЕС
+	else if(type=='ESclosed'||type=='ESopened')
+	{	let slug;
+		let str = '';
+		if(!!LastMessId[chatId].location && !!LastMessId[chatId].location.slug) slug = LastMessId[chatId].location.slug;
+		if(!!slug)
+		{	if(type=='ESclosed') str = 'Вот ссылка на расписание в Вашем городе:\n'+'https://na-russia.org/'+slug+'/meetings-today';
+			if(type=='ESopened') str = 'Вот ссылка на расписание в Вашем городе:\n'+'https://na-russia.org/'+slug+'/schedule-pro';
+		}
+		else
+		{	str = 'Прошу прощения, но я не могу прислать Вам ссылку на расписание собраний в Вашем городе. ';
+			str += 'Если не трудно, пришлите мне еще раз свою Локацию!\n';
+			str += 'А пока я дам Вам общую ссылку на сайт РЗФ:\n'+'https://na-russia.org \n';
+			str += 'где Вы сможете в ручном режиме подыскать для себя ближайщие собрания!';
+		}
+		if(!LastKey[chatId]) LastKey[chatId] = '0';
+		await sendMessage(chatId, str, klava('Назад', {'backbutton':LastKey[chatId]}, chatId));
 	}
 	
 	//при нажатии на ЛЮБУЮ другую кнопку - обнуляем счетчик 10го шага
@@ -617,8 +643,7 @@ try{
 		else if(msg.text.indexOf('/PublicMessUser')+1) {PublicMessUser(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
-			Tree['Назад'].parent = LastKey[chatId];//место возврата
-			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',null, chatId));
+			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		}
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
@@ -644,8 +669,7 @@ try{
 		else if(msg.text.indexOf('/EditBackName')+1) {EditBackName(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
-			Tree['Назад'].parent = LastKey[chatId];//место возврата
-			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',null, chatId));
+			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		}
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
@@ -674,8 +698,7 @@ try{
 		else if(msg.text.indexOf('/DelEvent')+1) {DelEvent(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
-			Tree['Назад'].parent = LastKey[chatId];//место возврата
-			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',null, chatId));
+			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		}
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
@@ -691,35 +714,38 @@ try{
 	const chatId = msg.chat.id.toString();
 	if(!isValidChatId(chatId)) return;//левые chatId не пускаем
 	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
+	const match = msg.text.match(/\S+/g);
+	const comm = match ? match[0] : null;
 	
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
-	{	if(msg.text=='/AddHistory') {AddHistory(msg);}
-		else if(msg.text.indexOf('/AddPhoto')+1) {AddPhoto(msg);}
-		else if(msg.text.indexOf('/AddFile')+1) {AddFile(msg);}
-		else if(msg.text.indexOf('/AddVideo')+1) {AddVideo(msg);}
-		else if(msg.text.indexOf('/AddAudio')+1) {AddAudio(msg);}
-		else if(msg.text.indexOf('/AddButtonText')+1) {AddButtonText(msg);}
-		else if(msg.text.indexOf('/AddButtonAdmin')+1) {AddButtonAdmin(msg);}
-		else if(msg.text.indexOf('/AddButtonUrl')+1) {AddButtonUrl(msg);}
-		else if(msg.text.indexOf('/AddButtonPhoto')+1) {AddButtonPhoto(msg);}
-		else if(msg.text.indexOf('/AddButtonFile')+1) {AddButtonFile(msg);}
-		else if(msg.text.indexOf('/AddButtonVideo')+1) {AddButtonVideo(msg);}
-		else if(msg.text.indexOf('/AddButtonAudio')+1) {AddButtonAudio(msg);}
-		else if(msg.text.indexOf('/AddButtonRaspis')+1) {AddButtonRaspis(msg);}
-		else if(msg.text.indexOf('/AddButtonEg')+1) {AddButtonEg(msg);}
-		else if(msg.text.indexOf('/AddButtonHistory')+1) {AddButtonHistory(msg);}
-		else if(msg.text.indexOf('/AddButtonTime')+1) {AddButtonTime(msg);}
-		else if(msg.text.indexOf('/AddAdmin')+1) {AddAdmin(msg);}
-		else if(msg.text.indexOf('/AddUser')+1) {AddUser(msg);}
-		else if(msg.text.indexOf('/AddButtonTen')+1) {AddButtonTen(msg);}
-		else if(msg.text.indexOf('/AddButtonQuestions')+1) {AddButtonQuestions(msg);}
-		else if(msg.text.indexOf('/AddEvent')+1) {AddEvent(msg);}
-		else if(msg.text.indexOf('/AddButtonBarrels')+1) {AddButtonBarrels(msg);}
-		else if(msg.text.indexOf('/AddButtonLocation')+1) {AddButtonLocation(msg);}
+	{	if(comm=='/AddHistory') {AddHistory(msg);}
+		else if(comm=='/AddPhoto') {AddPhoto(msg);}
+		else if(comm=='/AddFile') {AddFile(msg);}
+		else if(comm=='/AddVideo') {AddVideo(msg);}
+		else if(comm=='/AddAudio') {AddAudio(msg);}
+		else if(comm=='/AddButtonText') {AddButtonText(msg);}
+		else if(comm=='/AddButtonAdmin') {AddButtonAdmin(msg);}
+		else if(comm=='/AddButtonUrl') {AddButtonUrl(msg);}
+		else if(comm=='/AddButtonPhoto') {AddButtonPhoto(msg);}
+		else if(comm=='/AddButtonFile') {AddButtonFile(msg);}
+		else if(comm=='/AddButtonVideo') {AddButtonVideo(msg);}
+		else if(comm=='/AddButtonAudio') {AddButtonAudio(msg);}
+		else if(comm=='/AddButtonRaspis') {AddButtonRaspis(msg);}
+		else if(comm=='/AddButtonEg') {AddButtonEg(msg);}
+		else if(comm=='/AddButtonHistory') {AddButtonHistory(msg);}
+		else if(comm=='/AddButtonTime') {AddButtonTime(msg);}
+		else if(comm=='/AddAdmin') {AddAdmin(msg);}
+		else if(comm=='/AddUser') {AddUser(msg);}
+		else if(comm=='/AddButtonTen') {AddButtonTen(msg);}
+		else if(comm=='/AddButtonQuestions') {AddButtonQuestions(msg);}
+		else if(comm=='/AddEvent') {AddEvent(msg);}
+		else if(comm=='/AddButtonBarrels') {AddButtonBarrels(msg);}
+		else if(comm=='/AddButtonLocation') {AddButtonLocation(msg);}
+		else if(comm=='/AddButtonESclosed') {AddButtonESclosed(msg);}
+		else if(comm=='/AddButtonESopened') {AddButtonESopened(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
-			Tree['Назад'].parent = LastKey[chatId];//место возврата
-			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',null, chatId));
+			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		}
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
@@ -741,8 +767,7 @@ try{
 		else if(msg.text.indexOf('/MoveButtonDown')+1) {MoveButtonDown(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
-			Tree['Назад'].parent = LastKey[chatId];//место возврата
-			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',null, chatId));
+			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		}
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
@@ -765,8 +790,7 @@ try{
 
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return;
 		}
 		str = 'Кнопка определена! Теперь перейдите на нужный уровень и вставьте эту кнопку командой /InsertButton';
@@ -798,8 +822,7 @@ try{
 
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return;
 		}
 		//удаляем вырезанную кнопку из потомков у бывшего родителя
@@ -834,11 +857,9 @@ try{
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(msg.text=='/StatWeek') {StatWeek(msg);}
 		else if(msg.text=='/StatGrand') {StatGrand(msg);}
-		else if(msg.text=='/StatServer') {StatServer(msg);}
 		else
 		{	if(!LastKey[chatId]) LastKey[chatId] = '0';
-			Tree['Назад'].parent = LastKey[chatId];//место возврата
-			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',null, chatId));
+			await sendMessage(chatId, "Команда '"+msg.text+"' не распознана", klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		}
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
@@ -978,7 +999,6 @@ try{
 		}catch (err) {flag=1;}
 		if(flag || str=='') str = 'Файл не найден или пуст!';
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
 		//если текст получился большой, то зазбиваем его на части
 		let len = 4100;
 		if(str.length > len)
@@ -988,11 +1008,11 @@ try{
 				str = str.substring(len);
 			}
 			for(let i in sub)
-			{	if(i==sub.length-1) await sendMessage(chatId, sub[i], klava('Назад',{parse_mode:"markdown"}, chatId));
+			{	if(i==sub.length-1) await sendMessage(chatId, sub[i], klava('Назад',{parse_mode:"markdown",'backbutton':LastKey[chatId]}, chatId));
 				else await sendMessage(chatId, sub[i], {parse_mode:"markdown"});
 			}
 		}
-		else await sendMessage(chatId, str, klava('Назад',{parse_mode:"markdown"}, chatId));
+		else await sendMessage(chatId, str, klava('Назад',{parse_mode:"markdown",'backbutton':LastKey[chatId]}, chatId));
 		delete CutList[chatId];//очищаем вырезание кнопки
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
@@ -1034,8 +1054,7 @@ try{
 	
 	//проверяем текст
 	if(msg.text.length > 4050)
-	{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, '🤷‍♂️Сожалею, но длина текста не может превышать 4000 символов!🤷‍♂️', klava('Назад',null, chatId));
+	{	await sendMessage(chatId, '🤷‍♂️Сожалею, но длина текста не может превышать 4000 символов!🤷‍♂️', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		WaitEditText[chatId]=0;
 		return;
 	}
@@ -1101,8 +1120,7 @@ try{
 			await sendMessage(chatId, 'Выбранный пост успешно удален!', klava(LastKey[chatId],null, chatId));
 		}
 		else
-		{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-			await sendMessage(chatId, 'Такого номера нет в списке!', klava('Назад',null, chatId));//Отмена
+		{	await sendMessage(chatId, 'Такого номера нет в списке!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		}
 	}
 	//пришел номер файла для удаления из /doc
@@ -1161,8 +1179,7 @@ try{
 				await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(LastKey[chatId],null, chatId));
 			}
 			else
-			{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-				await sendMessage(chatId, 'Такого номера нет в списке!', klava('Назад',null, chatId));//Отмена
+			{	await sendMessage(chatId, 'Такого номера нет в списке!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 			}
 		}
 	}
@@ -1222,8 +1239,7 @@ try{
 			await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(LastKey[chatId],null, chatId));
 			}
 			else
-			{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-				await sendMessage(chatId, 'Такого номера нет в списке!', klava('Назад',null, chatId));//Отмена
+			{	await sendMessage(chatId, 'Такого номера нет в списке!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 			}
 		}
 	}
@@ -1283,8 +1299,7 @@ try{
 				await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(LastKey[chatId],null, chatId));
 			}
 			else
-			{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-				await sendMessage(chatId, 'Такого номера нет в списке!', klava('Назад',null, chatId));//Отмена
+			{	await sendMessage(chatId, 'Такого номера нет в списке!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 			}
 		}
 	}
@@ -1301,15 +1316,13 @@ try{
 	else if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==6)
 	{	WaitEditText[chatId]=0;
 		sendPublicText(msg);//функция рассылки с задержкой
-		Tree['Назад'].parent = LastKey[chatId];
-		await sendMessage(chatId, 'Процесс пошел!', klava('Назад',null, chatId));
+		await sendMessage(chatId, 'Процесс пошел!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 	}
 	//пришел текст для рассылки Админам
 	else if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]=='public2admins')
 	{	WaitEditText[chatId]=0;
 		sendPublicTextAdmin(msg);//функция рассылки с задержкой
-		Tree['Назад'].parent = LastKey[chatId];
-		await sendMessage(chatId, 'Процесс пошел!', klava('Назад',null, chatId));
+		await sendMessage(chatId, 'Процесс пошел!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 	}
 	//пришел текст личной истории для добавления
 	else if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==7)
@@ -1331,9 +1344,8 @@ try{
 			 flag=0;
 			}
 		} catch(err) {console.error(err);}
-		Tree['Назад'].parent = LastKey[chatId];
-		if(flag==0) await sendMessage(chatId, 'История добавлена!', klava('Назад',null, chatId));
-		else await sendMessage(chatId, 'Текст истории слишком велик, история не добавлена!', klava('Назад',null, chatId));
+		if(flag==0) await sendMessage(chatId, 'История добавлена!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+		else await sendMessage(chatId, 'Текст истории слишком велик, история не добавлена!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 	}
 	//пришел номер личной истории для удаления
 	else if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==8)
@@ -1354,8 +1366,7 @@ try{
 			else str = 'Такого номера нет в списке!';
 		}
 		catch(err) {console.error(err);}
-		Tree['Назад'].parent = LastKey[chatId];
-		await sendMessage(chatId, str, klava('Назад',null, chatId));
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 	}
 	//если пришла дата начала срока чистоты
 	else if(msg.text.indexOf('начало=')+1)
@@ -1447,8 +1458,7 @@ try{
 		// Убираем текстовую клавиатуру
 		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
 		try {await Bot.deleteMessage(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
-		delete LastMessId[chatId].tz;
-		delete LastMessId[chatId].utcOffset;
+		delete LastMessId[chatId].location;
 		let index='0';
 		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
 	}
@@ -1484,8 +1494,7 @@ try{
 	if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==11 && photos_key!='')
 	{	//проверяем подпись
 		if(Object.hasOwn(msg,'caption') && caption.length > 1000)
-		{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-			await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад',null, chatId));
+		{	await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 			WaitEditText[chatId]=0;
 			//если файлы уже были загружены, то нужно их удалить!
 			if(media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
@@ -1498,8 +1507,7 @@ try{
 		//загружаем файл
 		try {path = await Bot.downloadFile(file_id, PathToPhoto+'/'+key);}
 		catch(err)
-		{   Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-			await sendMessage(chatId, 'Не могу загрузить этот файл!\n'+smilik, klava('Назад',null, chatId));
+		{   await sendMessage(chatId, 'Не могу загрузить этот файл!\n'+smilik, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 			WaitEditText[chatId]=0;
 			//если файлы уже были загружены, то нужно их удалить!
 			if(media_group_id) {await deleteMediaFiles(MediaList[media_group_id]); delete MediaList[media_group_id];}
@@ -1521,8 +1529,7 @@ try{
 			WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', opt);//сохраняем подписи в файл
 			WriteLogFile("New photo was loaded to "+path+ " by "+firstname);
 			if(!LastKey[chatId]) LastKey[chatId] = '0';
-			Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-			await sendMessage(chatId, 'Поздравляю! Фотка '+name+' загружена!', klava('Назад',null, chatId));
+			await sendMessage(chatId, 'Поздравляю! Фотка '+name+' загружена!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 			photos_key='';
 		}
 		//если альбом
@@ -1553,8 +1560,7 @@ try{
 				WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', opt);//сохраняем подписи в файл
 				WriteLogFile("New album was loaded to "+PathToPhoto+'/'+key+ " by "+firstname);
 				if(!LastKey[chatId]) LastKey[chatId] = '0';
-				Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-				await sendMessage(chatId, 'Поздравляю! Альбом '+media_group_id+' загружен!', klava('Назад',null, chatId));
+				await sendMessage(chatId, 'Поздравляю! Альбом '+media_group_id+' загружен!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 				photos_key='';
 				WaitEditText[chatId]=0;
 				delete MediaList[media_group_id];
@@ -1571,8 +1577,7 @@ try{
 	else if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==1)
 	{	//проверяем подпись
 		if(Object.hasOwn(msg,'caption') && caption.length > 1000)
-		{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-			await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад',null, chatId));
+		{	await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 			WaitEditText[chatId]=0;
 			return;
 		}
@@ -1601,8 +1606,7 @@ try{
 			}
 			catch(err)
 			{   if(!key) key = '0';
-				Tree['Назад'].parent = key;//Кнопка Назад с возвратом
-				await sendMessage(chatId, 'Не могу загрузить этот файл!\n'+smilik, klava('Назад',null, chatId));
+				await sendMessage(chatId, 'Не могу загрузить этот файл!\n'+smilik, klava('Назад',{'backbutton':key}, chatId));
 				WaitEditText[chatId]=0;
 				return;
 			}
@@ -1622,8 +1626,7 @@ try{
 		}
 	}
 	else 
-	{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-		await sendMessage(chatId, 'Что-то пошло не так!\n'+smilik, klava('Назад',null, chatId));
+	{	await sendMessage(chatId, 'Что-то пошло не так!\n'+smilik, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		WaitEditText[chatId]=0;
 	}
 }catch(err){WriteLogFile(err+'\nfrom ловим ФОТО','вчат');}
@@ -1645,8 +1648,7 @@ try{
 	let media_group_id = msg.media_group_id;
 	//проверяем подпись
 	if(Object.hasOwn(msg,'caption') && caption.length > 1000)
-	{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-		await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад',null, chatId));
+	{	await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		WaitEditText[chatId]=0;
 		file_key='';
 		return;
@@ -1685,8 +1687,7 @@ try{
 		{   let str='Не могу загрузить этот файл '+filename+'!\n';
 			str += 'Длина файла = '+file_size+'\n';
 			str += 'Файл будет хранится на серверах Telegram и будет доступен для чтения';
-			Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-			await sendMessage(chatId, str, klava('Назад',null, chatId));
+			await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 			file_key='';
 			return;
 		}
@@ -1698,8 +1699,7 @@ try{
 		fs.renameSync(path, newpath);
 		WriteLogFile("New doc was loaded to "+newpath+" by "+firstname);
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-		await sendMessage(chatId, 'Поздравляю! Файл '+filename+' загружен!', klava('Назад',null, chatId));
+		await sendMessage(chatId, 'Поздравляю! Файл '+filename+' загружен!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		file_key='';
 	}
 	//пришел файл со списком вопросов по 10му шагу
@@ -1772,8 +1772,7 @@ try{
 	let media_group_id = msg.media_group_id;
 	//проверяем подпись
 	if(Object.hasOwn(msg,'caption') && caption.length > 1000)
-	{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-		await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад',null, chatId));
+	{	await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		WaitEditText[chatId]=0;
 		video_key='';
 		return;
@@ -1803,7 +1802,6 @@ try{
 		{   let str='Не могу записать этот файл '+filename+'!\n';
 			str += 'Длина файла = '+file_size+'\n';
 			str += 'Файл будет хранится на серверах Telegram и будет доступен для чтения';
-			Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
 			await sendMessage(chatId, str);
 		}
 		if(!Object.hasOwn(MediaList, media_group_id) || MediaList[media_group_id].media.length==0)//если первый файл альбома
@@ -1832,8 +1830,7 @@ try{
 			WriteFileJson(PathToPhoto+'/'+key+'/'+'FileCaption.json', opt);//сохраняем подписи в файл
 			WriteLogFile("New album was loaded to "+PathToPhoto+'/'+key+ " by "+firstname);
 			if(!LastKey[chatId]) LastKey[chatId] = '0';
-			Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-			await sendMessage(chatId, 'Поздравляю! Альбом '+media_group_id+' загружен!', klava('Назад',null, chatId));
+			await sendMessage(chatId, 'Поздравляю! Альбом '+media_group_id+' загружен!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 			photos_key='';
 			WaitEditText[chatId]=0;
 			delete MediaList[media_group_id];
@@ -1864,8 +1861,7 @@ try{
 		{   let str='Не могу загрузить этот файл '+filename+'!\n';
 			str += 'Длина файла = '+file_size+'\n';
 			str += 'Файл будет хранится на серверах Telegram и будет доступен для чтения';
-			Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-			await sendMessage(chatId, str, klava('Назад',null, chatId));
+			await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 			video_key='';
 			return;
 		}
@@ -1877,8 +1873,7 @@ try{
 		fs.renameSync(path, newpath);
 		WriteLogFile("New video was loaded to "+newpath+" by "+firstname);
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-		await sendMessage(chatId, 'Поздравляю! Файл '+filename+' загружен!', klava('Назад',null, chatId));
+		await sendMessage(chatId, 'Поздравляю! Файл '+filename+' загружен!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		video_key='';
 	}
 	else //если пришел файл от Админа без ожидания, то сохраним его id
@@ -1907,8 +1902,7 @@ try{
 	let media_group_id = msg.media_group_id;
 	//проверяем подпись
 	if(Object.hasOwn(msg,'caption') && caption.length > 1000)
-	{	Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-		await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад',null, chatId));
+	{	await sendMessage(chatId, '🤷‍♂️Сожалею, но подпись не может превышать 1000 символов!🤷‍♂️', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		WaitEditText[chatId]=0;
 		audio_key='';
 		return;
@@ -1947,8 +1941,7 @@ try{
 		{   let str='Не могу загрузить этот файл '+filename+'!\n';
 			str += 'Длина файла = '+file_size+'\n';
 			str += 'Файл будет хранится на серверах Telegram и будет доступен для чтения';
-			Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-			await sendMessage(chatId, str, klava('Назад',null, chatId));
+			await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 			audio_key='';
 			return;
 		}
@@ -1960,8 +1953,7 @@ try{
 		fs.renameSync(path, newpath);
 		WriteLogFile("New audio was loaded to "+newpath+newpath+" by "+firstname);
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
-		await sendMessage(chatId, 'Поздравляю! Файл '+filename+' загружен!', klava('Назад',null, chatId));
+		await sendMessage(chatId, 'Поздравляю! Файл '+filename+' загружен!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		audio_key='';
 	}
 	else //если пришел файл от Админа без ожидания, то сохраним его id
@@ -1991,9 +1983,27 @@ try{
 	const tz = tzLookup(lat, lon);
 	if(!!tz)
 	{	const zoneOffset = moment.tz(tz).utcOffset();//в минутах
-		LastMessId[chatId].tz = tz;
-		LastMessId[chatId].utcOffset = zoneOffset;//числом
-		await sendMessage(chatId, 'Ваша таймзона = '+tz, {reply_markup: {remove_keyboard: true}});//убираем белую кнопку
+		delete LastMessId[chatId].tz;//старая
+		delete LastMessId[chatId].utcOffset;//старая
+		let obj = {};
+		obj.tz = tz;
+		obj.utcOffset = zoneOffset;//числом
+		obj.lat = lat;
+		obj.lon = lon;
+		//запрашиваем город на ЕС по локации
+		let url = 'https://na-russia.org/api/towns/closest/?lat='+lat+'&lon='+lon;
+		let res = await getObjFromES(url);
+		let slug, general_town;
+		if(res != 'NO')
+		{	slug = (!!res&&!!res.town&&!!res.town.slug) ? res.town.slug : '';
+			general_town = (!!res&&!!res.town&&!!res.town.general_town) ? res.town.general_town : '';
+			if(!!slug) obj.slug = slug;
+			if(!!general_town) obj.general_town = general_town;
+		}
+		LastMessId[chatId].location = obj;
+		//убираем белую кнопку
+		await sendMessage(chatId, 'Ваша таймзона = '+tz+(!!slug?' ('+slug+')':''), {reply_markup: {remove_keyboard: true}});
+		//await sendMessage(chatId, 'Ваша таймзона = '+tz, {reply_markup: {remove_keyboard: true}});
 		exit();
 	}
 	else
@@ -2579,11 +2589,10 @@ async function sendEvents(chatId, flag)
 try{if(!isValidChatId(chatId)) return false;//если не число, то не пускаем
 	if(!PRIVAT) return false;//только в приватном режиме
 	if(!LastKey[chatId]) LastKey[chatId] = '0';
-	Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 	//читаем файл событий
 	try {EventList = JSON.parse(await fs.promises.readFile(FileEventList));} catch (err) {WriteFileJson(FileEventList,EventList);}
 	let mas = Object.keys(EventList);
-	if(!mas.length) await sendMessage(chatId, 'Тут пока ничего нет '+smilik, klava('Назад',null, chatId));//Назад
+	if(!mas.length) await sendMessage(chatId, 'Тут пока ничего нет '+smilik, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
     else
 	{	//теперь отсылаем список событий
 		str='Список Событий:\n\n';
@@ -2594,10 +2603,10 @@ try{if(!isValidChatId(chatId)) return false;//если не число, то н�
 			
 		if(flag)//если для удаления, то 2 сообщения
 		{await sendMessage(chatId, str);
-		 await sendMessage(chatId, 'Теперь пришлите мне *номер* события, которое нужно удалить.\n', klava('Назад', {parse_mode:"markdown"}, chatId));
+		 await sendMessage(chatId, 'Теперь пришлите мне *номер* события, которое нужно удалить.\n', klava('Назад', {parse_mode:"markdown",'backbutton':LastKey[chatId]}, chatId));
 		 WaitEditText[chatId]=40;//взводим флаг ожидания номера от юзера
 		}
-		else await sendMessage(chatId, str, klava('Назад',null, chatId));
+		else await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 	}
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendEvents()','вчат'); return err;}
@@ -3029,8 +3038,7 @@ try{
 				if(!!Tree[index].caption_entities) option.caption_entities = Tree[index].caption_entities;
 				await sendMessageImage(chatId,path,option);
 			}
-			Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-			await sendMessage(chatId, 'Пришлите мне исправленный текст или картинку', klava('Назад',null, chatId));
+			await sendMessage(chatId, 'Пришлите мне исправленный текст или картинку', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 			//теперь ловим текст
 		} 
 	}
@@ -3056,11 +3064,9 @@ try{
 
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и изменим имя
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3072,7 +3078,7 @@ try{
 		}
 		if(i==dl) str = "В этом наборе кнопки '"+key+"' нет!";
 		else str = 'Готово';
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3093,15 +3099,13 @@ try{
 
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		Tree['Назад'].name = newkey;//новое имя кнопки
 		await WriteFileJson(FileTree,Tree);
 		str = 'Готово';
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3126,11 +3130,9 @@ try{
 
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и изменим имя
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3142,7 +3144,7 @@ try{
 		}
 		if(i==dl) str = "В этом наборе нет кнопки '"+key+"' типа 'url'!";
 		else str = 'Готово';
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3166,12 +3168,10 @@ try{
 
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		if(!checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
+		if(!checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',{'backbutton':'0'}, chatId));return true;}
 		//найдем номер кнопки из текущего набора по имени и изменим путь к файлу
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3183,7 +3183,7 @@ try{
 		}
 		if(i==dl) str = "В этом наборе нет кнопки '"+key+"' типа 'eg'!";
 		else str = 'Готово';
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3207,12 +3207,10 @@ try{
 
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		if(!checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
+		if(!checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',{'backbutton':'0'}, chatId));return true;}
 		//найдем номер кнопки из текущего набора по имени и изменим путь к файлу
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3224,7 +3222,7 @@ try{
 		}
 		if(i==dl) str = "В этом наборе нет кнопки '"+key+"' типа 'raspis'!";
 		else str = 'Готово';
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3243,11 +3241,9 @@ try{
 
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и сохраним
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3257,7 +3253,7 @@ try{
 			}
 			else photos_key = '';
 		}
-		if(i==dl) await sendMessage(chatId, "В этом наборе нет кнопки '"+key+"' типа 'photo'!", klava('Назад',null, chatId));
+		if(i==dl) await sendMessage(chatId, "В этом наборе нет кнопки '"+key+"' типа 'photo'!", klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		else {await sendPhotos(chatId, true, photos_key);}//показываем все фотки с номерами файлов
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
@@ -3277,11 +3273,9 @@ try{
 	
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и сохраним
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3291,7 +3285,7 @@ try{
 			}
 			else file_key = '';
 		}
-		if(i==dl) await sendMessage(chatId, "В этом наборе нет кнопки '"+key+"' типа 'file'!", klava('Назад', {parse_mode:"markdown"}, chatId));//Отмена
+		if(i==dl) await sendMessage(chatId, "В этом наборе нет кнопки '"+key+"' типа 'file'!", klava('Назад', {parse_mode:"markdown",'backbutton':LastKey[chatId]}, chatId));//Отмена
 		else {await sendFiles(chatId, true, file_key);}//показываем все файлы с номерами 
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
@@ -3311,11 +3305,9 @@ try{
 	
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и сохраним
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3325,7 +3317,7 @@ try{
 			}
 			else video_key = '';
 		}
-		if(i==dl) await sendMessage(chatId, "В этом наборе нет кнопки '"+key+"' типа 'video'!", klava('Назад', {parse_mode:"markdown"}, chatId));//Отмена
+		if(i==dl) await sendMessage(chatId, "В этом наборе нет кнопки '"+key+"' типа 'video'!", klava('Назад', {parse_mode:"markdown",'backbutton':LastKey[chatId]}, chatId));//Отмена
 		else {await sendVideos(chatId, true, video_key);}//показываем все файлы с номерами 
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
@@ -3345,11 +3337,9 @@ try{
 	
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и сохраним
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3359,7 +3349,7 @@ try{
 			}
 			else audio_key = '';
 		}
-		if(i==dl) await sendMessage(chatId, "В этом наборе нет кнопки '"+key+"' типа 'audio'!", klava('Назад', {parse_mode:"markdown"}, chatId));//Отмена
+		if(i==dl) await sendMessage(chatId, "В этом наборе нет кнопки '"+key+"' типа 'audio'!", klava('Назад', {parse_mode:"markdown",'backbutton':LastKey[chatId]}, chatId));//Отмена
 		else {await sendAudios(chatId, true, audio_key);}//показываем все файлы с номерами 
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
@@ -3376,8 +3366,7 @@ try{
 	if(!isValidChatId(chatId)) return false;//левые chatId не пускаем
 	if(!validAdmin(chatId)) return false;//только для админов
 	if(!LastKey[chatId])
-	{Tree['Назад'].parent = '0';//куда возвращаться
-	 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+	{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 	 return true;
 	}
 	Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
@@ -3395,8 +3384,7 @@ try{
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	let str = 'Теперь пришлите мне *номер* истории, которую нужно удалить. Он указывается в самом низу при просмотре истории.\n';
         if(!LastKey[chatId]) LastKey[chatId] = '0';
-        Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-        await sendMessage(chatId, str, klava('Назад', {parse_mode:"markdown"}, chatId));//Отмена
+        await sendMessage(chatId, str, klava('Назад', {parse_mode:"markdown",'backbutton':LastKey[chatId]}, chatId));//Отмена
         WaitEditText[chatId]=8;//взводим флаг ожидания номера от Админа
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
@@ -3417,11 +3405,9 @@ try{
 
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return false;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и удалим кнопку
 		let i, dl=Tree[LastKey[chatId]].child.length, num=0;
 		for(i=0;i<dl;i++)
@@ -3433,7 +3419,7 @@ try{
 		}
 		if(i==dl) str = "В этом наборе кнопки '"+name+"' нет!";
 		else str = 'Готово';
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3456,7 +3442,6 @@ try{
 		let id = match[1];
 		if(id==chat_Supervisor) return true;//рута удалять не будем
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		let str = '';
 		if(!!id && Object.keys(AdminList).indexOf(id)+1)//если такой Админ есть в списке
 		{	delete AdminList[id];
@@ -3466,7 +3451,7 @@ try{
 			for(i in mas) str += mas[i] + ' - ' + AdminList[mas[i]] + '\n';
 		}
 		else str = 'Такого Админа в списке нет!';
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3487,7 +3472,6 @@ try{
 		catch (err) {WriteFileJson(FileUserList,UserList);}
 		let id = match[1];
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		let str = '';
 		if(!!id && Object.keys(UserList).indexOf(id)+1)//если такой User есть в списке
 		{	delete UserList[id];
@@ -3497,7 +3481,7 @@ try{
 			for(i in mas) str += mas[i] + ' - ' + UserList[mas[i]] + '\n';
 		}
 		else str = 'Такого Служенца в списке нет!';
-		await await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3515,11 +3499,9 @@ try{
 
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и сохраним
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3535,7 +3517,7 @@ try{
 		{str = 'Теперь пришлите мне фотку или альбом';
 		 WaitEditText[chatId]=11;//взводим флаг ожидания фотки от юзера
 		}
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3553,11 +3535,9 @@ try{
 	
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и сохраним
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3573,7 +3553,7 @@ try{
 		{	str = 'Теперь пришлите мне один файл';
 			WaitEditText[chatId]=4;//взводим флаг ожидания файла от юзера
 		}
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3591,11 +3571,9 @@ try{
 	
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и сохраним
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3611,7 +3589,7 @@ try{
 		{	str = 'Теперь пришлите мне одно видео';
 			WaitEditText[chatId]=21;//взводим флаг ожидания файла от юзера
 		}
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3629,11 +3607,9 @@ try{
 	
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и сохраним
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -3649,7 +3625,7 @@ try{
 		{	str = 'Теперь пришлите мне одно аудио';
 			WaitEditText[chatId]=31;//взводим флаг ожидания файла от юзера
 		}
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3663,8 +3639,7 @@ try{
 	const chatId = msg.chat.id.toString();
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Теперь пришлите мне текст истории', klava('Назад'));//Отмена
+		await sendMessage(chatId, 'Теперь пришлите мне текст истории', klava('Назад',{'backbutton':LastKey[chatId]}));//Отмена
 		WaitEditText[chatId]=7;//взводим флаг ожидания текста истории от Админа
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
@@ -3684,8 +3659,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -3693,8 +3667,7 @@ try{
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
 		addNode(String(max),LastKey[chatId],key,'text');
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3713,8 +3686,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -3722,8 +3694,7 @@ try{
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
 		addNode(String(max),LastKey[chatId],key,'admin');
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3742,8 +3713,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -3751,8 +3721,7 @@ try{
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
 		addNode(String(max),LastKey[chatId],key,'ten');
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3771,8 +3740,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -3780,8 +3748,7 @@ try{
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
 		addNode(String(max),LastKey[chatId],key,'barrels');
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3800,8 +3767,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -3809,8 +3775,7 @@ try{
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
 		addNode(String(max),LastKey[chatId],key,'questions');
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3827,16 +3792,15 @@ try{
 		if(!match || match.length!=2) return false;
 		const key = match[0].trim();//имя кнопки
 		const url = match[1].trim();// url кнопки
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Назад с возвратом
 		//проверяем url
 		let ret = await isValidUrl(url);
 		if(!ret)
-		{	await sendMessage(chatId, url+'\nЧто-то не так со ссылкой...', klava('Назад',null, chatId));
+		{	await sendMessage(chatId, url+'\nЧто-то не так со ссылкой...', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 			return true;
 		}
 		if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -3844,8 +3808,8 @@ try{
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
 		let res = addNode(String(max),LastKey[chatId],key,'url',url);
-		if(res) await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));
-		else await sendMessage(chatId, smilik+'\nЧто-то пошло не так...', klava('Назад',null, chatId));		
+		if(res) await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+		else await sendMessage(chatId, smilik+'\nЧто-то пошло не так...', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));		
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0'));
 	return true;
@@ -3864,8 +3828,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -3875,8 +3838,7 @@ try{
 		addNode(String(max),LastKey[chatId],key,'photo');
 		//создадим папку с номером новой кнопки
 		if(!fs.existsSync(PathToPhoto+'/'+String(max))) {fs.mkdirSync(PathToPhoto+'/'+String(max));}
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0'));
 	return true;
@@ -3895,8 +3857,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -3906,8 +3867,7 @@ try{
 		addNode(String(max),LastKey[chatId],key,'file');
 		//создадим папку с номером новой кнопки
 		if(!fs.existsSync(PathToDoc+'/'+String(max))) {fs.mkdirSync(PathToDoc+'/'+String(max));}
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3926,8 +3886,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -3937,8 +3896,7 @@ try{
 		addNode(String(max),LastKey[chatId],key,'video');
 		//создадим папку с номером новой кнопки
 		if(!fs.existsSync(PathToVideo+'/'+String(max))) {fs.mkdirSync(PathToVideo+'/'+String(max));}
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3957,8 +3915,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -3968,8 +3925,7 @@ try{
 		addNode(String(max),LastKey[chatId],key,'audio');
 		//создадим папку с номером новой кнопки
 		if(!fs.existsSync(PathToAudio+'/'+String(max))) {fs.mkdirSync(PathToAudio+'/'+String(max));}
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -3988,8 +3944,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -4002,8 +3957,7 @@ try{
 		addNode(String(max),parent,'Справка','text');//создаем кнопку Справка
 		Tree[String(max)].text = "В любое время, в любом месте можно прислать боту дату начала срока чистоты, отправив ему команду (обязательно с маленькой буквы!)\n\nначало=ДД.ММ.ГГГГ\n\nи бот запомнит эту новую дату. Менять ее можно сколь угодно раз.\nТочно также можно прислать боту дату начала жизни Без Никотина, просто добавив в конце буквы БН\n\nначало=ДД.ММ.ГГГГБН\n\nСтереть все даты сразу тоже можно, послав боту команду\n\n/off\n\nУдачи!";
 		Tree[String(max)].entities = [{"offset": 131,"length": 19,"type": "bold"},{"offset": 312,"length": 21,"type": "bold"},{"offset": 389,"length": 4,"type": "bot_command"},{"offset": 389,"length": 4,"type": "bold"}];
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -4025,11 +3979,10 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
-		if(!!path && !checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
+		if(!!path && !checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));return true;}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -4039,8 +3992,7 @@ try{
 		{	Tree[String(max)].path = path;//добавляем путь к файлу
 			await WriteFileJson(FileTree,Tree);
 		}
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -4062,11 +4014,10 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
-		if(!!path && !checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',null, chatId));return true;}
+		if(!!path && !checkPathFile(currentDir+path)) {await sendMessage(chatId, '😉', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));return true;}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -4076,8 +4027,7 @@ try{
 		{	Tree[String(max)].path = path;//добавляем путь к файлу
 			await WriteFileJson(FileTree,Tree);
 		}
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -4096,8 +4046,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -4105,8 +4054,7 @@ try{
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
 		addNode(String(max),LastKey[chatId],key,'history');
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -4125,8 +4073,7 @@ try{
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId]) LastKey[chatId]=0;
 		if(key=='')
-		{Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		 await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -4134,12 +4081,65 @@ try{
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
 		max++;//следующий по порядку
 		addNode(String(max),LastKey[chatId],key,'location');
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Готово!', klava('Назад',null, chatId));//Отмена	
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom AddButtonLocation()','вчат'); return err;}
+}
+//====================================================================
+// Команда AddButtonESclosed
+async function AddButtonESclosed(msg)
+{
+try{
+	const chatId = msg.chat.id.toString();
+	let match = msg.text.match(/\/AddButtonESclosed (.+$)/);
+	if(!match || match.length<2) return false;
+	const key = match[1];//имя кнопки
+
+	if(validAdmin(chatId))
+	{	if(!LastKey[chatId]) LastKey[chatId]=0;
+		if(key=='')
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
+		 return true;
+		}
+		//сначала выберем номер новой кнопки
+		let mas = Object.keys(Tree), max = -1;
+		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
+		max++;//следующий по порядку
+		addNode(String(max),LastKey[chatId],key,'ESclosed');
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
+	}
+	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom AddButtonESclosed()','вчат'); return err;}
+}
+//====================================================================
+// Команда AddButtonESopened
+async function AddButtonESopened(msg)
+{
+try{
+	const chatId = msg.chat.id.toString();
+	let match = msg.text.match(/\/AddButtonESopened (.+$)/);
+	if(!match || match.length<2) return false;
+	const key = match[1];//имя кнопки
+
+	if(validAdmin(chatId))
+	{	if(!LastKey[chatId]) LastKey[chatId]=0;
+		if(key=='')
+		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
+		 return true;
+		}
+		//сначала выберем номер новой кнопки
+		let mas = Object.keys(Tree), max = -1;
+		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
+		max++;//следующий по порядку
+		addNode(String(max),LastKey[chatId],key,'ESopened');
+		await sendMessage(chatId, 'Готово!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена	
+	}
+	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom AddButtonESopened()','вчат'); return err;}
 }
 //====================================================================
 // Команда AddAdmin
@@ -4166,8 +4166,7 @@ try{
 			let mas = Object.keys(AdminList);
 			for(i in mas) str += mas[i] + ' - ' + AdminList[mas[i]] + '\n';
 			if(!LastKey[chatId]) LastKey[chatId] = '0';
-			Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
-			await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+			await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 			return true;
 		}
 		//далее пойдет добавление Админа
@@ -4185,8 +4184,7 @@ try{
 		let mas = Object.keys(AdminList);
 		for(i in mas) str += mas[i] + ' - ' + AdminList[mas[i]] + '\n';
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -4215,8 +4213,7 @@ try{
 			let mas = Object.keys(UserList);
 			for(i in mas) str += mas[i] + ' - ' + UserList[mas[i]] + '\n';
 			if(!LastKey[chatId]) LastKey[chatId] = '0';
-			Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
-			await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+			await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 			return true;
 		}
 		//далее пойдет добавление Юзера
@@ -4234,8 +4231,7 @@ try{
 		let mas = Object.keys(UserList);
 		for(i in mas) str += mas[i] + ' - ' + UserList[mas[i]] + '\n';
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -4272,8 +4268,7 @@ try{
 		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY'))
 		{	let str = 'Дата события не соответствует шаблону, или символы введены некорректно!\nПопробуйте еще разок сначала\n';
 			if(!LastKey[chatId]) LastKey[chatId] = '0';
-			Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
-			await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+			await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 			return true;
 		}
 		
@@ -4309,11 +4304,9 @@ try{
 
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и переместим ее
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -4330,7 +4323,7 @@ try{
 		}
 		if(i==dl) str = "В этом наборе кнопки '"+name+"' нет!";
 		else str = 'Готово';
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -4349,11 +4342,9 @@ try{
 
 	if(validAdmin(chatId))
 	{	if(!LastKey[chatId])
-		{Tree['Назад'].parent = '0';//куда возвращаться
-		 await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',null, chatId));//Отмена
+		{await sendMessage(chatId, 'Текущий набор не определен!', klava('Назад',{'backbutton':'0'}, chatId));//Отмена
 		 return true;
 		}
-		Tree['Назад'].parent = LastKey[chatId];//куда возвращаться
 		//найдем номер кнопки из текущего набора по имени и переместим ее
 		let i, dl=Tree[LastKey[chatId]].child.length;
 		for(i=0;i<dl;i++)
@@ -4370,7 +4361,7 @@ try{
 		}
 		if(i==dl) str = "В этом наборе кнопки '"+name+"' нет!";
 		else str = 'Готово';
-		await sendMessage(chatId, str, klava('Назад',null, chatId));//Назад
+		await sendMessage(chatId, str, klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Назад
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 	return true;
@@ -4417,8 +4408,7 @@ async function StatWeek(msg)
 		str += '\n*Сумма за '+(Object.keys(WeekCount).length-1)+' суток*';
         
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, str, klava('Назад', {parse_mode:"markdown"}, chatId));
+		await sendMessage(chatId, str, klava('Назад', {parse_mode:"markdown",'backbutton':LastKey[chatId]}, chatId));
 		return true;
   }catch(err){WriteLogFile(err+'\nfrom StatWeek()','вчат'); return err;}
 }
@@ -4452,39 +4442,9 @@ async function StatGrand(msg)
 		}
         
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, str, klava('Назад', {parse_mode:"markdown"}, chatId));
+		await sendMessage(chatId, str, klava('Назад', {parse_mode:"markdown",'backbutton':LastKey[chatId]}, chatId));
 		return true;
   }catch(err){WriteLogFile(err+'\nfrom StatGrand()','вчат'); return err;}
-}
-//====================================================================
-//состояние сервера: диск и память
-async function StatServer(msg)
-{	
-/*try{
-	const chatId = msg.chat.id.toString();
-	let str = '';
-	str += '*Состояние сервера:*\n\n';
-	//диск
-	str += '*Диск*\n';
-	let obj = {};
-	obj = await exec('df -h -t ext4 --output=source,size,pcent');
-	if(obj.stderr) {str += 'Ошибка в команде df\n\n';}
-	else {str += obj.stdout + '\n';}
-	//память
-	str += '*Память*\n';
-	obj = {};
-	obj = await exec("vmstat -s | grep -E '(total memory|used memory)'");
-	if(obj.stderr) {str += 'Ошибка в команде vmstat\n\n';}
-	else if(!!obj.stdout)
-	{	let mas = obj.stdout.split('\n');
-		for(let i in mas) str += mas[i].trim()+'\n';
-	}
-	
-	if(!LastKey[chatId]) LastKey[chatId] = '0';
-	Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-	await sendMessage(chatId, str, klava('Назад', {parse_mode:"markdown"}));
-}catch(err){WriteLogFile(err+'\nfrom StatServer()','вчат'); return err;}*/
 }
 //====================================================================
 // Команда PublicText
@@ -4494,8 +4454,7 @@ try{
 	const chatId = msg.chat.id.toString();
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Теперь пришлите мне текст  для рассылки', klava('Назад',null, chatId));//Отмена
+		await sendMessage(chatId, 'Теперь пришлите мне текст  для рассылки', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		WaitEditText[chatId]=6;//взводим флаг ожидания текста от юзера	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
@@ -4510,8 +4469,7 @@ try{
 	const chatId = msg.chat.id.toString();
 	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
 	{	if(!LastKey[chatId]) LastKey[chatId] = '0';
-		Tree['Назад'].parent = LastKey[chatId];//Кнопка Отмена с возвратом
-		await sendMessage(chatId, 'Теперь пришлите мне текст  для рассылки', klava('Назад',null, chatId));//Отмена
+		await sendMessage(chatId, 'Теперь пришлите мне текст  для рассылки', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		WaitEditText[chatId]='public2admins';//взводим флаг ожидания текста от юзера	
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
@@ -5299,8 +5257,8 @@ function setTimezoneByOffset(offsetMinutes)
 //возвращает таймстамп юзера в формате moment()
 function getUserDateTime(chatId)
 {	let now = moment();
-	if(!!LastMessId[chatId].utcOffset)//таймзона юзера
-	{	let userTime = moment().unix() + ((Number(LastMessId[chatId].utcOffset) - utcOffset) * 60);//в сек
+	if(!!LastMessId[chatId].location&&!!LastMessId[chatId].location.utcOffset)//таймзона юзера
+	{	let userTime = moment().unix() + ((Number(LastMessId[chatId].location.utcOffset) - utcOffset) * 60);//в сек
 		now = moment.unix(userTime);//дата/время юзера
 	}
 	return now;
@@ -5321,3 +5279,21 @@ function getEgDateTime(refpath)
 	return now;
 }
 //====================================================================
+async function getObjFromES(URL)
+{	try
+	{
+		let promise = new Promise((resolve, reject) => 
+		{	needle.get(URL, async function(err, response) 
+			{ 	if(response.statusCode==200)
+				{
+					resolve (response.body);	
+				}
+				else {console.log(moment().format('DD-MM-YY HH:mm:ss:ms ')+'Страница '+URL+' не получена! ' +response.statusCode); resolve('NO');} 
+			});
+  
+		});//конец промиса
+		return await promise;
+	} catch(err) {console.log('Ошибка в parser_eg()\n'+err.message);}//
+}
+//====================================================================
+
