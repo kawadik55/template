@@ -1993,17 +1993,21 @@ try{
 		//запрашиваем город на ЕС по локации
 		let url = 'https://na-russia.org/api/towns/closest/?lat='+lat+'&lon='+lon;
 		let res = await getObjFromES(url);
-		let slug, general_town;
+		let slug, general_town='';
 		if(res != 'NO')
 		{	slug = (!!res&&!!res.town&&!!res.town.slug) ? res.town.slug : '';
-			general_town = (!!res&&!!res.town&&!!res.town.general_town) ? res.town.general_town : '';
+			//запросим головной город, если есть
+			if(!!res&&!!res.town&&!!res.town.general_town)
+			{	url = 'https://na-russia.org/api/service-struct/'+res.town.general_town+'/';
+				res = await getObjFromES(url);
+				if(res != 'NO' && (!!res&&!!res.slug)) general_town = res.slug;
+			}
 			if(!!slug) obj.slug = slug;
 			if(!!general_town) obj.general_town = general_town;
 		}
 		LastMessId[chatId].location = obj;
 		//убираем белую кнопку
 		await sendMessage(chatId, 'Ваша таймзона = '+tz+(!!slug?' ('+slug+')':''), {reply_markup: {remove_keyboard: true}});
-		//await sendMessage(chatId, 'Ваша таймзона = '+tz, {reply_markup: {remove_keyboard: true}});
 		exit();
 	}
 	else
