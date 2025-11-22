@@ -4840,7 +4840,7 @@ try{
 				for(let i in user)
 				{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 					let chatId = user[i].toString();
-					await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
+					await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:null});
 					//await sendMessage(chatId, mess, {parse_mode:"markdown"});
 				}
 				user = Object.keys(UserList);//создаем массив ключей из списка юзеров
@@ -4848,7 +4848,7 @@ try{
 				{	for(let i in user)
 					{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 						let chatId = user[i].toString();
-						await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
+						await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:null});
 						//await sendMessage(chatId, mess, {parse_mode:"markdown"});
 					}
 				}
@@ -4873,7 +4873,7 @@ try{
 						if(files[k].toLowerCase().indexOf('.gif')+1) 
 						{	//let res = await sendDocument(chatId, files[k]);
 							while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-							let res = await queue.addToQueue({type:'sendDocument', chatId:chatId, data:files[k], options:{}, bot:Bot});
+							let res = await queue.addToQueue({type:'sendDocument', chatId:chatId, data:files[k], options:{}, bot:null});
 							if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_srok');
 							else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_srok');
 						}
@@ -4883,7 +4883,7 @@ try{
 					{	for(let k in Stickers.ubik)
 						{	//let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
 							while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-							let res = await queue.addToQueue({type:'sendSticker', chatId:chatId, data:Stickers.ubik[k], options:{}, bot:Bot});
+							let res = await queue.addToQueue({type:'sendSticker', chatId:chatId, data:Stickers.ubik[k], options:{}, bot:null});
 							if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_srok');
 							else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_srok');
 						}
@@ -4891,7 +4891,7 @@ try{
 				}
 				//let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
 				while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-				let res = await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
+				let res = await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:null});
 				if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_srok');
 				else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_srok');
 			}
@@ -4915,7 +4915,7 @@ try{
 						if(files[k].toLowerCase().indexOf('.gif')+1) 
 						{	//let res = await sendDocument(chatId, files[k]);
 							while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-							let res = await queue.addToQueue({type:'sendDocument', chatId:chatId, data:files[k], options:{}, bot:Bot});
+							let res = await queue.addToQueue({type:'sendDocument', chatId:chatId, data:files[k], options:{}, bot:null});
 							if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_smoke');
 							else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_smoke');
 							//await sleep(2000);
@@ -4926,14 +4926,14 @@ try{
 					{	for(let k in Stickers.ubik)
 						{	//let res = await Bot.sendSticker(chatId, Stickers.ubik[k]);
 							while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-							let res = await queue.addToQueue({type:'sendSticker', chatId:chatId, data:Stickers.ubik[k], options:{}, bot:Bot});if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_smoke');
+							let res = await queue.addToQueue({type:'sendSticker', chatId:chatId, data:Stickers.ubik[k], options:{}, bot:null});if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал стикер '+username+' из ubik_smoke');
 							else WriteLogFile('Ошибка при посылке стикера '+username+' из ubik_smoke');
 						}
 					}
 				}
 				//let res = await sendMessage(chatId, mess, {parse_mode:"markdown"});//без кнопки
 				while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-				let res = await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:Bot});
+				let res = await queue.addToQueue({type:'sendMessage', chatId:chatId, data:mess, options:{parse_mode:"markdown"}, bot:null});
 				if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал поздравление '+username+' из ubik_smoke');
 				else WriteLogFile('Ошибка при посылке поздравления '+username+' из ubik_smoke');
 				//await sleep(1000);
