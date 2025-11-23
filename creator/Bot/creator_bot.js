@@ -2126,7 +2126,7 @@ try{
 	}
 	
 	//если есть id сообщений локации, то удаляем
-	if(!!LastMessId[chatId].loc_mess_id && LastMessId[chatId].loc_mess_id !== 'запрос')
+	if(!!LastMessId[chatId] && !!LastMessId[chatId].loc_mess_id && LastMessId[chatId].loc_mess_id !== 'запрос')
 	{	remove_message(chat_id, LastMessId[chatId].loc_mess_id);
 		delete LastMessId[chatId].loc_mess_id;
 	}
