@@ -1454,7 +1454,7 @@ try{
 	}
 	else if(msg.text === "Удалить мою локацию")
 	{	//Убираем предыдущее сообщение
-		if(!!LastMessId[chatId].messId) await Bot.deleteMessage(chatId, LastMessId[chatId].messId);
+		try {if(!!LastMessId[chatId].messId) await Bot.deleteMessage(chatId, LastMessId[chatId].messId);}catch(err){console.log(err);}
 		await Bot.deleteMessage(chatId, msg.message_id);
 		// Убираем текстовую клавиатуру
 		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
