@@ -2082,7 +2082,7 @@ try{
 	 if(!!mess_id) {await remove_message(chat_id, mess_id);}
 	}
 	//сохраняем id от локации, если запрошено
-	if(!!LastMessId[chatId].loc_mess_id && LastMessId[chatId].loc_mess_id === 'запрос') LastMessId[chatId].loc_mess_id = res.message_id;
+	if(!!LastMessId[chatId] && !!LastMessId[chatId].loc_mess_id && LastMessId[chatId].loc_mess_id === 'запрос') LastMessId[chatId].loc_mess_id = res.message_id;
 	return res;
 	
 }catch(err){
