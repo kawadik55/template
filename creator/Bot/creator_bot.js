@@ -1444,21 +1444,21 @@ try{
 	}
 	else if(msg.text === "❌ Отменить")
 	{	//Убираем предыдущее сообщение
-		if(!!LastMessId[chatId].messId) await Bot.deleteMessage(chatId, LastMessId[chatId].messId);
-		await Bot.deleteMessage(chatId, msg.message_id);
+		if(!!LastMessId[chatId].messId) await remove_message(chatId, LastMessId[chatId].messId);
+		await remove_message(chatId, msg.message_id);
 		// Убираем текстовую клавиатуру
 		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
-		try {await Bot.deleteMessage(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
+		try {await remove_message(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
 		let index='0';
 		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
 	}
 	else if(msg.text === "Удалить мою локацию")
 	{	//Убираем предыдущее сообщение
-		try {if(!!LastMessId[chatId].messId) await Bot.deleteMessage(chatId, LastMessId[chatId].messId);}catch(err){console.log(err);}
-		await Bot.deleteMessage(chatId, msg.message_id);
+		try {if(!!LastMessId[chatId].messId) await remove_message(chatId, LastMessId[chatId].messId);}catch(err){console.log(err);}
+		await remove_message(chatId, msg.message_id);
 		// Убираем текстовую клавиатуру
 		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
-		try {await Bot.deleteMessage(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
+		try {await remove_message(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
 		delete LastMessId[chatId].location;
 		let index='0';
 		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
