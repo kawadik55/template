@@ -12,6 +12,7 @@ const RassilkaDirOpen = currentDir+"/../../pso/Rassilka";
 const FileRaspis = RassilkaDir+'/raspis.txt';//файл с расписанием на день
 const FileRaspisOpen = RassilkaDirOpen+'/raspis_open.txt';//файл открытых с расписанием
 const FileCommitee = RassilkaDir+'/commitee.txt';//файл с расписанием комитетов
+const FileStatistic = RassilkaDir+'/statistic.json';//файл со статистикой
 const FileXlsDir = currentDir+'/../XlsBot/doc/1';//папка
 //const FileZagol = /^ListUfa\.xls+x?$/;//маска файла, xlsx или xls.
 const FileZagol = 'Местность.xls';//маска заголовочного файла местности, xls
@@ -661,6 +662,39 @@ try{
 }catch(err){console.log(err);}
 }
 //====================================================================
+//запишем общее кол-во групп в файл
+async function save_statistic_file()
+{
+try{
+	let groups = '';
+	if(!!List.groups) groups = List.groups;
+	else {console.log('Ошибка! Отсутствует объект List.groups'); return;}
+	let town = Object.keys(groups);//массив городов
+	if(!town) {console.log('Ошибка! Отсутствует массив городов'); return;}
+	let out = {};//выходной объект
+	let count = 0;
+	
+	//будем собирать по городам
+	for(let i=0;i<town.length;i++)//по городам
+	{	let name = Object.keys(groups[town[i]]);//массив групп в городе
+		if(!name) continue;//если групп нету, то пропускаем этот город
+		out[town[i]] = name.length;
+		count += name.length;
+	}
+	//console.log(JSON.stringify(out,null,2));
+	if(!out) return;//если ничего не собрали
+	out.total = count;
+	
+	//запишем файл статистики
+	let err = fs.writeFileSync(FileStatistic, /*"\ufeff" +*/ JSON.stringify(out,null,2));
+    if(!!err) {console.log(err);}
+	err = '';
+	err = fs.writeFileSync(currentDir+'/statistic.json', /*"\ufeff" +*/ JSON.stringify(out,null,2));
+    if(!!err) {console.log(err);}
+	
+}catch(err){console.log(err);}
+}
+//====================================================================
 //запускаем функции
 (async () => 
 {
@@ -685,6 +719,7 @@ try{
 	
 	await save_today_file();
 	await save_commitee_file();
+	await save_statistic_file();
 	//setCsvYandex();
 	//save_open_file();
 	//console.log(new Date()+' parserxls - OK!');
