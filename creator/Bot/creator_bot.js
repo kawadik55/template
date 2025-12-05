@@ -5,7 +5,8 @@ const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const tzLookup = require('tz-lookup');
-const homedir = require('os').homedir();
+//const homedir = require('os').homedir();
+const homedir = '/home/pi';
 const needle = require('needle');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше
@@ -4994,7 +4995,7 @@ try{
 	{	WriteLogFile('Путь не содержит ни '+homedir+'/js/'+', ни '+homedir+'/telegram/');
 		return false;
 	}
-	if((mypath.indexOf('/Token/')+1)||(path.extname(mypath)=='.js')||(path.extname(mypath)=='.sh')) 
+	if((mypath.indexOf('/Token/')>=1)||(path.extname(mypath)=='.js')||(path.extname(mypath)=='.sh')) 
 	{	WriteLogFile('Ошибка в расширении файла');
 		return false;
 	}
