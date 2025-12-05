@@ -12,7 +12,7 @@ const RassilkaDirOpen = currentDir+"/../../pso/Rassilka";
 const FileRaspis = RassilkaDir+'/raspis.txt';//файл с расписанием на день
 const FileRaspisOpen = RassilkaDirOpen+'/raspis_open.txt';//файл открытых с расписанием
 const FileCommitee = RassilkaDir+'/commitee.txt';//файл с расписанием комитетов
-const FileStatistic = RassilkaDir+'/statistic.json';//файл со статистикой
+const FileStatistic = RassilkaDir+'/statistic.txt';//файл со статистикой
 const FileXlsDir = currentDir+'/../XlsBot/doc/1';//папка
 //const FileZagol = /^ListUfa\.xls+x?$/;//маска файла, xlsx или xls.
 const FileZagol = 'Местность.xls';//маска заголовочного файла местности, xls
@@ -672,24 +672,61 @@ try{
 	let town = Object.keys(groups);//массив городов
 	if(!town) {console.log('Ошибка! Отсутствует массив городов'); return;}
 	let out = {};//выходной объект
-	let count = 0;
+	let count_groups = 0;
+	let count_meet = 0;
+	let str = '';
 	
 	//будем собирать по городам
 	for(let i=0;i<town.length;i++)//по городам
 	{	let name = Object.keys(groups[town[i]]);//массив групп в городе
 		if(!name) continue;//если групп нету, то пропускаем этот город
-		out[town[i]] = name.length;
-		count += name.length;
+		if(!out[town[i]]) out[town[i]] = {};
+		out[town[i]].groups = name.length;
+		count_groups += name.length;
+		let count = 0;
+		//пройдемся по группам в городе и соберем кол-во собраний в месяц
+		for(let n in name)
+		{	let meet = groups[town[i]][name[n]];
+			
+			for(let k in meet)//по массиву собраний группы
+			{	if(!!meet[k].format && (meet[k].format==="Закрытое" || meet[k].format==="Открытое"))
+				{	if(!!meet[k].type && meet[k].type=='static')
+					{	if(meet[k].period.length > 4) count += 4; else count += meet[k].period.length;
+					}
+					if(!!meet[k].type && meet[k].type=='floating')
+					{	let num = Math.trunc(4/meet[k].period);
+						count += num;
+					}
+				}
+			}
+		}
+		out[town[i]].meetings = count;
+		count_meet += count;
 	}
-	//console.log(JSON.stringify(out,null,2));
-	if(!out) return;//если ничего не собрали
-	out.total = count;
+
+	if(!out)//если ничего не собрали
+	{	str += 'Сожалею, но ничего нет!';
+	}
+	else
+	{	str += 'На сегодня в *МКО Уфа* обслуживаются *'+count_groups+'* групп!\n';
+		for(let i=0;i<town.length;i++)
+		{	str += town[i]+' - *'+out[town[i]].groups+'*\n';
+		}
+		str += '\nВсего на местности проводится более *'+count_meet+'* собраний в месяц!\n';
+		for(let i=0;i<town.length;i++)
+		{	str += town[i]+' - более *'+out[town[i]].meetings+'*\n';
+		}
+	}
+	
 	
 	//запишем файл статистики
+	out = {};
+	out.text = str;
+	out.mode = 'markdown';
 	let err = fs.writeFileSync(FileStatistic, /*"\ufeff" +*/ JSON.stringify(out,null,2));
     if(!!err) {console.log(err);}
 	err = '';
-	err = fs.writeFileSync(currentDir+'/statistic.json', /*"\ufeff" +*/ JSON.stringify(out,null,2));
+	err = fs.writeFileSync(currentDir+'/statistic.txt', /*"\ufeff" +*/ JSON.stringify(out,null,2));
     if(!!err) {console.log(err);}
 	
 }catch(err){console.log(err);}
