@@ -3987,7 +3987,11 @@ try{
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
-		if(!!mypath && !checkPathFile(currentDir+mypath)) {await sendMessage(chatId, '😉', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));return true;}
+		if(!!mypath && !checkPathFile(currentDir+mypath)) 
+		{	await sendMessage(chatId, '😉', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			WriteLogFile('Ошибка в пути к файлу: '+currentDir+mypath);
+			return true;
+		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
