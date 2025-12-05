@@ -4992,12 +4992,10 @@ function checkPathFile(mypath)
 {
 try{
 	if(mypath.indexOf(homedir+'/js/')<0 && mypath.indexOf(homedir+'/telegram/')<0) 
-	{	WriteLogFile('Путь не содержит ни '+homedir+'/js/'+', ни '+homedir+'/telegram/');
-		return false;
+	{	return false;
 	}
 	if((mypath.indexOf('/Token/')>=1)||(path.extname(mypath)=='.js')||(path.extname(mypath)=='.sh')) 
-	{	WriteLogFile('Ошибка в расширении файла');
-		return false;
+	{	return false;
 	}
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom checkPath()','вчат');}
