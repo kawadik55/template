@@ -4984,11 +4984,11 @@ async function isValidUrl(url)
 	finally {clearTimeout(timeout);}
 }
 //====================================================================
-function checkPathFile(path)
+function checkPathFile(mypath)
 {
 try{
-	if(!(path.indexOf(homedir+'/js')+1)&&!(path.indexOf(homedir+'/telegram')+1)) return false;
-	if((path.indexOf('/Token')+1)||(path.indexOf('.js')+1)||(path.indexOf('.sh')+1)) return false;//запретный путь
+	if(mypath.indexOf(homedir+'/js/')<0 && mypath.indexOf(homedir+'/telegram/')<0) return false;
+	if((mypath.indexOf('/Token/')+1)||(path.extname(mypath)=='.js')||(path.extname(mypath)=='.sh')) return false;//запретный путь
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom checkPath()','вчат');}
 }
