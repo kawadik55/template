@@ -3989,7 +3989,6 @@ try{
 		}
 		if(!!mypath && !checkPathFile(currentDir+mypath)) 
 		{	await sendMessage(chatId, '😉', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
-			WriteLogFile('Ошибка в пути к файлу: '+currentDir+mypath);
 			return true;
 		}
 		//сначала выберем номер новой кнопки
@@ -4991,8 +4990,14 @@ async function isValidUrl(url)
 function checkPathFile(mypath)
 {
 try{
-	if(mypath.indexOf(homedir+'/js/')<0 && mypath.indexOf(homedir+'/telegram/')<0) return false;
-	if((mypath.indexOf('/Token/')+1)||(path.extname(mypath)=='.js')||(path.extname(mypath)=='.sh')) return false;//запретный путь
+	if(mypath.indexOf(homedir+'/js/')<0 && mypath.indexOf(homedir+'/telegram/')<0) 
+	{	WriteLogFile('Путь не содержит ни '+homedir+'/js/'+', ни '+homedir+'/telegram/');
+		return false;
+	}
+	if((mypath.indexOf('/Token/')+1)||(path.extname(mypath)=='.js')||(path.extname(mypath)=='.sh')) 
+	{	WriteLogFile('Ошибка в расширении файла');
+		return false;
+	}
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom checkPath()','вчат');}
 }
