@@ -708,7 +708,12 @@ try{
 	{	str += 'Сожалею, но ничего нет!';
 	}
 	else
-	{	str += 'На сегодня в *МКО Уфа* обслуживаются *'+count_groups+'* групп!\n';
+	{	const now = new Date();
+		const day = String(now.getDate()).padStart(2, '0');
+		const month = String(now.getMonth() + 1).padStart(2, '0'); // месяцы с 0!
+		const year = now.getFullYear();
+		const today = `${day}.${month}.${year}`;
+		str += 'На сегодня '+today+' в *МКО Уфа* обслуживаются *'+count_groups+'* групп!\n';
 		for(let i=0;i<town.length;i++)
 		{	str += town[i]+' - *'+out[town[i]].groups+'*\n';
 		}
