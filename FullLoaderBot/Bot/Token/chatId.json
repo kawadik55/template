@@ -1,13 +1,15 @@
 {
   "Supervisor": "123456789",
-  "chat_news": [
-    {
-      "ИмяКанала": "chatID канала",
-      "message_thread_id": ""
-    },
-	{
-      "СколькоХочешь": "может быть каналов",
-      "message_thread_id": ""
-    }
-  ]
+  "chat_news": {
+    "+180": [
+      {
+        "ИмяКанала": "chatID канала",
+        "message_thread_id": ""
+      },
+      {
+        "СколькоХочешь": "может быть каналов",
+        "message_thread_id": ""
+      }
+    ]
+  }
 }

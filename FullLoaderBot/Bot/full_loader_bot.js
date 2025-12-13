@@ -7,7 +7,7 @@ const { execFile } = require('child_process');
 const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const PathToImages = currentDir+'/images';//путь к файлам на выполнение
+const PathToImages = currentDir+'/images';//путь к файлам на выполнение.
 const PathToImagesModer = currentDir+'/moder';//путь к файлам на выполнение
 const FileUserList = currentDir+"/UserList.txt";//имя файла белого листа
 const FileBlackList = currentDir+"/BlackList.txt";//имя файла черного листа
@@ -63,7 +63,7 @@ setTimezoneByOffset(utcOffset);//устанавливаем локальную �
 
 const chat_Supervisor = require(TokenDir+"/chatId.json").Supervisor;//пользователь 'Supervisor'
 // выбор токена
-let tokenLoader = '', tokenNews = '', chat_news = [];
+let tokenLoader = '', tokenNews = '', chat_news = {};
 tokenLoader = require(TokenDir+"/loader_bot.json").token;
 var namebot = 'unnown';
 try{namebot = require(TokenDir+"/loader_bot.json").comment;}catch(err){console.log(err);}//юзернейм бота
@@ -73,22 +73,35 @@ tokenNews = require(TokenDir+"/news_bot.json").token;
 {try{
  let obj = require(TokenDir+"/chatId.json");
  if(Object.hasOwn(obj, 'chat_news'))
- {	if(obj.chat_news.constructor === Object)//если это объект по старому, то переделаем в массив объектов
-	{	let key = Object.keys(obj.chat_news);
-		let mas = [];
-		for(let i=0;i<key.length;i++) 
-		{	let obj2={}; obj2[key[i]]=obj.chat_news[key[i]]; obj2.message_thread_id="";
-			mas.push(obj2);
+ {	if(Array.isArray(obj.chat_news))//если массив 
+	{	let arr = [...obj.chat_news];
+		chat_news = transform_chat2obj(arr);//преобразуем chat_news в плане мультизонности
+		if(Object.keys(chat_news).length > 0)
+		{	obj.chat_news = {};
+			obj.chat_news = chat_news;
+			WriteFileJson(TokenDir+"/chatId.json",obj);
 		}
-		obj.chat_news = mas;
-		chat_news = [...obj.chat_news];
-		WriteFileJson(TokenDir+"/chatId.json",obj);
+		else {WriteLogFile('Ошибка: список чатов пустой!');}
 	}
-	else if(obj.chat_news.constructor === Array) chat_news = [...obj.chat_news];//если уже по новому
-	else chat_news[0]={'имяГруппы':'-12345','message_thread_id':''};
+	else if(obj.chat_news.constructor === Object)
+	{	
+		let num = Object.keys(obj.chat_news);
+		for(let i in num) 
+		{	let parsed = parseInt(num[i], 10);
+			if(isNaN(parsed) || parsed.toString() !== num[i].replace(/^\+/, '')) delete obj.chat_news[num[i]];
+		}	
+		chat_news = obj.chat_news;
+	}
+	else {WriteLogFile('Ошибка: список чатов пустой!');}
  }
- else chat_news[0]={'имяГруппы':'-12345','message_thread_id':''}; 
- }catch(err) {console.log(err);} 
+ else 
+ {let str = (utcOffset>0) ? ('+'+utcOffset) : String(utcOffset);
+  chat_news[str]=[];
+  chat_news[str].push({'имяГруппы':'-12345','message_thread_id':''});
+  obj.chat_news = chat_news;
+  WriteFileJson(TokenDir+"/chatId.json",obj);
+ } 
+ }catch(err) {WriteLogFile(err);} 
 })();
 
 const LoaderBot = new TelegramBot(tokenLoader, {polling: true});
@@ -168,25 +181,26 @@ if(hostingImg && !!PathToHostImg)
 
 const TmpPath = "/tmp";//путь для временных файлов
 let forDeleteList = [];//список файлов на удаление
-//let keyboard = require(currentDir+"/knopki.json");// массив клавиатур из файла
+
 //====================================================================
 if(!timeCron)//всегда выполняется
 {	if(timePablic != moment(timePablic,'HH:mm:ss').format('HH:mm:ss'))
 	{WriteLogFile('Ошибка в timePublic','вчат'); timePablic = '06:00:00';
 	}
 	let tmp=timePablic.split(':');
-	timeCron = tmp[1]+' '+tmp[0]+' * * *';
+	//timeCron = tmp[1]+' '+tmp[0]+' * * *';
+	timeCron = tmp[1]+' * * * *';//теперь будем проверять каждый час для мультизонности
 }
 //установим службу стандартных утренних публикаций в каналах
 var Cron1 = cron.schedule(timeCron, async function() 
 {	if(rassilka)//если рассылка включена
-	{	WriteLogFile('Начинаем стандартную Рассылку:');
+	{	//WriteLogFile('Начинаем стандартную Рассылку:');
 		//ежик
 		if(RunList.Eg===true) await send_Eg();
 		//расписание
 		if(RunList.Raspis===true) await send_Raspis();
 		
-		WriteLogFile('Далее рассылка текстов и картинок:');
+		//WriteLogFile('Далее рассылка текстов и картинок:');
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
 //установим службу публикаций по времени, каждую нечетную мин
@@ -3828,15 +3842,27 @@ async function send_Eg()
   {		let eg = '';
 		if(fs.existsSync(FileEg)) eg = fs.readFileSync(FileEg).toString();
 		if(!eg) {WriteLogFile(getTimeStr()+'файл с ежиком отсутствует'); return;}
+		
+		let offset = Object.keys(chat_news);//массив смещений строками
+		if(offset.length==0) {console.log('offset.length='+offset.length); return;}
+		let now = moment();
+		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
+		for(let i=0;i<offset.length;i++)
+		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
+			if(userHour===publicHour) go2public(chat_news[offset[i]]);//передаем массив объектов
+		}
+	
+	async function go2public(chat)
+	{
 		let good = 0;
 		WriteLogFile('Рассылка Ежика в каналы через очередь:');
-		for(let i=0;i<chat_news.length;i++) 
+		for(let i=0;i<chat.length;i++) 
 		{  try{	
 			let chatId = '', threadId = '', opt = {};
-			let name = Object.keys(chat_news[i]);
-			if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+			let name = Object.keys(chat[i]);
+			if(!!chat[i][name[0]]) chatId = chat[i][name[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
-			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+			if(!!chat[i].message_thread_id) threadId = chat[i].message_thread_id;
 			if(!!threadId) opt.message_thread_id = threadId;
 			opt.parse_mode = "markdown"; opt.disable_web_page_preview = true;
 			while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
@@ -3845,11 +3871,7 @@ async function send_Eg()
 			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 			{	
 				if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
-				{//нельзя послать сообщение админу в телегу
-					/*if(good==0)//если не послано еще ни одного корректного сообщения 
-					{	fun['sendEg'] = setTimeout(send_Eg, interval);
-						return;//выходим, дальше цикл теряет смысл
-					}*/
+				{
 					WriteLogFile(' '+res);
 				}
 				else //ошибка от Ноды
@@ -3865,6 +3887,7 @@ async function send_Eg()
 			}
 		  }catch(err){WriteLogFile(err+'\nfrom send_Eg()=>for()','вчат');}
 		}
+	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Eg()','вчат');
   }
@@ -3875,8 +3898,6 @@ async function send_Raspis()
   {		let raspis = '';
 		if(fs.existsSync(FileRaspis)) raspis = fs.readFileSync(FileRaspis).toString();
 		if(!raspis) {WriteLogFile('файл с расписанием отсутствует'); return;}
-		let good = 0;
-		
 		let mode = 'HTML';//по-умолчанию
 		let obj = {};
 		let flag = 1;
@@ -3885,28 +3906,38 @@ async function send_Raspis()
 		if(flag)//если это объект
 		{	if(Object.hasOwn(obj, 'text')) raspis = obj.text;
 			if(Object.hasOwn(obj, 'mode')) mode = obj.mode;
+			if(!raspis) {raspis = smilik; mode = 'markdown';}
+		}
+		else return;
+		
+		let offset = Object.keys(chat_news);//массив смещений строками
+		if(offset.length==0) {console.log('offset.length='+offset.length); return;}
+		let now = moment();
+		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
+		for(let i=0;i<offset.length;i++)
+		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
+			if(userHour===publicHour) go2public(chat_news[offset[i]]);//передаем массив объектов
 		}
 		
+	async function go2public(chat)
+	{
+		let good = 0;
 		WriteLogFile('Рассылка Расписания в каналы через очередь:');
 		let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
-		for(let i=0;i<chat_news.length;i++) 
+		for(let i=0;i<chat.length;i++) 
 		{  try{
 			let chatId = '', threadId = '';
-			let name = Object.keys(chat_news[i]);
-			if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+			let name = Object.keys(chat[i]);
+			if(!!chat[i][name[0]]) chatId = chat[i][name[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
-			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+			if(!!chat[i].message_thread_id) threadId = chat[i].message_thread_id;
 			if(!!threadId) opt.message_thread_id = threadId;
 			let res = await sendTextToBot(NewsBot,chatId,raspis,opt);
 			if(res===false) WriteLogFile('Не смог послать Расписание "'+' в '+name[0]);
 			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 			{	
 				if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
-				{//нельзя послать сообщение админу в телегу
-					/*if(good==0)//если не послано еще ни одного корректного сообщения 
-					{	fun['sendRaspis'] = setTimeout(send_Raspis, interval);
-						return;//выходим, дальше цикл теряет смысл
-					}*/
+				{
 					WriteLogFile(' '+res);
 				}
 				else //ошибка от Ноды
@@ -3922,6 +3953,7 @@ async function send_Raspis()
 			}
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis()=>for()','вчат');}
 		}
+	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Raspis()','вчат');
   }
@@ -4283,3 +4315,21 @@ queue.on('disconnected', (error) => {WriteLogFile(error+'; => bot disconnected')
 //queue.on('processing_finished', () => {WriteLogFile('processing_finished');});
 //queue.on('cleared', (item) => {WriteLogFile('cleared = '+item);});
 //====================================================================
+//преобразуем массив объектов в объект с массивами
+function transform_chat2obj(arr)
+{	let obj = {};
+	let zona = (utcOffset>0) ? ('+'+utcOffset) : String(utcOffset);
+	obj[zona] = [];//таймзона по-умолчанию, в ней массив объектов
+	for(let i=0; i<arr.length; i++) {if(typeof(arr[i])==='object') obj[zona].push(arr[i]);}
+	
+	return obj;
+}
+//====================================================================
+//возвращает таймстамп юзера в формате moment()
+function getUserDateTime(now, offset)
+{	offset = Number(offset);
+	let userTime = now.unix() + ((offset - utcOffset) * 60);//в сек
+	return moment.unix(userTime);//дата/время юзера
+}
+//====================================================================
+
