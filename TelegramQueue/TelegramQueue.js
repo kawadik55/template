@@ -221,35 +221,56 @@ class TelegramQueue extends EventEmitter {
 		const { type, data, chatId, bot = this.bot} = queueItem;
 		// Проверяем, что бот доступен
 		if (!bot) {throw new Error('Bot instance is not available');}
-		try{
+		let attempts = 0;
+		const maxAttempts = this.maxRetries || 3;
+		
+	  while (attempts < maxAttempts)
+	  { try{
           switch (type) {
             case 'sendMessage':
-                return await bot.sendMessage(chatId, data, options);
+                return await bot.sendMessage(chatId, data, options); break;
             
             case 'sendPhoto':
-                return await bot.sendPhoto(chatId, data, options);
+                return await bot.sendPhoto(chatId, data, options); break;
             
             case 'sendVideo':
-                return await bot.sendVideo(chatId, data, options);
+                return await bot.sendVideo(chatId, data, options); break;
             
             case 'sendDocument':
-                return await bot.sendDocument(chatId, data, options);
+                return await bot.sendDocument(chatId, data, options); break;
             
             case 'sendAudio':
-                return await bot.sendAudio(chatId, data, options);
+                return await bot.sendAudio(chatId, data, options); break;
             
             case 'sendMediaGroup':
-                return await bot.sendMediaGroup(chatId, data, options);
+                return await bot.sendMediaGroup(chatId, data, options); break;
             
             case 'sendSticker':
-                return await bot.sendSticker(chatId, data, options);
+                return await bot.sendSticker(chatId, data, options); break;
 			
 			default:
                 throw new Error(`Unsupported message type: ${type}`);
           }
 		} 
-		catch (error) {throw error;}
-    }
+		catch (error) 
+		{	attempts++;
+            const isRateLimit = error.response?.body?.error_code === 429 || 
+				(error.response?.body?.description || error.message || '').toLowerCase().includes('too many requests');
+			//if (error.response?.body?.error_code === 429 && attempts < maxAttempts)
+			if (isRateLimit && attempts < maxAttempts)
+			{
+                const retryAfter = error.response.body.parameters?.retry_after || 5;
+                console.log(`429. Ждем ${retryAfter}с (${attempts}/${maxAttempts})`);
+                await this._delay(retryAfter * 1000);
+                continue;
+            }
+			
+			throw error;
+		}
+      }
+	  
+	  throw new Error(`Failed after ${maxAttempts} attempts`);
+	}
 	//====================================================================
     /**
      * Вспомогательная функция задержки
