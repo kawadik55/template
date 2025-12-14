@@ -2975,9 +2975,7 @@ try{
 		let date = !!obj.date?obj.date:'';//запись даты
 		WriteLogFile('text "Срочно" => день='+day+'; дата='+date+timestr);
 		//соберем все чаты в новый массив
-		let all_chats = [], keys = Object.keys(chat_news);
-		for(let i=0;i<keys.length;i++)
-			for(let j=0;j<chat_news[keys[i]].length;j++) all_chats.push(chat_news[keys[i]][j]);
+		let all_chats = getAllChats();
 		for(let i=0;i<all_chats.length;i++) 
 		try{
 		  if(!!all_chats[i])
@@ -3154,9 +3152,7 @@ try{
 		let date = !!obj.date?obj.date:'';//запись даты
 		WriteLogFile(obj.type+' "Срочно" в очередь => день='+day+'; дата='+date+timestr);
 	 //соберем все чаты в новый массив
-	 let all_chats = [], keys = Object.keys(chat_news);
-	 for(let i=0;i<keys.length;i++)
-		for(let j=0;j<chat_news[keys[i]].length;j++) all_chats.push(chat_news[keys[i]][j]);
+	 let all_chats = getAllChats();
 	 for(let i=0;i<all_chats.length;i++) 
 	 {	try{
 		  let chatId = '', threadId = '';
@@ -4063,9 +4059,7 @@ async function send_Images(now)
 			if(Object.hasOwn(ImagesList[key], 'caption_entities')) opt.caption_entities = ImagesList[key].caption_entities;
             if(Object.hasOwn(ImagesList[key], 'parse_mode')) opt.parse_mode = ImagesList[key].parse_mode;
 			//соберем все чаты в новый массив
-			let all_chats = [], keys = Object.keys(chat_news);
-			for(let i=0;i<keys.length;i++)
-				for(let j=0;j<chat_news[keys[i]].length;j++) all_chats.push(chat_news[keys[i]][j]);
+			let all_chats = getAllChats();
 			//основной канал новостей
 			for(let i=0;i<all_chats.length;i++) 
 			{	let chatId = '', threadId = '';
@@ -4222,9 +4216,7 @@ async function send_Text(now)
 			}
 			if(!!TextList[key].parse_mode) opt.parse_mode = TextList[key].parse_mode;
             //соберем все чаты в новый массив
-			let all_chats = [], keys = Object.keys(chat_news);
-			for(let i=0;i<keys.length;i++)
-				for(let j=0;j<chat_news[keys[i]].length;j++) all_chats.push(chat_news[keys[i]][j]);
+			let all_chats = getAllChats();
 			//основной канал новостей
 			for(let i=0;i<all_chats.length;i++) 
 			{	let chatId = '', threadId = '';
@@ -4346,6 +4338,21 @@ function getUserDateTime(now, offset)
 {	offset = Number(offset);
 	let userTime = now.unix() + ((offset - utcOffset) * 60);//в сек
 	return moment.unix(userTime);//дата/время юзера
+}
+//====================================================================
+//соберем все чаты в новый массив
+function getAllChats()
+{
+	let obj = chat_news;
+	let all_chats = [];
+	let keys = Object.keys(obj);//смещения
+	if(keys.length==0) return all_chats;
+	for(let i=0;i<keys.length;i++)
+	{	let chats = obj[keys[i]];//массив объектов чатов
+		if(chats.length==0) continue;
+		for(let j=0;j<chats.length;j++) all_chats.push(chats[j]);
+	}
+	return all_chats;
 }
 //====================================================================
 
