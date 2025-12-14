@@ -7,7 +7,7 @@ const { execFile } = require('child_process');
 const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const PathToImages = currentDir+'/images';//путь к файлам на выполнение.
+const PathToImages = currentDir+'/images';//путь к файлам на выполнение
 const PathToImagesModer = currentDir+'/moder';//путь к файлам на выполнение
 const FileUserList = currentDir+"/UserList.txt";//имя файла белого листа
 const FileBlackList = currentDir+"/BlackList.txt";//имя файла черного листа
@@ -2974,14 +2974,18 @@ try{
 		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
 		let date = !!obj.date?obj.date:'';//запись даты
 		WriteLogFile('text "Срочно" => день='+day+'; дата='+date+timestr);
-		for(let i=0;i<chat_news.length;i++) 
+		//соберем все чаты в новый массив
+		let all_chats = [], keys = Object.keys(chat_news);
+		for(let i=0;i<keys.length;i++)
+			for(let j=0;j<chat_news[keys[i]].length;j++) all_chats.push(chat_news[keys[i]][j]);
+		for(let i=0;i<all_chats.length;i++) 
 		try{
-		  if(!!chat_news[i])
+		  if(!!all_chats[i])
 		  {	let opt = {};
 			let chatId = '', threadId = '';
-			let key = Object.keys(chat_news[i]);
-			if(!!chat_news[i][key[0]]) chatId = chat_news[i][key[0]];
-			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+			let key = Object.keys(all_chats[i]);
+			if(!!all_chats[i][key[0]]) chatId = all_chats[i][key[0]];
+			if(!!all_chats[i].message_thread_id) threadId = all_chats[i].message_thread_id;
 			opt.entities = obj.entities;
 			if(!!threadId) opt.message_thread_id = threadId;
 			if(Object.hasOwn(obj, 'link_preview_options'))
@@ -3149,14 +3153,18 @@ try{
 		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
 		let date = !!obj.date?obj.date:'';//запись даты
 		WriteLogFile(obj.type+' "Срочно" в очередь => день='+day+'; дата='+date+timestr);
-	 for(let i=0;i<chat_news.length;i++) 
+	 //соберем все чаты в новый массив
+	 let all_chats = [], keys = Object.keys(chat_news);
+	 for(let i=0;i<keys.length;i++)
+		for(let j=0;j<chat_news[keys[i]].length;j++) all_chats.push(chat_news[keys[i]][j]);
+	 for(let i=0;i<all_chats.length;i++) 
 	 {	try{
 		  let chatId = '', threadId = '';
-		  if(!!chat_news[i]) 
-		  {	let key = Object.keys(chat_news[i]);
-			if(!!chat_news[i][key[0]]) chatId = chat_news[i][key[0]];
+		  if(!!all_chats[i]) 
+		  {	let key = Object.keys(all_chats[i]);
+			if(!!all_chats[i][key[0]]) chatId = all_chats[i][key[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
-			if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+			if(!!all_chats[i].message_thread_id) threadId = all_chats[i].message_thread_id;
 			if(!!threadId) opt.message_thread_id = threadId;
 			while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 			if(Object.hasOwn(obj, 'type')) 
@@ -4054,13 +4062,17 @@ async function send_Images(now)
             if(Object.hasOwn(ImagesList[key], 'caption')) opt.caption = ImagesList[key].caption;
 			if(Object.hasOwn(ImagesList[key], 'caption_entities')) opt.caption_entities = ImagesList[key].caption_entities;
             if(Object.hasOwn(ImagesList[key], 'parse_mode')) opt.parse_mode = ImagesList[key].parse_mode;
+			//соберем все чаты в новый массив
+			let all_chats = [], keys = Object.keys(chat_news);
+			for(let i=0;i<keys.length;i++)
+				for(let j=0;j<chat_news[keys[i]].length;j++) all_chats.push(chat_news[keys[i]][j]);
 			//основной канал новостей
-			for(let i=0;i<chat_news.length;i++) 
+			for(let i=0;i<all_chats.length;i++) 
 			{	let chatId = '', threadId = '';
-				let name = Object.keys(chat_news[i]);
-				if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+				let name = Object.keys(all_chats[i]);
+				if(!!all_chats[i][name[0]]) chatId = all_chats[i][name[0]];
 				if(!chatId) continue;//пропускаем цикл, если нет chatId
-				if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+				if(!!all_chats[i].message_thread_id) threadId = all_chats[i].message_thread_id;
 				if(!!threadId) opt.message_thread_id = threadId;
 				let res;
 				if(!!ImagesList[key].type)
@@ -4209,13 +4221,17 @@ async function send_Text(now)
 			 if(Object.hasOwn(TextList[key].link_preview_options, 'is_disabled')) opt.disable_web_page_preview = true;
 			}
 			if(!!TextList[key].parse_mode) opt.parse_mode = TextList[key].parse_mode;
-            //основной канал новостей
-			for(let i=0;i<chat_news.length;i++) 
+            //соберем все чаты в новый массив
+			let all_chats = [], keys = Object.keys(chat_news);
+			for(let i=0;i<keys.length;i++)
+				for(let j=0;j<chat_news[keys[i]].length;j++) all_chats.push(chat_news[keys[i]][j]);
+			//основной канал новостей
+			for(let i=0;i<all_chats.length;i++) 
 			{	let chatId = '', threadId = '';
-				let name = Object.keys(chat_news[i]);
-				if(!!chat_news[i][name[0]]) chatId = chat_news[i][name[0]];
+				let name = Object.keys(all_chats[i]);
+				if(!!all_chats[i][name[0]]) chatId = all_chats[i][name[0]];
 				if(!chatId) continue;//пропускаем цикл, если нет chatId
-				if(!!chat_news[i].message_thread_id) threadId = chat_news[i].message_thread_id;
+				if(!!all_chats[i].message_thread_id) threadId = all_chats[i].message_thread_id;
 				if(!!threadId) opt.message_thread_id = threadId;
 				let res = await sendTextToBot(NewsBot, chatId, TextList[key].text, opt);
 				if(res===false) WriteLogFile('Не смог послать текст text "'+key+'"'+' в '+name[0]);
