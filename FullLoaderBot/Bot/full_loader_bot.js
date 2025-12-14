@@ -195,6 +195,18 @@ if(!timeCron)//всегда выполняется
 var Cron1 = cron.schedule(timeCron, async function() 
 {	if(rassilka)//если рассылка включена
 	{	//WriteLogFile('Начинаем стандартную Рассылку:');
+		//обновим список чатов
+		let obj = require(TokenDir+"/chatId.json");
+		if(Object.hasOwn(obj, 'chat_news'))
+		{	let num = Object.keys(obj.chat_news);
+			if(num.length>0)
+			{	for(let i in num) 
+				{	let parsed = parseInt(num[i], 10);
+					if(isNaN(parsed) || parsed.toString() !== num[i].replace(/^\+/, '')) delete obj.chat_news[num[i]];
+				}
+				chat_news = obj.chat_news;
+			}
+		}
 		//ежик
 		if(RunList.Eg===true) await send_Eg();
 		//расписание
@@ -3871,23 +3883,23 @@ async function send_Eg()
 			opt.parse_mode = "markdown"; opt.disable_web_page_preview = true;
 			while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 			let res = await sendTextToBot(NewsBot,chatId,eg,opt);
-			if(res===false) WriteLogFile('Не смог послать Ежик "'+' в '+name[0]);
+			if(res===false) await WriteLogFile('Не смог послать Ежик "'+' в '+name[0]);
 			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 			{	
 				if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
 				{
-					WriteLogFile(' '+res);
+					await WriteLogFile(' '+res);
 				}
 				else //ошибка от Ноды
 				{//можно послать сообщение админу в телегу
 					let obj = {}; obj.message = '';
 					if(Object.hasOwn(res, 'message')) obj.message = res.message;
-					WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
+					await WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
 				}
 			}
 			else 
 			{	good++;//если без ошибок
-				WriteLogFile('в '+name[0]+' = ОК');
+				await WriteLogFile('в '+name[0]+' = ОК');
 			}
 		  }catch(err){WriteLogFile(err+'\nfrom send_Eg()=>for()','вчат');}
 		}
@@ -3926,7 +3938,7 @@ async function send_Raspis()
 	async function go2public(chat)
 	{
 		let good = 0;
-		WriteLogFile('Рассылка Расписания в каналы через очередь:');
+		await WriteLogFile('Рассылка Расписания в каналы через очередь:');
 		let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 		for(let i=0;i<chat.length;i++) 
 		{  try{
@@ -3942,18 +3954,18 @@ async function send_Raspis()
 			{	
 				if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
 				{
-					WriteLogFile(' '+res);
+					await WriteLogFile(' '+res);
 				}
 				else //ошибка от Ноды
 				{//можно послать сообщение админу в телегу
 					let obj = {}; obj.message = '';
 					if(Object.hasOwn(res, 'message')) obj.message = res.message;
-					WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
+					await WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
 				}
 			}
 			else 
 			{	good++;//если без ошибок
-				WriteLogFile('в '+name[0]+' = ОК');
+				await WriteLogFile('в '+name[0]+' = ОК');
 			}
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis()=>for()','вчат');}
 		}
