@@ -4336,7 +4336,31 @@ queue.on('error', (error) => {WriteLogFile(error);});
 //queue.on('sent', (item) => {WriteLogFile(`Сообщение отправлено: ${item.id}`);});
 queue.on('failed', (item, error) => 
 {if(!!item.bot) delete item.bot;
- try{WriteLogFile('Ошибка отправки сообщения из очереди: '+error.message+'\n'+JSON.stringify(item,null,2));}catch(err){WriteLogFile('Не могу распарсить item из ошибки очереди');}
+ try
+ {	WriteLogFile('Ошибка отправки сообщения из очереди: '+error.message+'\n'+JSON.stringify(item,null,2));
+	if(error.message.includes('chat not found') && item.chatId)//левый чат в списке, удалим
+	{	let flag = 0;
+		let chatId = String(item.chatId);
+		Object.keys(chat_news || {}).forEach(key => 
+		{	if (Array.isArray(chat_news[key])) 
+			{	const originalLength = chat_news[key].length;
+                chat_news[key] = chat_news[key].filter(chatObj => 
+				{	// Проверяем все значения объекта
+                    const values = Object.values(chatObj || {});
+                    // Если ни одно значение не совпадает с chatId - оставляем объект
+                    return !values.some(value => String(value) === chatId);
+                });
+                if (chat_news[key].length !== originalLength) {flag++;}
+            }
+        });
+		if(flag)
+		{	let obj = require(TokenDir+"/chatId.json");
+			obj.chat_news = chat_news;
+			WriteFileJson(TokenDir+"/chatId.json",obj);
+			WriteLogFile('Чат '+chatId+' удален из списка чатов.');
+		}
+	}		
+ }catch(err){WriteLogFile('Не могу распарсить item из ошибки очереди');}
 });
 //queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 queue.on('connected', () => {WriteLogFile('=> bot connected');});
