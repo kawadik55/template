@@ -88,7 +88,10 @@ tokenNews = require(TokenDir+"/news_bot.json").token;
 		let num = Object.keys(obj.chat_news);
 		for(let i in num) 
 		{	let parsed = parseInt(num[i], 10);
-			if(isNaN(parsed) || parsed.toString() !== num[i].replace(/^\+/, '')) delete obj.chat_news[num[i]];
+			if(isNaN(parsed) || parsed.toString() !== num[i].replace(/^\+/, ''))
+			{	WriteLogFile('Ошибка: таймзона '+num[i]+' в chatId.json не распознана!');
+				delete obj.chat_news[num[i]];
+			}
 		}	
 		chat_news = obj.chat_news;
 	}
@@ -202,7 +205,10 @@ var Cron1 = cron.schedule(timeCron, async function()
 			if(num.length>0)
 			{	for(let i in num) 
 				{	let parsed = parseInt(num[i], 10);
-					if(isNaN(parsed) || parsed.toString() !== num[i].replace(/^\+/, '')) delete obj.chat_news[num[i]];
+					if(isNaN(parsed) || parsed.toString() !== num[i].replace(/^\+/, ''))
+					{	WriteLogFile('Ошибка: таймзона '+num[i]+' в chatId.json не распознана!');
+						delete obj.chat_news[num[i]];
+					}
 				}
 				chat_news = obj.chat_news;
 			}
@@ -3870,12 +3876,14 @@ async function send_Eg()
 	
 	async function go2public(chat)
 	{
+		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		let good = 0;
 		WriteLogFile('Рассылка Ежика в каналы через очередь:');
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
 			let chatId = '', threadId = '', opt = {};
-			let name = Object.keys(chat[i]);
+			let name = (chat[i] && typeof chat[i] === 'object') ? Object.keys(chat[i]) : [];
+			if(name.length==0) continue;
 			if(!!chat[i][name[0]]) chatId = chat[i][name[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
 			if(!!chat[i].message_thread_id) threadId = chat[i].message_thread_id;
@@ -3937,13 +3945,15 @@ async function send_Raspis()
 		
 	async function go2public(chat)
 	{
+		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		let good = 0;
 		await WriteLogFile('Рассылка Расписания в каналы через очередь:');
 		let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 		for(let i=0;i<chat.length;i++) 
 		{  try{
 			let chatId = '', threadId = '';
-			let name = Object.keys(chat[i]);
+			let name = (chat[i] && typeof chat[i] === 'object') ? Object.keys(chat[i]) : [];
+			if(name.length==0) continue;
 			if(!!chat[i][name[0]]) chatId = chat[i][name[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
 			if(!!chat[i].message_thread_id) threadId = chat[i].message_thread_id;
@@ -4357,7 +4367,7 @@ function getAllChats()
 {
 	let obj = chat_news;
 	let all_chats = [];
-	let keys = Object.keys(obj);//смещения
+	let keys = (obj && typeof obj === 'object') ? Object.keys(obj) : [];//смещения
 	if(keys.length==0) return all_chats;
 	for(let i=0;i<keys.length;i++)
 	{	let chats = obj[keys[i]];//массив объектов чатов
