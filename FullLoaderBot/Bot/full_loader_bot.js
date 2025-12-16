@@ -3871,14 +3871,14 @@ async function send_Eg()
 		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 		for(let i=0;i<offset.length;i++)
 		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
-			if(userHour===publicHour) go2public(chat_news[offset[i]]);//передаем массив объектов
+			if(userHour===publicHour) go2public(chat_news[offset[i]],offset[i]);//передаем массив объектов
 		}
 	
-	async function go2public(chat)
+	async function go2public(chat,groffset)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		let good = 0;
-		WriteLogFile('Рассылка Ежика в каналы через очередь:');
+		WriteLogFile('Рассылка Ежика в каналы '+groffset+' через очередь:');
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
 			let chatId = '', threadId = '', opt = {};
@@ -3891,7 +3891,7 @@ async function send_Eg()
 			opt.parse_mode = "markdown"; opt.disable_web_page_preview = true;
 			while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 			let res = await sendTextToBot(NewsBot,chatId,eg,opt);
-			if(res===false) await WriteLogFile('Не смог послать Ежик "'+' в '+name[0]);
+			if(res===false) await WriteLogFile('Не смог послать Ежик в '+name[0]);
 			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 			{	
 				if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
@@ -3940,14 +3940,14 @@ async function send_Raspis()
 		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 		for(let i=0;i<offset.length;i++)
 		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
-			if(userHour===publicHour) go2public(chat_news[offset[i]]);//передаем массив объектов
+			if(userHour===publicHour) go2public(chat_news[offset[i]],offset[i]);//передаем массив объектов
 		}
 		
-	async function go2public(chat)
+	async function go2public(chat,groffset)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		let good = 0;
-		await WriteLogFile('Рассылка Расписания в каналы через очередь:');
+		await WriteLogFile('Рассылка Расписания в каналы '+groffset+' через очередь:');
 		let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 		for(let i=0;i<chat.length;i++) 
 		{  try{
@@ -3959,7 +3959,7 @@ async function send_Raspis()
 			if(!!chat[i].message_thread_id) threadId = chat[i].message_thread_id;
 			if(!!threadId) opt.message_thread_id = threadId;
 			let res = await sendTextToBot(NewsBot,chatId,raspis,opt);
-			if(res===false) WriteLogFile('Не смог послать Расписание "'+' в '+name[0]);
+			if(res===false) WriteLogFile('Не смог послать Расписание в '+name[0]);
 			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 			{	
 				if(res.code.indexOf('ETELEGRAM')+1)//ошибка от Телеги 
