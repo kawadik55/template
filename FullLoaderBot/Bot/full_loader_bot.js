@@ -3321,27 +3321,21 @@ function setContextFiles()
 	}
 	//config.json
 		if(!fs.existsSync(currentDir+'/config.json')) 
-		{	obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru", obj.Supervisor='123456';
-			WriteFileJson(currentDir+'/config.json',obj);
+		{	if(fs.existsSync(cBot+'/config.json')) {fs.copyFileSync(cBot+'/config.json',currentDir+'/config.json');}
+			else
+			{	let obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru", obj.Supervisor='123456';
+				WriteFileJson(currentDir+'/config.json',obj);
+			}
 		}
 		if(fs.existsSync(currentDir+'/config.json'))//если файл уже имеется
 		{	let obj;
 			try{obj = JSON.parse(fs.readFileSync(currentDir+'/config.json'));}catch(err){console.log(err);}
 			if(typeof obj !== 'object')
-			{obj={}; 
-			 obj.area = "НашаМестность";
-			 obj.timePablic = "06:00:00";
-			 obj.forDate = [3,0];
-			 obj.lifeTime = 180;
-			 obj.rassilka = true;
-			 obj.hostingImg = false;
-			 obj.pathHostingImg = "/../www/img";
-			 obj.hostname = "https://vps.server.ru";
-			 obj.Supervisor='123456';
-			 obj.chat_news = {"+180":[]};
-			 obj.chat_news['+180'].push({'ИмяКанала':'chatID канала',message_thread_id:''});
-			 obj.chat_news['+180'].push({'СколькоХочешь':'может быть каналов',message_thread_id:''});
-			 WriteFileJson(currentDir+'/config.json',obj);
+			{if(fs.existsSync(cBot+'/config.json')) {fs.copyFileSync(cBot+'/config.json',currentDir+'/config.json');}
+			 else
+			 {	obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru", obj.Supervisor='123456';
+				WriteFileJson(currentDir+'/config.json',obj);
+			 }
 			}
 			if(!Object.hasOwn(obj,'rassilka')) {obj.rassilka = true; WriteFileJson(currentDir+'/config.json',obj);}
 			if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+'/config.json',obj);}
