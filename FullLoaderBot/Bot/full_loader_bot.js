@@ -61,13 +61,13 @@ if(!!config.pathHostingImg) PathToHostImg = currentDir+config.pathHostingImg;
 if(!!config.hostname) hostname = config.hostname;
 setTimezoneByOffset(utcOffset);//устанавливаем локальную таймзону
 
-const chat_Supervisor = require(TokenDir+"/chatId.json").Supervisor;//пользователь 'Supervisor'
 // выбор токена
 let tokenLoader = '', tokenNews = '', chat_news = {};
 tokenLoader = require(TokenDir+"/loader_bot.json").token;
 var namebot = 'unnown';
 try{namebot = require(TokenDir+"/loader_bot.json").comment;}catch(err){console.log(err);}//юзернейм бота
 tokenNews = require(TokenDir+"/news_bot.json").token;
+
 //Загрузим ID новостных каналов
 (async () => 
 {try{
@@ -103,9 +103,21 @@ tokenNews = require(TokenDir+"/news_bot.json").token;
   chat_news[str].push({'имяГруппы':'-12345','message_thread_id':''});
   obj.chat_news = chat_news;
   WriteFileJson(TokenDir+"/chatId.json",obj);
- } 
+ }
+ 
+ if(Object.hasOwn(obj, 'Supervisor'))//перенесем это поле в конфиг
+ {	chat_Supervisor = obj.Supervisor;
+	delete obj.Supervisor;
+	WriteFileJson(TokenDir+"/chatId.json",obj);
+	config.Supervisor = chat_Supervisor;
+	WriteFileJson(currentDir+"/config.json",config);
+ }
  }catch(err) {WriteLogFile(err);} 
 })();
+
+//пользователь 'Supervisor'
+const chat_Supervisor = (config && config.Supervisor) ? config.Supervisor : '1234';
+if(chat_Supervisor==='1234') {WriteLogFile('Отсутствует chat_Supervisor');}
 
 const LoaderBot = new TelegramBot(tokenLoader, {polling: true});
 const NewsBot = new TelegramBot(tokenNews, {polling: false});//этот без поллинга
