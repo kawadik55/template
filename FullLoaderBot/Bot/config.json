@@ -10,5 +10,17 @@
   "hostingImg": false,
   "pathHostingImg": "/../www/img",
   "hostname":"https://vps.na-serv.ru",
-  "Supervisor":"123456"
+  "Supervisor":"123456",
+  "chat_news": {
+    "+180": [
+      {
+        "ИмяКанала": "chatID канала",
+        "message_thread_id": ""
+      },
+      {
+        "СколькоХочешь": "может быть каналов",
+        "message_thread_id": ""
+      }
+    ]
+  }
 }
