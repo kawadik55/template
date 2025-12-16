@@ -1,13 +1,14 @@
 {
-  "area": "АН местности Поволжья",
+  "area": "АН местности Поволжье",
   "timePablic": "06:00:00",
   "forDate": [
     3,
     0
   ],
-  "lifeTime": 180,
+  "lifeTime": 365,
   "rassilka": true,
   "hostingImg": false,
   "pathHostingImg": "/../www/img",
-  "hostname":"https://vps.na-ufa.ru"
+  "hostname":"https://vps.na-serv.ru",
+  "Supervisor":"123456"
 }

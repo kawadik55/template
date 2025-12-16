@@ -102,8 +102,8 @@ docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --res
 -e "NAME_LOG=это_лог_bot или как хотите" \
 -e "TOKEN_NEWS=токен новостного бота, как есть" \
 -e "NAME_NEWS=это_news_bot или как хотите" \
--e 'CONFIG_OBJ={"area":"Название вашей местности","timePablic":"06:00:00","forDate":[3,1,0],"lifeTime":"180","rassilka":true,"utcOffset":"+180"}' \
--e 'CHAT_NEWS_OBJ=[{"Ваш канал в телеграме":"-1234567890","message_thread_id":"если нужен"}]' \
+-e 'CONFIG_OBJ={"area":"Название вашей местности","timePablic":"06:00:00","forDate":[3,1,0],"lifeTime":"180","rassilka":true,"utcOffset":"+180","Supervisor":"chatId_Супервизора"}' \
+-e 'CHAT_NEWS_OBJ={"+180(смещениезонывминутах)":[{"Ваш канал в телеграме":"-1234567890","message_thread_id":"если нужен"}]}' \
 -e 'BUTTONS_OBJ={"reply_markup":{ "inline_keyboard":[[{"text": "Духовные принципы на каждый день", "url": "https://t.me/+a8HO46bHu8MwZjZk"}]]}}' \
 -e 'RUN_OBJ={"Text": true,"Image": true,"Eg": true,"Raspis": true,"FileEg":"/../Rassilka/eg.txt","FileRaspis":"/../Rassilka/raspis.txt"}' \
 --user "$(id -u):$(id -g)" kawadiyk/fullloaderbot:latest ./full_loader_bot

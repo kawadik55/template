@@ -51,7 +51,7 @@ try{config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
 	if(!config.lifeTime) {config.lifeTime = lifeTime; WriteFileJson(currentDir+"/config.json",config);}
 	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
 }catch(err)
-{config = {"area":area, "timePablic":timePablic, "utcOffset":String(utcOffset), "forDate":forDate, "lifeTime":lifeTime, "rassilka":rassilka, "hostingImg":hostingImg, "pathHostingImg":"/../www/img", "hostname":"https://vps.na-ufa.ru"};
+{config = {"area":area, "timePablic":timePablic, "utcOffset":String(utcOffset), "forDate":forDate, "lifeTime":lifeTime, "rassilka":rassilka, "hostingImg":hostingImg, "pathHostingImg":"/../www/img", "hostname":"https://vps.na-ufa.ru", "Supervisor":"1234567"};
  WriteFileJson(currentDir+"/config.json",config);
 }
 if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset','вчат');}
@@ -68,6 +68,10 @@ var namebot = 'unnown';
 try{namebot = require(TokenDir+"/loader_bot.json").comment;}catch(err){console.log(err);}//юзернейм бота
 tokenNews = require(TokenDir+"/news_bot.json").token;
 
+//пользователь 'Supervisor'
+var chat_Supervisor = (config && !config.Supervisor) ? config.Supervisor : '1234';
+if(chat_Supervisor==='1234') {WriteLogFile('Отсутствует chat_Supervisor в конфиге');}
+
 //Загрузим ID новостных каналов
 (async () => 
 {try{
@@ -79,7 +83,7 @@ tokenNews = require(TokenDir+"/news_bot.json").token;
 		if(Object.keys(chat_news).length > 0)
 		{	obj.chat_news = {};
 			obj.chat_news = chat_news;
-			WriteFileJson(TokenDir+"/chatId.json",obj);
+			await WriteFileJson(TokenDir+"/chatId.json",obj);
 		}
 		else {WriteLogFile('Ошибка: список чатов пустой!');}
 	}
@@ -102,22 +106,19 @@ tokenNews = require(TokenDir+"/news_bot.json").token;
   chat_news[str]=[];
   chat_news[str].push({'имяГруппы':'-12345','message_thread_id':''});
   obj.chat_news = chat_news;
-  WriteFileJson(TokenDir+"/chatId.json",obj);
+  await WriteFileJson(TokenDir+"/chatId.json",obj);
  }
  
  if(Object.hasOwn(obj, 'Supervisor'))//перенесем это поле в конфиг
  {	chat_Supervisor = obj.Supervisor;
 	delete obj.Supervisor;
-	WriteFileJson(TokenDir+"/chatId.json",obj);
+	await WriteFileJson(TokenDir+"/chatId.json",obj);
 	config.Supervisor = chat_Supervisor;
-	WriteFileJson(currentDir+"/config.json",config);
+	await WriteFileJson(currentDir+"/config.json",config);
+	WriteLogFile('chat_Supervisor загружен из chatId.json и перенесен в конфиг');
  }
  }catch(err) {WriteLogFile(err);} 
 })();
-
-//пользователь 'Supervisor'
-const chat_Supervisor = (config && config.Supervisor) ? config.Supervisor : '1234';
-if(chat_Supervisor==='1234') {WriteLogFile('Отсутствует chat_Supervisor');}
 
 const LoaderBot = new TelegramBot(tokenLoader, {polling: true});
 const NewsBot = new TelegramBot(tokenNews, {polling: false});//этот без поллинга
@@ -3316,18 +3317,19 @@ function setContextFiles()
 	}
 	//config.json
 		if(!fs.existsSync(currentDir+'/config.json')) 
-		{	obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru";
+		{	obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru", obj.Supervisor='123456';
 			WriteFileJson(currentDir+'/config.json',obj);
 		}
 		if(fs.existsSync(currentDir+'/config.json'))//если файл уже имеется
 		{	let obj;
 			try{obj = JSON.parse(fs.readFileSync(currentDir+'/config.json'));}catch(err){console.log(err);}
 			if(typeof(obj) !== 'object')
-			{obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru";
+			{obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru", obj.Supervisor='123456';
 			 WriteFileJson(currentDir+'/config.json',obj);
 			}
 			if(!Object.hasOwn(obj,'rassilka')) {obj.rassilka = true; WriteFileJson(currentDir+'/config.json',obj);}
 			if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+'/config.json',obj);}
+			if(!Object.hasOwn(obj,'Supervisor')) {obj.Supervisor = '123456'; WriteFileJson(currentDir+'/config.json',obj);}
 			//если запрошено изменение конфига в ENV
 			if(!!CONFIG_OBJ) 
 			{	let mas;
@@ -3341,6 +3343,8 @@ function setContextFiles()
 				 }catch(err){WriteLogFile('Ошибка в объекте CONFIG_OBJ');}
 				}
 			}
+			//если запрошено изменение чатайди супера в ENV
+			if(!!SUPERVISOR) {obj.Supervisor = SUPERVISOR; WriteFileJson(currentDir+'/config.json',obj);}
 		}
 	//button.txt
 		if(!fs.existsSync(currentDir+'/buttons.txt')) {WriteFileJson(currentDir+'/buttons.txt',{});}
@@ -3388,25 +3392,22 @@ function setContextFiles()
 	//chatId.json	
 		if(!fs.existsSync(TokenDir+'/chatId.json'))
 		{	let obj = {};
-			obj.Supervisor = "123456789";
-			obj.chat_news = [];
-			obj.chat_news.push({'ИмяКанала':'chatID канала',message_thread_id:''});
-			obj.chat_news.push({'СколькоХочешь':'может быть каналов',message_thread_id:''});
+			obj.chat_news = {"+180":[]};
+			obj.chat_news['+180'].push({'ИмяКанала':'chatID канала',message_thread_id:''});
+			obj.chat_news['+180'].push({'СколькоХочешь':'может быть каналов',message_thread_id:''});
 			WriteFileJson(TokenDir+'/chatId.json',obj);
 		}
 		if(fs.existsSync(TokenDir+'/chatId.json'))//если файл уже имеется.
 		{	let obj = {};
 			try{obj = JSON.parse(fs.readFileSync(TokenDir+"/chatId.json"));}catch(err){obj = {};}
-			if(typeof(obj) != 'object' || Object.keys(obj).length === 0) {obj={}; obj.Supervisor="123456789"; WriteFileJson(TokenDir+'/chatId.json',obj);}
-			if(!obj.Supervisor) {obj.Supervisor = "123456789"; WriteFileJson(TokenDir+'/chatId.json',obj);}
+			if(typeof(obj) != 'object' || Object.keys(obj).length === 0) {obj={};}
 			if(!obj.chat_news) 
-			{obj.chat_news = [];
-			 obj.chat_news.push({'ИмяКанала':'chatID канала',message_thread_id:''});
-			 obj.chat_news.push({'СколькоХочешь':'может быть каналов',message_thread_id:''});
+			{obj.chat_news = {"chat_news":{"+180":[]}};
+			 obj.chat_news['+180'].push({'ИмяКанала':'chatID канала',message_thread_id:''});
+			 obj.chat_news['+180'].push({'СколькоХочешь':'может быть каналов',message_thread_id:''});
 			 WriteFileJson(TokenDir+'/chatId.json',obj);
 			}
-			//если запрошено изменение чатайди супера в ENV
-			if(!!SUPERVISOR) {obj.Supervisor = SUPERVISOR; WriteFileJson(TokenDir+'/chatId.json',obj);}
+			
 			//если запрошено изменение chatId каналов
 			if(!!CHAT_NEWS_OBJ)
 			{	let mas;
