@@ -7,7 +7,7 @@ const { execFile } = require('child_process');
 const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const PathToImages = currentDir+'/images';//путь к файлам на выполнение
+const PathToImages = currentDir+'/images';//путь к файлам на выполнение.
 const PathToImagesModer = currentDir+'/moder';//путь к файлам на выполнение
 const FileUserList = currentDir+"/UserList.txt";//имя файла белого листа
 const FileBlackList = currentDir+"/BlackList.txt";//имя файла черного листа
@@ -69,13 +69,26 @@ try{namebot = require(TokenDir+"/loader_bot.json").comment;}catch(err){console.l
 tokenNews = require(TokenDir+"/news_bot.json").token;
 
 //пользователь 'Supervisor'
-var chat_Supervisor = (config && !config.Supervisor) ? config.Supervisor : '1234';
+var chat_Supervisor = (config && config.Supervisor) ? config.Supervisor : '1234';
 if(chat_Supervisor==='1234') {WriteLogFile('Отсутствует chat_Supervisor в конфиге');}
 
-//Загрузим ID новостных каналов
-(async () => 
-{try{
- let obj = require(TokenDir+"/chatId.json");
+//список чатов
+chat_news = (config && config.chat_news) ? config.chat_news : {};
+if(Object.keys(chat_news).length==0) {WriteLogFile('Отсутствует chat_news в конфиге');}
+
+//Загрузим ID новостных каналов из старого файла
+(async () => { 
+ try{
+ let obj = fs.existsSync(TokenDir+"/chatId.json") ? require(TokenDir+"/chatId.json") : {};
+ if(Object.hasOwn(obj, 'Supervisor'))//перенесем это поле в конфиг
+ {	chat_Supervisor = obj.Supervisor;
+	delete obj.Supervisor;
+	await WriteFileJson(TokenDir+"/chatId.json",obj);
+	config.Supervisor = chat_Supervisor;
+	await WriteFileJson(currentDir+"/config.json",config);
+	WriteLogFile('chat_Supervisor загружен из chatId.json и перенесен в конфиг');
+ }
+ 
  if(Object.hasOwn(obj, 'chat_news'))
  {	if(Array.isArray(obj.chat_news))//если массив 
 	{	let arr = [...obj.chat_news];
@@ -100,22 +113,13 @@ if(chat_Supervisor==='1234') {WriteLogFile('Отсутствует chat_Supervis
 		chat_news = obj.chat_news;
 	}
 	else {WriteLogFile('Ошибка: список чатов пустой!');}
- }
- else 
- {let str = (utcOffset>0) ? ('+'+utcOffset) : String(utcOffset);
-  chat_news[str]=[];
-  chat_news[str].push({'имяГруппы':'-12345','message_thread_id':''});
-  obj.chat_news = chat_news;
-  await WriteFileJson(TokenDir+"/chatId.json",obj);
- }
- 
- if(Object.hasOwn(obj, 'Supervisor'))//перенесем это поле в конфиг
- {	chat_Supervisor = obj.Supervisor;
-	delete obj.Supervisor;
-	await WriteFileJson(TokenDir+"/chatId.json",obj);
-	config.Supervisor = chat_Supervisor;
+	//перенесем это поле в конфиг
+	chat_news = obj.chat_news;
+	delete obj.chat_news;
+	fs.unlinkSync(TokenDir+"/chatId.json");//удаляем файл за ненадобностью
+	config.chat_news = chat_news;
 	await WriteFileJson(currentDir+"/config.json",config);
-	WriteLogFile('chat_Supervisor загружен из chatId.json и перенесен в конфиг');
+	WriteLogFile('chat_news загружен из chatId.json и перенесен в конфиг');
  }
  }catch(err) {WriteLogFile(err);} 
 })();
@@ -212,7 +216,7 @@ var Cron1 = cron.schedule(timeCron, async function()
 {	if(rassilka)//если рассылка включена
 	{	//WriteLogFile('Начинаем стандартную Рассылку:');
 		//обновим список чатов
-		let obj = require(TokenDir+"/chatId.json");
+		let obj = require(currentDir+"/config.json");
 		if(Object.hasOwn(obj, 'chat_news'))
 		{	let num = Object.keys(obj.chat_news);
 			if(num.length>0)
@@ -3323,20 +3327,38 @@ function setContextFiles()
 		if(fs.existsSync(currentDir+'/config.json'))//если файл уже имеется
 		{	let obj;
 			try{obj = JSON.parse(fs.readFileSync(currentDir+'/config.json'));}catch(err){console.log(err);}
-			if(typeof(obj) !== 'object')
-			{obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru", obj.Supervisor='123456';
+			if(typeof obj !== 'object')
+			{obj={}; 
+			 obj.area = "НашаМестность";
+			 obj.timePablic = "06:00:00";
+			 obj.forDate = [3,0];
+			 obj.lifeTime = 180;
+			 obj.rassilka = true;
+			 obj.hostingImg = false;
+			 obj.pathHostingImg = "/../www/img";
+			 obj.hostname = "https://vps.server.ru";
+			 obj.Supervisor='123456';
+			 obj.chat_news = {"+180":[]};
+			 obj.chat_news['+180'].push({'ИмяКанала':'chatID канала',message_thread_id:''});
+			 obj.chat_news['+180'].push({'СколькоХочешь':'может быть каналов',message_thread_id:''});
 			 WriteFileJson(currentDir+'/config.json',obj);
 			}
 			if(!Object.hasOwn(obj,'rassilka')) {obj.rassilka = true; WriteFileJson(currentDir+'/config.json',obj);}
 			if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+'/config.json',obj);}
 			if(!Object.hasOwn(obj,'Supervisor')) {obj.Supervisor = '123456'; WriteFileJson(currentDir+'/config.json',obj);}
+			if(!obj.chat_news) 
+			{obj.chat_news = {"+180":[]};
+			 obj.chat_news['+180'].push({'ИмяКанала':'chatID канала',message_thread_id:''});
+			 obj.chat_news['+180'].push({'СколькоХочешь':'может быть каналов',message_thread_id:''});
+			 WriteFileJson(currentDir+'/config.json',obj);
+			}
 			//если запрошено изменение конфига в ENV
 			if(!!CONFIG_OBJ) 
 			{	let mas;
 				try{mas = JSON.parse(CONFIG_OBJ);}catch(err){console.log(err); mas = '';}
 				if(!mas) WriteLogFile('CONFIG_OBJ - не объект');
 				else 
-				{try{	if(!!mas.area && !!mas.timePablic && !!mas.forDate && !!mas.lifeTime) 
+				{try{	if(!!mas.area && !!mas.timePablic && !!mas.forDate && !!mas.lifeTime && !!mas.chat_news) 
 						{	if(typeof(mas.forDate) != 'object') {mas.forDate = [3,0]; WriteLogFile('Ошибка в объекте CONFIG_OBJ.forDate');}
 							WriteFileJson(currentDir+'/config.json',mas);
 						}
@@ -3387,33 +3409,6 @@ function setContextFiles()
 				{	if(Object.hasOwn(mas,'Text') && Object.hasOwn(mas,'Image') && Object.hasOwn(mas,'Eg') && Object.hasOwn(mas,'Raspis') && !!mas.FileEg && !!mas.FileRaspis)
 					WriteFileJson(currentDir+'/run.txt',mas);
 				}
-			}
-		}
-	//chatId.json	
-		if(!fs.existsSync(TokenDir+'/chatId.json'))
-		{	let obj = {};
-			obj.chat_news = {"+180":[]};
-			obj.chat_news['+180'].push({'ИмяКанала':'chatID канала',message_thread_id:''});
-			obj.chat_news['+180'].push({'СколькоХочешь':'может быть каналов',message_thread_id:''});
-			WriteFileJson(TokenDir+'/chatId.json',obj);
-		}
-		if(fs.existsSync(TokenDir+'/chatId.json'))//если файл уже имеется.
-		{	let obj = {};
-			try{obj = JSON.parse(fs.readFileSync(TokenDir+"/chatId.json"));}catch(err){obj = {};}
-			if(typeof(obj) != 'object' || Object.keys(obj).length === 0) {obj={};}
-			if(!obj.chat_news) 
-			{obj.chat_news = {"chat_news":{"+180":[]}};
-			 obj.chat_news['+180'].push({'ИмяКанала':'chatID канала',message_thread_id:''});
-			 obj.chat_news['+180'].push({'СколькоХочешь':'может быть каналов',message_thread_id:''});
-			 WriteFileJson(TokenDir+'/chatId.json',obj);
-			}
-			
-			//если запрошено изменение chatId каналов
-			if(!!CHAT_NEWS_OBJ)
-			{	let mas;
-				try{mas = JSON.parse(CHAT_NEWS_OBJ);}catch(err){mas = '';}
-				if(!mas) WriteLogFile('Кривой объект в CHAT_NEWS_OBJ');
-				else {obj.chat_news = mas; WriteFileJson(TokenDir+'/chatId.json',obj);}
 			}
 		}
 	//файл токена лог бота
