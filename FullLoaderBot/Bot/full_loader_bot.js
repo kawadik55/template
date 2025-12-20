@@ -3863,23 +3863,34 @@ function getTimeStr() {return moment().format('DD-MM-YY HH:mm:ss:ms ');}
 //посылает Ежик всегда в markdown
 async function send_Eg()
 { try
-  {		let eg = '';
-		if(fs.existsSync(FileEg)) eg = fs.readFileSync(FileEg).toString();
-		if(!eg) {WriteLogFile(getTimeStr()+'файл с ежиком отсутствует'); return;}
-		
+  {		if(!fs.existsSync(FileEg)) {WriteLogFile(getTimeStr()+'файл с ежиком отсутствует'); return;}
 		let offset = Object.keys(chat_news);//массив смещений строками
 		if(offset.length==0) {console.log('offset.length='+offset.length); return;}
 		let now = moment();
 		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 		for(let i=0;i<offset.length;i++)
 		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
-			if(userHour===publicHour) go2public(chat_news[offset[i]],offset[i]);//передаем массив объектов
+			if(userHour===publicHour) go2public(chat_news[offset[i]],offset[i],now);//передаем массив чатов
 		}
 	
-	async function go2public(chat,groffset)
+	async function go2public(chat,groffset,parnow)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
-		let good = 0;
+		//вычислим нужный файл Ежика по локальному времени группы чатов
+		let refpath = FileEg;//путь по-умолчанию
+		const userTime = getUserDateTime(parnow, Number(groffset)).startOf('day');//дата группы чатов
+		const todayDate = getEgDateTime(refpath).startOf('day'); //дата Ежика на сегодня
+		const diffDays = todayDate.diff(userTime, 'days');//разница в днях
+		if(diffDays > 0)
+		{	const yesterdayPath = path.join(path.dirname(refpath), 'yesterday_' + path.basename(refpath));//с префиксом вчера
+			if(fs.existsSync(yesterdayPath)) refpath = yesterdayPath;
+		}
+		else if(diffDays < 0)
+		{	const tomorrowPath = path.join(path.dirname(refpath), 'tomorrow_' + path.basename(refpath));//с префиксом завтра
+			if(fs.existsSync(tomorrowPath)) refpath = tomorrowPath;
+		}		
+		let eg = (await fs.promises.readFile(refpath)).toString();//получаем "сегодняшний" для юзера Ежик
+		
 		WriteLogFile('Рассылка Ежика в каналы '+groffset+' через очередь:');
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
@@ -3907,10 +3918,8 @@ async function send_Eg()
 					await WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
 				}
 			}
-			else 
-			{	good++;//если без ошибок
-				await WriteLogFile('в '+name[0]+' = ОК');
-			}
+			else await WriteLogFile('в '+name[0]+' = ОК');
+
 		  }catch(err){WriteLogFile(err+'\nfrom send_Eg()=>for()','вчат');}
 		}
 	}
@@ -3942,13 +3951,12 @@ async function send_Raspis()
 		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 		for(let i=0;i<offset.length;i++)
 		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
-			if(userHour===publicHour) go2public(chat_news[offset[i]],offset[i]);//передаем массив объектов
+			if(userHour===publicHour) go2public(chat_news[offset[i]],offset[i]);//передаем массив чатов
 		}
 		
 	async function go2public(chat,groffset)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
-		let good = 0;
 		await WriteLogFile('Рассылка Расписания в каналы '+groffset+' через очередь:');
 		let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 		for(let i=0;i<chat.length;i++) 
@@ -3975,10 +3983,8 @@ async function send_Raspis()
 					await WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
 				}
 			}
-			else 
-			{	good++;//если без ошибок
-				await WriteLogFile('в '+name[0]+' = ОК');
-			}
+			else await WriteLogFile('в '+name[0]+' = ОК');
+
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis()=>for()','вчат');}
 		}
 	}
@@ -4401,6 +4407,21 @@ function getAllChats()
 		for(let j=0;j<chats.length;j++) all_chats.push(chats[j]);
 	}
 	return all_chats;
+}
+//====================================================================
+//возвращает таймстамп файла Ежика на сегодня в формате moment()
+function getEgDateTime(refpath)
+{	let now = moment();//по-умолчанию
+	if(!fs.existsSync(refpath)) {WriteLogFile('getEgDateTime(refPath) - некорректный путь = '+refpath); return now;}
+	const timestampPath = path.join(path.dirname(refpath), 'timestamp.json');//к файлу с unixtimestamp
+	if(fs.existsSync(timestampPath))
+	{	try {const obj = JSON.parse(fs.readFileSync(timestampPath));
+			if(!!obj.UnixTime) now = moment.unix(obj.UnixTime);//дата/время создания файла Ежика
+		} 
+		catch (err) {console.log(err);}
+	}
+
+	return now;
 }
 //====================================================================
 
