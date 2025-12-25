@@ -24,7 +24,6 @@ const FileRun = currentDir+'/run.txt';//файл со списком запус�
 const FileButtons = currentDir+'/buttons.txt';//файл с кнопками
 var FileEg = 	currentDir+'/../Raspis/eg.txt';//файл с ежиком
 var FileRaspis = currentDir+'/../Raspis/raspis.txt';//файл с расписанием на день
-const QUEUELIMIT = 200;//ограничение макс размера очереди
 const smilik = '¯\\_(ツ)_/¯';
 const PathToLog = currentDir+'/../log';//путь к логам
 const LOGGING = true;//включение/выключение записи лога в файл
@@ -53,11 +52,13 @@ try{config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
 	if(!config.lifeTime) {config.lifeTime = lifeTime; WriteFileJson(currentDir+"/config.json",config);}
 	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
 }catch(err)
-{config = {"area":area, "timePablic":timePablic, "utcOffset":String(utcOffset), "forDate":forDate, "lifeTime":lifeTime, "rassilka":rassilka, "hostingImg":hostingImg, "pathHostingImg":"/../www/img", "hostname":"https://vps.na-ufa.ru", "Supervisor":"1234567"};
+{config = {"area":area, "timePablic":timePablic, "utcOffset":String(utcOffset), "forDate":forDate, "lifeTime":lifeTime, "rassilka":rassilka, "hostingImg":hostingImg, "pathHostingImg":"/../www/img", "hostname":"https://vps.na-server.ru", "Supervisor":"1234567", "queuelimit":200};
  WriteFileJson(currentDir+"/config.json",config);
 }
 if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset','вчат');}
 area = config.area; timePablic = config.timePablic; utcOffset = Number(config.utcOffset); forDate = config.forDate; lifeTime = config.lifeTime; rassilka = config.rassilka; 
+const QUEUELIMIT = config.queuelimit ? Number(config.queuelimit) : 200;//ограничение макс размера очереди
+if(!config.queuelimit) {config.queuelimit = QUEUELIMIT; WriteFileJson(currentDir+"/config.json",config);}
 if(!!config.hostingImg) hostingImg = config.hostingImg;
 if(!!config.pathHostingImg) PathToHostImg = currentDir+config.pathHostingImg;
 if(!!config.hostname) hostname = config.hostname;
@@ -94,7 +95,7 @@ if(config && config.chat_news)
             if (chatObj && typeof chatObj === 'object')
 			{	// Добавляем только если ключ не существует
                 if (!chatObj.hasOwnProperty('Eg')) chatObj.Eg = true;
-                if (!chatObj.hasOwnProperty('News')) chatObj.News = false;
+                if (!chatObj.hasOwnProperty('News')) chatObj.News = true;
             }
         }
     }
