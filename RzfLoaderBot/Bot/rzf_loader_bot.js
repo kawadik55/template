@@ -252,7 +252,7 @@ var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
 		let offset = Object.keys(chat_news).length>0 ? Object.keys(chat_news) :[];
 		//публикуем тексты
 		if(RunList.Text===true) 
-		{	for(let i=0;i<offset.length;i++) {WriteLogFile(offset[i]); await send_Text(now, offset[i]);}
+		{	for(let i=0;i<offset.length;i++) {await send_Text(now, offset[i]);}
 		}
 		//публикуем фото и пр
 		if(RunList.Image===true)
@@ -4195,11 +4195,8 @@ async function send_Text(now,offset)
 	let made = 0;
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	if(!now || now.isValid()==false) now = moment();//проверяем
-	WriteLogFile('now = '+now.format('DD.MM.YYYY HH:mm:ss'));
-	WriteLogFile('timepublic = '+timepublic.format('DD.MM.YYYY HH:mm:ss'));
 	//читаем список
 	let dayzone = now.clone().utcOffset(Number(offset),true).startOf('day');//текущий день в зоне
-	WriteLogFile('dayzone = '+dayzone.format('DD.MM.YYYY HH:mm:ss'));
 	for(let key in TextList)
 	{   try{  
 		  let date = TextList[key].date;//запись даты
@@ -4208,7 +4205,6 @@ async function send_Text(now,offset)
 		  if(Object.hasOwn(TextList[key], 'time') && !!TextList[key].time)
 		  {	if(moment(TextList[key].time, 'HH:mm').isValid()) 
 			{	timeobj = getDateTimeForZone(TextList[key].time, offset);//приводим к местному времени
-				WriteLogFile('timeobj = '+timeobj.format('DD.MM.YYYY HH:mm:ss'));
 			}
 		  }
           let flag = 0;
@@ -4266,7 +4262,6 @@ async function send_Text(now,offset)
 				//иначе публикуем во время timeobj
 				else sec = now.diff(timeobj, 'seconds');//разница в секундах
 				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
-				WriteLogFile('sec = '+sec);
 			}
           }
 		  let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
