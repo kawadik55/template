@@ -249,7 +249,7 @@ var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
 {	if(rassilka)//если рассылка включена
 	{	let now = moment();
 		now = now.subtract(10, 'seconds');//приводим к 0 сек
-		let offset = Object.keys(chat_news)>0 ? Object.keys(chat_news) :[];
+		let offset = Object.keys(chat_news).length>0 ? Object.keys(chat_news) :[];
 		//публикуем тексты
 		if(RunList.Text===true) 
 		{	for(let i=0;i<offset.length;i++) await send_Text(now, offset[i]);
