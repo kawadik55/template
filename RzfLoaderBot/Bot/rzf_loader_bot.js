@@ -248,15 +248,16 @@ var Cron1 = cron.schedule(timeCron, async function()
 var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
 {	if(rassilka)//если рассылка включена
 	{	let now = moment();
+		console.log('Зашли в крон с now='+now.format('DD.MM.YYYY HH:mm:ss'));
 		now = now.subtract(10, 'seconds');//приводим к 0 сек
 		let offset = Object.keys(chat_news).length>0 ? Object.keys(chat_news) :[];
 		//публикуем тексты
 		if(RunList.Text===true) 
-		{	for(let i=0;i<offset.length;i++) {await send_Text(now, offset[i]);}
+		{	for(let i=0;i<offset.length;i++) {await send_Text(now, offset[i]); console.log('Text '+offset[i]+' now='+now.format('DD.MM.YYYY HH:mm:ss'));}
 		}
 		//публикуем фото и пр
 		if(RunList.Image===true)
-		{	for(let i=0;i<offset.length;i++) await send_Images(now, offset[i]);
+		{	for(let i=0;i<offset.length;i++) {await send_Images(now, offset[i]); console.log('Image '+offset[i]+' now='+now.format('DD.MM.YYYY HH:mm:ss'));}
 		}	
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
@@ -4225,7 +4226,7 @@ async function send_Text(now,offset)
 					}
 					else //по дням недели
 					{ 	//сегодняшний день недели в зоне: 0-воскресенье, 1-понедельник
-						let dayWeek = now.utcOffset(Number(offset),true).day();
+						let dayWeek = now.clone().utcOffset(Number(offset),true).day();
 						if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
 						if(dayWeek==masDay.indexOf(day))//совпали дни, публикуем 
 						{	let sec;
