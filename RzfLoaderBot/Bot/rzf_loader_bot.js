@@ -248,7 +248,6 @@ var Cron1 = cron.schedule(timeCron, async function()
 var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
 {	if(rassilka)//если рассылка включена
 	{	let now = moment();
-		console.log('Зашли в крон с now='+now.format('DD.MM.YYYY HH:mm:ss'));
 		now = now.subtract(10, 'seconds');//приводим к 0 сек
 		let offset = Object.keys(chat_news).length>0 ? Object.keys(chat_news) :[];
 		//публикуем тексты

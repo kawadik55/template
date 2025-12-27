@@ -41,14 +41,19 @@ class SlaveBot {
         this.bot.onText(/^\/config(?:@\w+)?$/, async (msg) => {
             try {
                 const chatId = msg.chat.id;
-                const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
+				const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
+				const fromId = msg.from.id;
                 
                 // Проверяем права
-                if (!await this.checkAdminRights(chatId, msg.from.id)) {
-                    await this.bot.sendMessage(chatId, 
-                        '❌ Только администраторы чата могут настраивать бота.');
-                    return;
-                }
+                const messageId = msg.message_id;
+				if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
+					if (!await this.checkAdminRights(chatId, fromId)) {
+						try { // Удаляем сообщение с командой
+							await this.bot.deleteMessage(chatId, messageId);
+						} catch (e) {} // Игнорируем, если нет прав на удаление
+						return;
+					}
+				}
                 
                 // Сохраняем message_thread_id, если он есть (для форумов)
                 const messageThreadId = msg.message_thread_id || "";
@@ -65,7 +70,18 @@ class SlaveBot {
                 const chatId = msg.chat.id;
                 const fromId = msg.from.id;
                 const params = match[1]; // Параметры после /start
-                const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
+				const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
+				
+				// Проверяем права
+                const messageId = msg.message_id;
+				if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
+					if (!await this.checkAdminRights(chatId, fromId)) {
+						try { // Удаляем сообщение с командой
+							await this.bot.deleteMessage(chatId, messageId);
+						} catch (e) {} // Игнорируем, если нет прав на удаление
+						return;
+					}
+				}
                 
                 // Проверяем тип чата
                 let chatType;
@@ -105,13 +121,6 @@ class SlaveBot {
                     return;
                 }
                 
-                // Для групп - оригинальная логика
-                if (!await this.checkAdminRights(chatId, fromId)) {
-                    await this.bot.sendMessage(chatId, 
-                        '❌ Только администраторы чата могут настраивать бота.');
-                    return;
-                }
-                
                 const messageThreadId = msg.message_thread_id || "";
                 await this.startConfigProcess(chatId, chatTitle, messageThreadId);
             } catch (err) {
@@ -124,6 +133,18 @@ class SlaveBot {
             try {
                 const chatId = msg.chat.id;
                 const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
+				const fromId = msg.from.id;
+				
+				// Проверяем права
+                const messageId = msg.message_id;
+				if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
+					if (!await this.checkAdminRights(chatId, fromId)) {
+						try { // Удаляем сообщение с командой
+							await this.bot.deleteMessage(chatId, messageId);
+						} catch (e) {} // Игнорируем, если нет прав на удаление
+						return;
+					}
+				}
                 
                 const info = await this.getChatInfo(chatId);
                 await this.bot.sendMessage(chatId, info, {parse_mode: 'markdown'});
@@ -136,8 +157,20 @@ class SlaveBot {
         this.bot.onText(/^\/help(?:@\w+)?$/, async (msg) => {
             try {
                 const chatId = msg.chat.id;
+				const fromId = msg.from.id;
                 
-                // Определяем тип чата
+                // Проверяем права
+                const messageId = msg.message_id;
+				if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
+					if (!await this.checkAdminRights(chatId, fromId)) {
+						try { // Удаляем сообщение с командой
+							await this.bot.deleteMessage(chatId, messageId);
+						} catch (e) {} // Игнорируем, если нет прав на удаление
+						return;
+					}
+				}
+				
+				// Определяем тип чата
                 let chatType;
                 try {
                     const chat = await this.bot.getChat(chatId);
@@ -257,20 +290,19 @@ class SlaveBot {
                 const data = msg.data;
                 const fromId = msg.from.id;
                 
-                // Проверяем права для callback (только для чатов, не для приватных)
-                if (chatId <= 0 && !await this.checkAdminRights(chatId, fromId)) {
-                    await this.bot.answerCallbackQuery(msg.id, {
-                        text: '❌ Только администраторы могут настраивать бот',
-                        show_alert: true
-                    });
-                    return;
-                }
+                // Проверяем права для callback
+                if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
+					if (!await this.checkAdminRights(chatId, fromId)) {
+						await this.bot.answerCallbackQuery(msg.id); // Пустой ответ
+						return;
+					}
+				}
                 
                 if (data.startsWith('timezone_')) {
                     const timezone = data.replace('timezone_', '');
                     const messageThreadId = msg.message.message_thread_id || "";
                     
-                    // Удаляем сообщение с кнопками
+                    // Удаляем сообщение с кнопками (текущее активное сообщение)
                     try {
                         await this.bot.deleteMessage(chatId, msg.message.message_id);
                     } catch (e) {
@@ -281,20 +313,23 @@ class SlaveBot {
                     await this.bot.answerCallbackQuery(msg.id);
                     
                 } else if (data === 'manual_timezone') {
-                    this.pendingConfigs.set(chatId, {
-                        ...this.pendingConfigs.get(chatId),
-                        waitingForManualInput: true
-                    });
-                    
-                    // Удаляем старое сообщение
-                    try {
-                        await this.bot.deleteMessage(chatId, msg.message.message_id);
-                    } catch (e) {
-                        // Игнорируем ошибки удаления
+                    const pending = this.pendingConfigs.get(chatId);
+                    if (pending) {
+                        // Удаляем текущее активное сообщение
+                        if (pending.lastMessageId) {
+                            try {
+                                await this.bot.deleteMessage(chatId, pending.lastMessageId);
+                            } catch (e) {
+                                // Игнорируем ошибки удаления
+                            }
+                        }
+                        
+                        pending.waitingForManualInput = true;
+                        this.pendingConfigs.set(chatId, pending);
                     }
                     
                     // Отправляем новое сообщение
-                    await this.bot.sendMessage(chatId,
+                    const sentMessage = await this.bot.sendMessage(chatId,
                         `*Отправьте смещение часового пояса в формате:*\n` +
                         `• +3 (для UTC+3)\n` +
                         `• -5 (для UTC-5)\n` +
@@ -307,10 +342,26 @@ class SlaveBot {
                         }
                     );
                     
+                    // Сохраняем ID нового активного сообщения
+                    if (pending) {
+                        pending.lastMessageId = sentMessage.message_id;
+                        this.pendingConfigs.set(chatId, pending);
+                    }
+                    
                     await this.bot.answerCallbackQuery(msg.id);
                     
                 } else if (data === 'cancel_config') {
                     const pending = this.pendingConfigs.get(chatId);
+                    
+                    // Удаляем текущее активное сообщение
+                    if (pending && pending.lastMessageId) {
+                        try {
+                            await this.bot.deleteMessage(chatId, pending.lastMessageId);
+                        } catch (e) {
+                            // Игнорируем ошибки удаления
+                        }
+                    }
+                    
                     // Удаляем сообщение с выбором контента, если есть
                     if (pending && pending.lastContentMessageId) {
                         try {
@@ -319,6 +370,7 @@ class SlaveBot {
                             // Игнорируем ошибки удаления
                         }
                     }
+                    
                     this.pendingConfigs.delete(chatId);
                     
                     // Удаляем текущее сообщение с кнопками
@@ -338,11 +390,15 @@ class SlaveBot {
                     
                 } else if (data === 'save_config') {
                     // Удаляем сообщение с выбором контента
-                    try {
-                        await this.bot.deleteMessage(chatId, msg.message.message_id);
-                    } catch (e) {
-                        // Игнорируем ошибки удаления
+                    const pending = this.pendingConfigs.get(chatId);
+                    if (pending && pending.lastContentMessageId) {
+                        try {
+                            await this.bot.deleteMessage(chatId, pending.lastContentMessageId);
+                        } catch (e) {
+                            // Игнорируем ошибки удаления
+                        }
                     }
+                    
                     // Сохранение конфигурации
                     await this.finishConfig(chatId);
                     await this.bot.answerCallbackQuery(msg.id);
@@ -350,10 +406,13 @@ class SlaveBot {
                 } else if (data === 'channel_by_id') {
                     const userId = msg.from.id;
                     
-                    // Удаляем текущее сообщение с кнопками
-                    try {
-                        await this.bot.deleteMessage(chatId, msg.message.message_id);
-                    } catch (e) {}
+                    // Удаляем текущее активное сообщение
+                    const pending = this.pendingConfigs.get(userId);
+                    if (pending && pending.lastMessageId) {
+                        try {
+                            await this.bot.deleteMessage(userId, pending.lastMessageId);
+                        } catch (e) {}
+                    }
                     
                     await this.requestChannelId(userId);
                     await this.bot.answerCallbackQuery(msg.id);
@@ -361,10 +420,13 @@ class SlaveBot {
                 } else if (data === 'channel_help') {
                     const userId = msg.from.id;
                     
-                    // Удаляем текущее сообщение с кнопками
-                    try {
-                        await this.bot.deleteMessage(chatId, msg.message.message_id);
-                    } catch (e) {}
+                    // Удаляем текущее активное сообщение
+                    const pending = this.pendingConfigs.get(userId);
+                    if (pending && pending.lastMessageId) {
+                        try {
+                            await this.bot.deleteMessage(userId, pending.lastMessageId);
+                        } catch (e) {}
+                    }
                     
                     await this.showChannelHelp(userId);
                     await this.bot.answerCallbackQuery(msg.id);
@@ -373,10 +435,13 @@ class SlaveBot {
                     const channelId = data.replace('edit_channel_', '');
                     const userId = msg.from.id;
                     
-                    // Удаляем текущее сообщение с кнопками
-                    try {
-                        await this.bot.deleteMessage(chatId, msg.message.message_id);
-                    } catch (e) {}
+                    // Удаляем текущее активное сообщение
+                    const pending = this.pendingConfigs.get(userId);
+                    if (pending && pending.lastMessageId) {
+                        try {
+                            await this.bot.deleteMessage(userId, pending.lastMessageId);
+                        } catch (e) {}
+                    }
                     
                     // Получаем информацию о канале
                     let channelTitle = `Канал ${channelId}`;
@@ -395,10 +460,13 @@ class SlaveBot {
                     const channelId = data.replace('remove_channel_', '');
                     const userId = msg.from.id;
                     
-                    // Удаляем текущее сообщение с кнопками
-                    try {
-                        await this.bot.deleteMessage(chatId, msg.message.message_id);
-                    } catch (e) {}
+                    // Удаляем текущее активное сообщение
+                    const pending = this.pendingConfigs.get(userId);
+                    if (pending && pending.lastMessageId) {
+                        try {
+                            await this.bot.deleteMessage(userId, pending.lastMessageId);
+                        } catch (e) {}
+                    }
                     
                     await this.removeChannelFromConfig(userId, channelId);
                     await this.bot.answerCallbackQuery(msg.id);
@@ -407,10 +475,13 @@ class SlaveBot {
                     const channelId = data.replace('confirm_remove_channel_', '');
                     const userId = msg.from.id;
                     
-                    // Удаляем текущее сообщение с кнопками
-                    try {
-                        await this.bot.deleteMessage(chatId, msg.message.message_id);
-                    } catch (e) {}
+                    // Удаляем текущее активное сообщение
+                    const pending = this.pendingConfigs.get(userId);
+                    if (pending && pending.lastMessageId) {
+                        try {
+                            await this.bot.deleteMessage(userId, pending.lastMessageId);
+                        } catch (e) {}
+                    }
                     
                     // Удаляем канал из конфига
                     const removed = this.removeChatFromAllTimezones(channelId, true);
@@ -432,10 +503,13 @@ class SlaveBot {
                 } else if (data === 'cancel_remove_channel') {
                     const userId = msg.from.id;
                     
-                    // Удаляем текущее сообщение с кнопками
-                    try {
-                        await this.bot.deleteMessage(chatId, msg.message.message_id);
-                    } catch (e) {}
+                    // Удаляем текущее активное сообщение
+                    const pending = this.pendingConfigs.get(userId);
+                    if (pending && pending.lastMessageId) {
+                        try {
+                            await this.bot.deleteMessage(userId, pending.lastMessageId);
+                        } catch (e) {}
+                    }
                     
                     await this.bot.sendMessage(userId, '⚙️ Удаление отменено.');
                     await this.bot.answerCallbackQuery(msg.id);
@@ -443,10 +517,20 @@ class SlaveBot {
                 } else if (data === 'cancel_channel_setup') {
                     const userId = msg.from.id;
                     
-                    // Удаляем текущее сообщение с кнопками
-                    try {
-                        await this.bot.deleteMessage(chatId, msg.message.message_id);
-                    } catch (e) {}
+                    // Удаляем текущее активное сообщение
+                    const pending = this.pendingConfigs.get(userId);
+                    if (pending && pending.lastMessageId) {
+                        try {
+                            await this.bot.deleteMessage(userId, pending.lastMessageId);
+                        } catch (e) {}
+                    }
+                    
+                    // Удаляем сообщение с выбором контента, если есть
+                    if (pending && pending.lastContentMessageId) {
+                        try {
+                            await this.bot.deleteMessage(userId, pending.lastContentMessageId);
+                        } catch (e) {}
+                    }
                     
                     this.pendingChannelSetup = null;
                     // Удаляем pending конфиг для этого пользователя
@@ -458,10 +542,13 @@ class SlaveBot {
                 } else if (data === 'back_to_channel_select') {
                     const userId = msg.from.id;
                     
-                    // Удаляем текущее сообщение с кнопками
-                    try {
-                        await this.bot.deleteMessage(chatId, msg.message.message_id);
-                    } catch (e) {}
+                    // Удаляем текущее активное сообщение
+                    const pending = this.pendingConfigs.get(userId);
+                    if (pending && pending.lastMessageId) {
+                        try {
+                            await this.bot.deleteMessage(userId, pending.lastMessageId);
+                        } catch (e) {}
+                    }
                     
                     await this.showChannelSelection(userId);
                     await this.bot.answerCallbackQuery(msg.id);
@@ -492,9 +579,18 @@ class SlaveBot {
                 if (pending && pending.waitingForManualInput) {
                     const timezone = this.parseTimezoneInput(text);
                     if (timezone) {
+                        // Удаляем текущее активное сообщение
+                        if (pending.lastMessageId) {
+                            try {
+                                await this.bot.deleteMessage(chatId, pending.lastMessageId);
+                            } catch (e) {
+                                // Игнорируем ошибки удаления
+                            }
+                        }
+                        
                         await this.handleTimezoneSelection(chatId, timezone, pending.message_thread_id || "");
                     } else {
-                        await this.bot.sendMessage(chatId, 
+                        const sentMessage = await this.bot.sendMessage(chatId, 
                             '❌ *Не удалось распознать часовой пояс.*\n\n' +
                             `*Попробуйте еще раз:*\n` +
                             `• +3 (для UTC+3)\n` +
@@ -502,6 +598,10 @@ class SlaveBot {
                             `• 0 (для UTC±0)\n`,
                             { parse_mode: 'Markdown' }
                         );
+                        
+                        // Обновляем ID активного сообщения
+                        pending.lastMessageId = sentMessage.message_id;
+                        this.pendingConfigs.set(chatId, pending);
                     }
                 }
                 
@@ -593,11 +693,22 @@ class SlaveBot {
         try {
             // Если есть старая сессия настройки канала, удаляем её сообщения
             const oldPending = this.pendingConfigs.get(userId);
-            if (oldPending && oldPending.lastContentMessageId) {
-                try {
-                    await this.bot.deleteMessage(userId, oldPending.lastContentMessageId);
-                } catch (e) {
-                    // Игнорируем ошибки удаления
+            if (oldPending) {
+                // Удаляем текущее активное сообщение
+                if (oldPending.lastMessageId) {
+                    try {
+                        await this.bot.deleteMessage(userId, oldPending.lastMessageId);
+                    } catch (e) {
+                        // Игнорируем ошибки удаления
+                    }
+                }
+                // Удаляем сообщение с выбором контента, если есть
+                if (oldPending.lastContentMessageId) {
+                    try {
+                        await this.bot.deleteMessage(userId, oldPending.lastContentMessageId);
+                    } catch (e) {
+                        // Игнорируем ошибки удаления
+                    }
                 }
             }
             
@@ -624,7 +735,7 @@ class SlaveBot {
                 ]
             };
             
-            await this.bot.sendMessage(userId,
+            const sentMessage = await this.bot.sendMessage(userId,
                 `📢 *Настройка бота для канала*\n\n` +
                 `*Введите ID канала:*\n\n` +
                 `*🆔 Формат ID:*\n` +
@@ -637,6 +748,16 @@ class SlaveBot {
                     reply_markup: keyboard
                 }
             );
+            
+            // Сохраняем временные данные (используем userId как ключ)
+            this.pendingConfigs.set(userId, {
+                userId: userId,
+                timestamp: Date.now(),
+                lastMessageId: sentMessage.message_id, // Сохраняем ID активного сообщения
+                lastContentMessageId: null,
+                waitingForManualInput: false,
+                configType: 'channel_selection'
+            });
             
         } catch (err) {
             console.error('Ошибка showChannelSelection:', err);
@@ -658,18 +779,32 @@ class SlaveBot {
 
     async startConfigProcess(chatId, chatTitle, messageThreadId = "") {
         try {
-            // Проверяем, есть ли уже такой чат в конфиге
-            const existing = this.findChatInConfig(chatId);
-            
-            // Если есть старая сессия настройки, удаляем её сообщения
+            // ОЧИСТКА СТАРОЙ СЕССИИ: Удаляем старое активное сообщение, если есть
             const oldPending = this.pendingConfigs.get(chatId);
-            if (oldPending && oldPending.lastContentMessageId) {
-                try {
-                    await this.bot.deleteMessage(chatId, oldPending.lastContentMessageId);
-                } catch (e) {
-                    // Игнорируем ошибки удаления
+            if (oldPending) {
+                // Удаляем текущее активное сообщение
+                if (oldPending.lastMessageId) {
+                    try {
+                        await this.bot.deleteMessage(chatId, oldPending.lastMessageId);
+                    } catch (e) {
+                        // Игнорируем ошибки удаления
+                    }
+                }
+                // Удаляем сообщение с выбором контента, если есть
+                if (oldPending.lastContentMessageId) {
+                    try {
+                        await this.bot.deleteMessage(chatId, oldPending.lastContentMessageId);
+                    } catch (e) {
+                        // Игнорируем ошибки удаления
+                    }
                 }
             }
+            
+            // Очищаем старую сессию
+            this.pendingConfigs.delete(chatId);
+            
+            // Проверяем, есть ли уже такой чат в конфиге
+            const existing = this.findChatInConfig(chatId);
             
             // Получаем текущие настройки контента из существующего конфига
             let contentSettings = { Eg: true, News: true };
@@ -681,16 +816,19 @@ class SlaveBot {
             }
             
             // Сохраняем информацию о старом чате во временные данные
-            this.pendingConfigs.set(chatId, {
+            const pendingData = {
                 chatTitle,
                 timestamp: Date.now(),
                 waitingForManualInput: false,
                 oldSettings: existing,
-                message_thread_id: messageThreadId, // Сохраняем ID темы
+                message_thread_id: messageThreadId,
                 timezoneOffset: null,
                 contentSettings: contentSettings,
-                lastContentMessageId: null
-            });
+                lastContentMessageId: null,
+                lastMessageId: null // Инициализируем поле для активного сообщения
+            };
+
+            this.pendingConfigs.set(chatId, pendingData);
 
             // Проверяем тип чата
             let chatType = 'чата';
@@ -719,13 +857,17 @@ class SlaveBot {
                 message += `\n📌 *Настройка для темы форума:* ID ${messageThreadId}`;
             }
             
-            await this.bot.sendMessage(chatId, message,
+            const sentMessage = await this.bot.sendMessage(chatId, message,
                 {
                     parse_mode: 'Markdown',
                     reply_markup: { inline_keyboard: keyboard },
-                    message_thread_id: messageThreadId || undefined // Отправляем в той же теме
+                    message_thread_id: messageThreadId || undefined
                 }
             );
+            
+            // Сохраняем ID активного сообщения
+            pendingData.lastMessageId = sentMessage.message_id;
+            this.pendingConfigs.set(chatId, pendingData);
 
         } catch (err) {
             console.error('Ошибка startConfigProcess:', err);
@@ -817,10 +959,12 @@ class SlaveBot {
             }
 
             // Обновляем временные данные
-            this.pendingConfigs.set(chatId, {
-                ...pending,
-                timezoneOffset: offsetNum
-            });
+            pending.timezoneOffset = offsetNum;
+            
+            // Очищаем ID активного сообщения (оно уже удалено в callback)
+            pending.lastMessageId = null;
+            
+            this.pendingConfigs.set(chatId, pending);
 
             // Показываем выбор типа контента
             await this.showContentSelection(chatId);
@@ -842,11 +986,8 @@ class SlaveBot {
             const hours = Math.abs(pending.timezoneOffset / 60);
             const sign = pending.timezoneOffset >= 0 ? '+' : '-';
             
-            // Получаем текущие настройки контента
-            const contentSettings = pending.contentSettings || { Eg: true, News: true };
-            
             // Создаем клавиатуру для выбора контента
-            const keyboard = this.createContentKeyboard(contentSettings);
+            const keyboard = this.createContentKeyboard(pending.contentSettings);
             
             const message = `⚙️ *Настройка бота для чата:* "${this.escapeMarkdown(pending.chatTitle)}"\n\n` +
                           `*Шаг 2/2: Выберите нужный контент*\n\n` +
@@ -862,10 +1003,9 @@ class SlaveBot {
             );
             
             // Сохраняем ID сообщения с выбором контента
-            this.pendingConfigs.set(chatId, {
-                ...pending,
-                lastContentMessageId: sentMessage.message_id
-            });
+            pending.lastContentMessageId = sentMessage.message_id;
+            pending.lastMessageId = sentMessage.message_id; // Также сохраняем как активное сообщение
+            this.pendingConfigs.set(chatId, pending);
 
         } catch (err) {
             console.error('Ошибка showContentSelection:', err);
@@ -912,14 +1052,9 @@ class SlaveBot {
                 contentSettings[contentType] = !contentSettings[contentType];
                 
                 // Обновляем временные данные
-                this.pendingConfigs.set(chatId, {
-                    ...pending,
-                    contentSettings: contentSettings
-                });
+                pending.contentSettings = contentSettings;
                 
-                // Обновляем существующее сообщение вместо удаления и отправки нового
-                const hours = Math.abs(pending.timezoneOffset / 60);
-                const sign = pending.timezoneOffset >= 0 ? '+' : '-';
+                // Редактируем существующее сообщение вместо удаления и отправки нового
                 const keyboard = this.createContentKeyboard(contentSettings);
                 
                 const message = `⚙️ *Настройка бота для чата:* "${this.escapeMarkdown(pending.chatTitle)}"\n\n` +
@@ -937,11 +1072,7 @@ class SlaveBot {
                     });
                     
                     // Сохраняем обновленные данные (ID сообщения остается тем же)
-                    this.pendingConfigs.set(chatId, {
-                        ...pending,
-                        contentSettings: contentSettings
-                        // lastContentMessageId остается прежним
-                    });
+                    this.pendingConfigs.set(chatId, pending);
                     
                 } catch (err) {
                     console.error('Ошибка редактирования сообщения:', err);
@@ -955,11 +1086,9 @@ class SlaveBot {
                     );
                     
                     // Сохраняем ID нового сообщения
-                    this.pendingConfigs.set(chatId, {
-                        ...pending,
-                        contentSettings: contentSettings,
-                        lastContentMessageId: sentMessage.message_id
-                    });
+                    pending.lastContentMessageId = sentMessage.message_id;
+                    pending.lastMessageId = sentMessage.message_id;
+                    this.pendingConfigs.set(chatId, pending);
                 }
             }
 
@@ -1310,6 +1439,23 @@ class SlaveBot {
             
             for (const [chatId, data] of this.pendingConfigs.entries()) {
                 if (now - data.timestamp > timeout) {
+                    // Удаляем активное сообщение при истечении таймаута
+                    if (data.lastMessageId) {
+                        try {
+                            this.bot.deleteMessage(chatId, data.lastMessageId);
+                        } catch (e) {
+                            // Игнорируем ошибки удаления
+                        }
+                    }
+                    // Удаляем сообщение с контентом при истечении таймаута
+                    if (data.lastContentMessageId) {
+                        try {
+                            this.bot.deleteMessage(chatId, data.lastContentMessageId);
+                        } catch (e) {
+                            // Игнорируем ошибки удаления
+                        }
+                    }
+                    
                     this.pendingConfigs.delete(chatId);
                     console.log(`Очищена устаревшая сессия для чата ${chatId}`);
                 }
@@ -1438,7 +1584,7 @@ class SlaveBot {
 
     async requestChannelId(userId) {
         try {
-            await this.bot.sendMessage(userId,
+            const sentMessage = await this.bot.sendMessage(userId,
                 `🆔 *Введите ID канала:*\n\n` +
                 `*Формат:*\n` +
                 `• -1001234567890\n\n` +
@@ -1457,6 +1603,13 @@ class SlaveBot {
                     }
                 }
             );
+            
+            // Обновляем ID активного сообщения
+            const pending = this.pendingConfigs.get(userId);
+            if (pending) {
+                pending.lastMessageId = sentMessage.message_id;
+                this.pendingConfigs.set(userId, pending);
+            }
             
             this.pendingChannelSetup = {
                 userId: userId,
@@ -1486,7 +1639,7 @@ class SlaveBot {
                 `• Вы должны быть администратором канала\n` +
                 `• Бот должен быть администратором канала`;
             
-            await this.bot.sendMessage(userId, helpText, {
+            const sentMessage = await this.bot.sendMessage(userId, helpText, {
                 parse_mode: 'Markdown',
                 reply_markup: {
                     inline_keyboard: [
@@ -1499,6 +1652,13 @@ class SlaveBot {
                     ]
                 }
             });
+            
+            // Обновляем ID активного сообщения
+            const pending = this.pendingConfigs.get(userId);
+            if (pending) {
+                pending.lastMessageId = sentMessage.message_id;
+                this.pendingConfigs.set(userId, pending);
+            }
         } catch (err) {
             console.error('Ошибка showChannelHelp:', err);
         }
@@ -1517,7 +1677,7 @@ class SlaveBot {
                     
                     // Проверяем формат юзернейма
                     if (!username.match(/^[a-zA-Z0-9_]{5,32}$/)) {
-                        await this.bot.sendMessage(userId,
+                        const sentMessage = await this.bot.sendMessage(userId,
                             `❌ *Неверный формат юзернейма.*\n` +
                             `*Юзернейм должен содержать 5-32 символа:*\n` +
                             `• Латинские буквы a-z, A-Z\n` +
@@ -1526,6 +1686,13 @@ class SlaveBot {
                             `*Используйте ID канала (начинается с -100)*`,
                             { parse_mode: 'Markdown' }
                         );
+                        
+                        // Обновляем ID активного сообщения
+                        const pending = this.pendingConfigs.get(userId);
+                        if (pending) {
+                            pending.lastMessageId = sentMessage.message_id;
+                            this.pendingConfigs.set(userId, pending);
+                        }
                         return;
                     }
                     
@@ -1558,13 +1725,20 @@ class SlaveBot {
                 let channelIdNum = parseInt(channelIdentifier);
                 
                 if (isNaN(channelIdNum)) {
-                    await this.bot.sendMessage(userId,
+                    const sentMessage = await this.bot.sendMessage(userId,
                         `❌ *Неверный формат ID.*\n` +
                         `*ID канала должен быть числом, например:*\n` +
                         `-1001234567890\n\n` +
                         `*Используйте ID канала (начинается с -100)*`,
                         { parse_mode: 'Markdown' }
                     );
+                    
+                    // Обновляем ID активного сообщения
+                    const pending = this.pendingConfigs.get(userId);
+                    if (pending) {
+                        pending.lastMessageId = sentMessage.message_id;
+                        this.pendingConfigs.set(userId, pending);
+                    }
                     return;
                 }
                 
@@ -1575,7 +1749,7 @@ class SlaveBot {
                 
                 // Проверяем, что ID имеет правильный формат для канала
                 if (channelIdNum >= -1000000000000) {
-                    await this.bot.sendMessage(userId,
+                    const sentMessage = await this.bot.sendMessage(userId,
                         `❌ *Неверный формат ID канала.*\n\n` +
                         `*ID канала должен:*\n` +
                         `• Начинаться с -100\n` +
@@ -1584,6 +1758,13 @@ class SlaveBot {
                         `*Убедитесь, что вы вводите правильный ID канала.*`,
                         { parse_mode: 'Markdown' }
                     );
+                    
+                    // Обновляем ID активного сообщения
+                    const pending = this.pendingConfigs.get(userId);
+                    if (pending) {
+                        pending.lastMessageId = sentMessage.message_id;
+                        this.pendingConfigs.set(userId, pending);
+                    }
                     return;
                 }
                 
@@ -1630,13 +1811,27 @@ class SlaveBot {
         try {
             // Если есть старая сессия настройки, удаляем её сообщения
             const oldPending = this.pendingConfigs.get(userId);
-            if (oldPending && oldPending.lastContentMessageId) {
-                try {
-                    await this.bot.deleteMessage(userId, oldPending.lastContentMessageId);
-                } catch (e) {
-                    // Игнорируем ошибки удаления
+            if (oldPending) {
+                // Удаляем текущее активное сообщение
+                if (oldPending.lastMessageId) {
+                    try {
+                        await this.bot.deleteMessage(userId, oldPending.lastMessageId);
+                    } catch (e) {
+                        // Игнорируем ошибки удаления
+                    }
+                }
+                // Удаляем сообщение с выбором контента, если есть
+                if (oldPending.lastContentMessageId) {
+                    try {
+                        await this.bot.deleteMessage(userId, oldPending.lastContentMessageId);
+                    } catch (e) {
+                        // Игнорируем ошибки удаления
+                    }
                 }
             }
+            
+            // Очищаем старую сессию
+            this.pendingConfigs.delete(userId);
             
             // Сначала проверяем, не настроен ли уже этот канал
             const existingConfig = this.findChatInConfig(channelId);
@@ -1652,7 +1847,7 @@ class SlaveBot {
                 const contentInfo = contentTypes.length > 0 ? contentTypes.join('\n') : '❌ Не выбрано';
                 
                 // Спрашиваем, хочет ли пользователь изменить настройки
-                await this.bot.sendMessage(userId,
+                const sentMessage = await this.bot.sendMessage(userId,
                     `⚠️ *Этот канал уже настроен!*\n\n` +
                     `📢 *Канал:* "${this.escapeMarkdown(existingConfig.title)}"\n` +
                     `🌍 *Часовой пояс:* UTC${sign}${hours} ч.\n` +
@@ -1673,6 +1868,17 @@ class SlaveBot {
                         }
                     }
                 );
+                
+                // Сохраняем временные данные
+                this.pendingConfigs.set(userId, {
+                    userId: userId,
+                    chatId: channelId,
+                    timestamp: Date.now(),
+                    lastMessageId: sentMessage.message_id,
+                    lastContentMessageId: null,
+                    configType: 'channel_manage'
+                });
+                
                 return;
             }
             
@@ -1680,7 +1886,7 @@ class SlaveBot {
             const isAdmin = await this.checkChannelAdminRights(channelId, userId);
             
             if (!isAdmin) {
-                await this.bot.sendMessage(userId,
+                const sentMessage = await this.bot.sendMessage(userId,
                     `❌ *Доступ запрещен*\n\n` +
                     `Вы не являетесь администратором этого канала.\n` +
                     `*Только администраторы могут настраивать бота.*\n\n` +
@@ -1694,6 +1900,16 @@ class SlaveBot {
                         }
                     }
                 );
+                
+                // Сохраняем временные данные
+                this.pendingConfigs.set(userId, {
+                    userId: userId,
+                    timestamp: Date.now(),
+                    lastMessageId: sentMessage.message_id,
+                    lastContentMessageId: null,
+                    configType: 'channel_error'
+                });
+                
                 return;
             }
             
@@ -1705,7 +1921,7 @@ class SlaveBot {
             if (!botIsAdmin) {
                 const botUsername = this.escapeMarkdown('@' + botInfo.username);
                 
-                await this.bot.sendMessage(userId,
+                const sentMessage = await this.bot.sendMessage(userId,
                     `❌ *Бот не имеет прав*\n\n` +
                     `Бот должен быть администратором канала.\n\n` +
                     `*Добавьте бота в канал как администратора:*\n` +
@@ -1722,6 +1938,16 @@ class SlaveBot {
                         }
                     }
                 );
+                
+                // Сохраняем временные данные
+                this.pendingConfigs.set(userId, {
+                    userId: userId,
+                    timestamp: Date.now(),
+                    lastMessageId: sentMessage.message_id,
+                    lastContentMessageId: null,
+                    configType: 'channel_error'
+                });
+                
                 return;
             }
             
@@ -1736,7 +1962,7 @@ class SlaveBot {
             }
             
             // Сохраняем временные данные (используем userId как ключ)
-            this.pendingConfigs.set(userId, {
+            const pendingData = {
                 userId: userId,
                 chatId: channelId,
                 chatTitle: channelTitle,
@@ -1747,10 +1973,13 @@ class SlaveBot {
                 timezoneOffset: null,
                 contentSettings: { Eg: true, News: true },
                 lastContentMessageId: null,
+                lastMessageId: null, // Инициализируем поле для активного сообщения
                 configType: 'channel',
                 sourceType: sourceType,
                 isEdit: false
-            });
+            };
+            
+            this.pendingConfigs.set(userId, pendingData);
             
             // Показываем часовые пояса с кнопкой отмены
             const keyboard = this.createTimezoneKeyboard();
@@ -1762,7 +1991,7 @@ class SlaveBot {
                 sourceInfo = ' (по ID)';
             }
             
-            await this.bot.sendMessage(userId,
+            const sentMessage = await this.bot.sendMessage(userId,
                 `✅ *Канал найден!*${sourceInfo}\n\n` +
                 `📢 *Канал:* "${this.escapeMarkdown(channelTitle)}"\n` +
                 `🆔 *ID:* \`${channelId}\`\n\n` +
@@ -1774,9 +2003,13 @@ class SlaveBot {
                 }
             );
             
+            // Сохраняем ID активного сообщения
+            pendingData.lastMessageId = sentMessage.message_id;
+            this.pendingConfigs.set(userId, pendingData);
+            
         } catch (err) {
             console.error('Ошибка startChannelConfig:', err);
-            await this.bot.sendMessage(userId,
+            const sentMessage = await this.bot.sendMessage(userId,
                 `❌ *Произошла ошибка при настройке канала.*\n` +
                 `*Проверьте, что:*\n` +
                 `1. Бот добавлен в канал\n` +
@@ -1790,6 +2023,15 @@ class SlaveBot {
                     }
                 }
             );
+            
+            // Сохраняем временные данные
+            this.pendingConfigs.set(userId, {
+                userId: userId,
+                timestamp: Date.now(),
+                lastMessageId: sentMessage.message_id,
+                lastContentMessageId: null,
+                configType: 'channel_error'
+            });
         }
     }
 
@@ -1797,18 +2039,32 @@ class SlaveBot {
         try {
             // Если есть старая сессия настройки, удаляем её сообщения
             const oldPending = this.pendingConfigs.get(userId);
-            if (oldPending && oldPending.lastContentMessageId) {
-                try {
-                    await this.bot.deleteMessage(userId, oldPending.lastContentMessageId);
-                } catch (e) {
-                    // Игнорируем ошибки удаления
+            if (oldPending) {
+                // Удаляем текущее активное сообщение
+                if (oldPending.lastMessageId) {
+                    try {
+                        await this.bot.deleteMessage(userId, oldPending.lastMessageId);
+                    } catch (e) {
+                        // Игнорируем ошибки удаления
+                    }
+                }
+                // Удаляем сообщение с выбором контента, если есть
+                if (oldPending.lastContentMessageId) {
+                    try {
+                        await this.bot.deleteMessage(userId, oldPending.lastContentMessageId);
+                    } catch (e) {
+                        // Игнорируем ошибки удаления
+                    }
                 }
             }
+            
+            // Очищаем старую сессию
+            this.pendingConfigs.delete(userId);
             
             // Находим текущие настройки
             const existing = this.findChatInConfig(channelId);
             if (!existing) {
-                await this.bot.sendMessage(userId,
+                const sentMessage = await this.bot.sendMessage(userId,
                     `❌ *Настройки канала не найдены.*\n` +
                     `Возможно, канал уже был удален из рассылки.`,
                     {
@@ -1820,6 +2076,16 @@ class SlaveBot {
                         }
                     }
                 );
+                
+                // Сохраняем временные данные
+                this.pendingConfigs.set(userId, {
+                    userId: userId,
+                    timestamp: Date.now(),
+                    lastMessageId: sentMessage.message_id,
+                    lastContentMessageId: null,
+                    configType: 'channel_error'
+                });
+                
                 return;
             }
             
@@ -1833,7 +2099,7 @@ class SlaveBot {
             }
             
             // Сохраняем временные данные для редактирования
-            this.pendingConfigs.set(userId, {
+            const pendingData = {
                 userId: userId,
                 chatId: channelId,
                 chatTitle: channelTitle,
@@ -1844,10 +2110,13 @@ class SlaveBot {
                 timezoneOffset: existing.offset, // Используем существующий часовой пояс
                 contentSettings: contentSettings,
                 lastContentMessageId: null,
+                lastMessageId: null, // Инициализируем поле для активного сообщения
                 configType: 'channel',
                 sourceType: 'edit',
                 isEdit: true // Флаг редактирования
-            });
+            };
+            
+            this.pendingConfigs.set(userId, pendingData);
             
             // Показываем текущие настройки и предлагаем изменить
             const hours = Math.abs(existing.offset / 60);
@@ -1860,7 +2129,7 @@ class SlaveBot {
             
             const keyboard = this.createTimezoneKeyboard();
             
-            await this.bot.sendMessage(userId,
+            const sentMessage = await this.bot.sendMessage(userId,
                 `✏️ *Редактирование настроек канала*\n\n` +
                 `📢 *Канал:* "${this.escapeMarkdown(channelTitle)}"\n` +
                 `🌍 *Текущий часовой пояс:* UTC${sign}${hours} ч.\n` +
@@ -1873,9 +2142,13 @@ class SlaveBot {
                 }
             );
             
+            // Сохраняем ID активного сообщения
+            pendingData.lastMessageId = sentMessage.message_id;
+            this.pendingConfigs.set(userId, pendingData);
+            
         } catch (err) {
             console.error('Ошибка startChannelEdit:', err);
-            await this.bot.sendMessage(userId,
+            const sentMessage = await this.bot.sendMessage(userId,
                 `❌ *Произошла ошибка при редактировании настроек.*`,
                 {
                     parse_mode: 'Markdown',
@@ -1886,6 +2159,15 @@ class SlaveBot {
                     }
                 }
             );
+            
+            // Сохраняем временные данные
+            this.pendingConfigs.set(userId, {
+                userId: userId,
+                timestamp: Date.now(),
+                lastMessageId: sentMessage.message_id,
+                lastContentMessageId: null,
+                configType: 'channel_error'
+            });
         }
     }
 
@@ -1894,7 +2176,7 @@ class SlaveBot {
             // Находим текущие настройки
             const existing = this.findChatInConfig(channelId);
             if (!existing) {
-                await this.bot.sendMessage(userId,
+                const sentMessage = await this.bot.sendMessage(userId,
                     `❌ *Канал не найден в настройках рассылки.*`,
                     {
                         parse_mode: 'Markdown',
@@ -1905,11 +2187,21 @@ class SlaveBot {
                         }
                     }
                 );
+                
+                // Сохраняем временные данные
+                this.pendingConfigs.set(userId, {
+                    userId: userId,
+                    timestamp: Date.now(),
+                    lastMessageId: sentMessage.message_id,
+                    lastContentMessageId: null,
+                    configType: 'channel_remove'
+                });
+                
                 return;
             }
             
             // Спрашиваем подтверждение
-            await this.bot.sendMessage(userId,
+            const sentMessage = await this.bot.sendMessage(userId,
                 `⚠️ *Вы уверены, что хотите удалить канал из рассылки?*\n\n` +
                 `📢 *Канал:* "${this.escapeMarkdown(existing.title)}"\n` +
                 `*Это действие нельзя отменить.*`,
@@ -1926,9 +2218,18 @@ class SlaveBot {
                 }
             );
             
+            // Сохраняем временные данные
+            this.pendingConfigs.set(userId, {
+                userId: userId,
+                timestamp: Date.now(),
+                lastMessageId: sentMessage.message_id,
+                lastContentMessageId: null,
+                configType: 'channel_remove'
+            });
+            
         } catch (err) {
             console.error('Ошибка removeChannelFromConfig:', err);
-            await this.bot.sendMessage(userId,
+            const sentMessage = await this.bot.sendMessage(userId,
                 `❌ *Произошла ошибка при удалении канала.*`,
                 {
                     parse_mode: 'Markdown',
@@ -1939,6 +2240,15 @@ class SlaveBot {
                     }
                 }
             );
+            
+            // Сохраняем временные данные
+            this.pendingConfigs.set(userId, {
+                userId: userId,
+                timestamp: Date.now(),
+                lastMessageId: sentMessage.message_id,
+                lastContentMessageId: null,
+                configType: 'channel_error'
+            });
         }
     }
 
