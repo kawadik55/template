@@ -3006,7 +3006,7 @@ try{
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
 	if(Object.hasOwn(obj, 'time') && !!obj.time)
-	{	if(moment(obj.time,'DD.MM.YYYY').isValid()) 
+	{	if(moment(obj.time,'HH:mm:ss').isValid()) 
 		{timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
 		}
 	}
@@ -3188,7 +3188,7 @@ try{
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
 	if(Object.hasOwn(obj, 'time') && !!obj.time)
-	{	if(moment(obj.time,'DD.MM.YYYY').isValid()) 
+	{	if(moment(obj.time,'HH:mm:ss').isValid()) 
 		{timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
 		}
 	}
