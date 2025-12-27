@@ -8,7 +8,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const SlaveBot = require('./Slave_bot');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const PathToImages = currentDir+'/images';//путь к файлам на выполнение.
+const PathToImages = currentDir+'/images';//путь к файлам на выполнение
 const PathToImagesModer = currentDir+'/moder';//путь к файлам на выполнение
 const FileUserList = currentDir+"/UserList.txt";//имя файла белого листа
 const FileBlackList = currentDir+"/BlackList.txt";//имя файла черного листа
@@ -253,11 +253,11 @@ var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
 		let offset = Object.keys(chat_news).length>0 ? Object.keys(chat_news) :[];
 		//публикуем тексты
 		if(RunList.Text===true) 
-		{	for(let i=0;i<offset.length;i++) {await send_Text(now, offset[i]); console.log('Text '+offset[i]+' now='+now.format('DD.MM.YYYY HH:mm:ss'));}
+		{	for(let i=0;i<offset.length;i++) {await send_Text(now, offset[i]);}
 		}
 		//публикуем фото и пр
 		if(RunList.Image===true)
-		{	for(let i=0;i<offset.length;i++) {await send_Images(now, offset[i]); console.log('Image '+offset[i]+' now='+now.format('DD.MM.YYYY HH:mm:ss'));}
+		{	for(let i=0;i<offset.length;i++) {await send_Images(now, offset[i]);}
 		}	
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
