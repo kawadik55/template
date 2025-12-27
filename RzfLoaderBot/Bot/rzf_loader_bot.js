@@ -367,8 +367,8 @@ catch (err)//если файл отсутствует, то создадим е�
 try 
 {let bl = fs.readFileSync(FileImagesList);
  ImagesList = JSON.parse(bl);
- ImagesList = shiftObject(ImagesList);//упорядочиваем номера-ключи в массиве
- WriteFileJson(FileImagesList,ImagesList);
+ let newlist = shiftObject(ImagesList);//упорядочиваем номера-ключи в массиве
+ if(JSON.stringify(ImagesList) !== JSON.stringify(newlist)) WriteFileJson(FileImagesList,newlist);
 }
 catch (err)//если файл отсутствует, то создадим его 
 {WriteFileJson(FileImagesList,ImagesList);
@@ -378,8 +378,8 @@ catch (err)//если файл отсутствует, то создадим е�
 try 
 {let bl = fs.readFileSync(FileTextList);
  TextList = JSON.parse(bl);
- TextList = shiftObject(TextList);//упорядочиваем номера-ключи в массиве
- WriteFileJson(FileTextList,TextList);
+ let newlist = shiftObject(TextList);//упорядочиваем номера-ключи в массиве
+ if(JSON.stringify(TextList) !== JSON.stringify(newlist)) WriteFileJson(FileTextList,newlist);
 }
 catch (err)//если файл отсутствует, то создадим его 
 {WriteFileJson(FileTextList,TextList);
@@ -389,8 +389,8 @@ catch (err)//если файл отсутствует, то создадим е�
 try 
 {let bl = fs.readFileSync(FileModerImagesList);
  ModerImagesList = JSON.parse(bl);
- ModerImagesList = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
- WriteFileJson(FileModerImagesList,ModerImagesList);
+ let newlist = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
+ if(JSON.stringify(ModerImagesList) !== JSON.stringify(newlist)) WriteFileJson(FileModerImagesList,newlist);
 }
 catch (err)//если файл отсутствует, то создадим его 
 {WriteFileJson(FileModerImagesList,ModerImagesList);
@@ -400,18 +400,22 @@ catch (err)//если файл отсутствует, то создадим е�
 try 
 {let bl = fs.readFileSync(FileModerTextList);
  ModerTextList = JSON.parse(bl);
- ModerTextList = shiftObject(ModerTextList);//упорядочиваем номера-ключи в массиве
- WriteFileJson(FileModerTextList,ModerTextList);
+ let newlist = shiftObject(ModerTextList);//упорядочиваем номера-ключи в массиве
+ if(JSON.stringify(ModerTextList) !== JSON.stringify(newlist)) WriteFileJson(FileModerTextList,newlist);
 }
 catch (err)//если файл отсутствует, то создадим его 
 {WriteFileJson(FileModerTextList,ModerTextList);
 }
 
 //загрузим chatId координатора WhatsApp
-let chat_coordinatorWhatsApp;
+let chat_coordinatorWhatsApp = 0;
 if(Object.hasOwn(AdminList, 'coordinatorWhatsApp')&&AdminList.coordinatorWhatsApp !== '') {chat_coordinatorWhatsApp = AdminList.coordinatorWhatsApp;}
-else 
-{chat_coordinatorWhatsApp = 0; AdminList.coordinatorWhatsApp = ''; AdminList.coordinatorName = '';
+else if(!Object.hasOwn(AdminList, 'coordinatorWhatsApp'))
+{AdminList.coordinatorWhatsApp = '';
+ WriteFileJson(FileAdminList,AdminList);
+}
+else if(!Object.hasOwn(AdminList, 'coordinatorName'))
+{AdminList.coordinatorName = '';
  WriteFileJson(FileAdminList,AdminList);
 }
 
