@@ -388,7 +388,7 @@ build_RzfLoaderBot:
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
-        - ${DIR}/Bot/*.{js}
+        - ${DIR}/Bot/*.js
         - ${DIR}/Dockerfile
 
         

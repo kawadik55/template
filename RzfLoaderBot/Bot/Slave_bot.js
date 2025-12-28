@@ -4,7 +4,7 @@ const moment = require('moment-timezone');
 class SlaveBot {
     constructor(token, onConfigUpdate, mainChatNewsRef) {
         this.bot = new TelegramBot(token, { polling: true });
-        this.onConfigUpdate = onConfigUpdate; // Колбэк для обновления конфига
+        this.onConfigUpdate = onConfigUpdate; // Колбэк для обновления конфига.
         this.pendingConfigs = new Map(); // chatId -> временные данные конфигурации
         this.pendingChannelSetup = null; // Для настройки каналов через приватный чат
         this.cleanupTimer = null; // Для очистки таймера при остановке
@@ -41,19 +41,19 @@ class SlaveBot {
         this.bot.onText(/^\/config(?:@\w+)?$/, async (msg) => {
             try {
                 const chatId = msg.chat.id;
-				const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
-				const fromId = msg.from.id;
+                const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
+                const fromId = msg.from.id;
                 
                 // Проверяем права
                 const messageId = msg.message_id;
-				if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
-					if (!await this.checkAdminRights(chatId, fromId)) {
-						try { // Удаляем сообщение с командой
-							await this.bot.deleteMessage(chatId, messageId);
-						} catch (e) {} // Игнорируем, если нет прав на удаление
-						return;
-					}
-				}
+                if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
+                    if (!await this.checkAdminRights(chatId, fromId)) {
+                        try { // Удаляем сообщение с командой
+                            await this.bot.deleteMessage(chatId, messageId);
+                        } catch (e) {} // Игнорируем, если нет прав на удаление
+                        return;
+                    }
+                }
                 
                 // Сохраняем message_thread_id, если он есть (для форумов)
                 const messageThreadId = msg.message_thread_id || "";
@@ -70,18 +70,18 @@ class SlaveBot {
                 const chatId = msg.chat.id;
                 const fromId = msg.from.id;
                 const params = match[1]; // Параметры после /start
-				const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
-				
-				// Проверяем права
+                const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
+                
+                // Проверяем права
                 const messageId = msg.message_id;
-				if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
-					if (!await this.checkAdminRights(chatId, fromId)) {
-						try { // Удаляем сообщение с командой
-							await this.bot.deleteMessage(chatId, messageId);
-						} catch (e) {} // Игнорируем, если нет прав на удаление
-						return;
-					}
-				}
+                if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
+                    if (!await this.checkAdminRights(chatId, fromId)) {
+                        try { // Удаляем сообщение с командой
+                            await this.bot.deleteMessage(chatId, messageId);
+                        } catch (e) {} // Игнорируем, если нет прав на удаление
+                        return;
+                    }
+                }
                 
                 // Проверяем тип чата
                 let chatType;
@@ -110,7 +110,10 @@ class SlaveBot {
                         `2. Используйте команду ${this.escapeMarkdown('/config_channel')}\n` +
                         `3. Выберите этот канал из списка\n\n` +
                         `*Только администраторы канала могут выполнить настройку.*`,
-                        { parse_mode: 'Markdown' }
+                        { 
+                            parse_mode: 'Markdown',
+                            message_thread_id: msg.message_thread_id || undefined
+                        }
                     );
                     return;
                 }
@@ -133,21 +136,26 @@ class SlaveBot {
             try {
                 const chatId = msg.chat.id;
                 const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
-				const fromId = msg.from.id;
-				
-				// Проверяем права
+                const fromId = msg.from.id;
+                
+                // Проверяем права
                 const messageId = msg.message_id;
-				if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
-					if (!await this.checkAdminRights(chatId, fromId)) {
-						try { // Удаляем сообщение с командой
-							await this.bot.deleteMessage(chatId, messageId);
-						} catch (e) {} // Игнорируем, если нет прав на удаление
-						return;
-					}
-				}
+                if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
+                    if (!await this.checkAdminRights(chatId, fromId)) {
+                        try { // Удаляем сообщение с командой
+                            await this.bot.deleteMessage(chatId, messageId);
+                        } catch (e) {} // Игнорируем, если нет прав на удаление
+                        return;
+                    }
+                }
                 
                 const info = await this.getChatInfo(chatId);
-                await this.bot.sendMessage(chatId, info, {parse_mode: 'markdown'});
+                await this.bot.sendMessage(chatId, info, 
+                    {
+                        parse_mode: 'markdown',
+                        message_thread_id: msg.message_thread_id || undefined
+                    }
+                );
             } catch (err) {
                 console.error('Ошибка в /info:', err);
             }
@@ -157,20 +165,20 @@ class SlaveBot {
         this.bot.onText(/^\/help(?:@\w+)?$/, async (msg) => {
             try {
                 const chatId = msg.chat.id;
-				const fromId = msg.from.id;
+                const fromId = msg.from.id;
                 
                 // Проверяем права
                 const messageId = msg.message_id;
-				if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
-					if (!await this.checkAdminRights(chatId, fromId)) {
-						try { // Удаляем сообщение с командой
-							await this.bot.deleteMessage(chatId, messageId);
-						} catch (e) {} // Игнорируем, если нет прав на удаление
-						return;
-					}
-				}
-				
-				// Определяем тип чата
+                if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
+                    if (!await this.checkAdminRights(chatId, fromId)) {
+                        try { // Удаляем сообщение с командой
+                            await this.bot.deleteMessage(chatId, messageId);
+                        } catch (e) {} // Игнорируем, если нет прав на удаление
+                        return;
+                    }
+                }
+                
+                // Определяем тип чата
                 let chatType;
                 try {
                     const chat = await this.bot.getChat(chatId);
@@ -201,7 +209,12 @@ class SlaveBot {
                 helpText += `*Общие команды:*\n` +
                            `/help - показать эту справку`;
                 
-                await this.bot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
+                await this.bot.sendMessage(chatId, helpText, 
+                    { 
+                        parse_mode: 'Markdown',
+                        message_thread_id: msg.message_thread_id || undefined
+                    }
+                );
             } catch (err) {
                 console.error('Ошибка в /help:', err);
             }
@@ -259,7 +272,10 @@ class SlaveBot {
                                     `2. Используйте команду ${this.escapeMarkdown('/config_channel')}\n` +
                                     `3. Выберите этот канал из списка\n\n` +
                                     `*Только администраторы канала могут выполнить настройку.*`,
-                                    { parse_mode: 'Markdown' }
+                                    { 
+                                        parse_mode: 'Markdown',
+                                        message_thread_id: msg.message_thread_id || undefined
+                                    }
                                 );
                             } else if (chatType === 'private') {
                                 // Для приватных чатов (личных сообщений)
@@ -270,7 +286,10 @@ class SlaveBot {
                                     `👋 *Привет! Я бот для публикаций.*\n\n` +
                                     `Чтобы настроить рассылку в этот чат, используйте команду /config\n` +
                                     `*Только администраторы чата могут выполнить настройку.*`,
-                                    { parse_mode: 'Markdown' }
+                                    { 
+                                        parse_mode: 'Markdown',
+                                        message_thread_id: msg.message_thread_id || undefined
+                                    }
                                 );
                             }
                         } catch (err) {
@@ -292,11 +311,11 @@ class SlaveBot {
                 
                 // Проверяем права для callback
                 if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
-					if (!await this.checkAdminRights(chatId, fromId)) {
-						await this.bot.answerCallbackQuery(msg.id); // Пустой ответ
-						return;
-					}
-				}
+                    if (!await this.checkAdminRights(chatId, fromId)) {
+                        await this.bot.answerCallbackQuery(msg.id); // Пустой ответ
+                        return;
+                    }
+                }
                 
                 if (data.startsWith('timezone_')) {
                     const timezone = data.replace('timezone_', '');
@@ -338,7 +357,8 @@ class SlaveBot {
                             parse_mode: 'Markdown',
                             reply_markup: { inline_keyboard: [[
                                 { text: 'Отмена', callback_data: 'cancel_config' }
-                            ]]}
+                            ]]},
+                            message_thread_id: msg.message.message_thread_id || undefined
                         }
                     );
                     
@@ -378,7 +398,9 @@ class SlaveBot {
                         await this.bot.deleteMessage(chatId, msg.message.message_id);
                     } catch (e) {}
                     
-                    await this.bot.sendMessage(chatId, '⚙️ Настройка отменена.');
+                    await this.bot.sendMessage(chatId, '⚙️ Настройка отменена.', {
+                        message_thread_id: pending ? pending.message_thread_id || undefined : undefined
+                    });
                     await this.bot.answerCallbackQuery(msg.id);
                     
                 } else if (data.startsWith('content_')) {
@@ -596,7 +618,10 @@ class SlaveBot {
                             `• +3 (для UTC+3)\n` +
                             `• -5 (для UTC-5)\n` +
                             `• 0 (для UTC±0)\n`,
-                            { parse_mode: 'Markdown' }
+                            { 
+                                parse_mode: 'Markdown',
+                                message_thread_id: pending.message_thread_id || undefined
+                            }
                         );
                         
                         // Обновляем ID активного сообщения
@@ -871,7 +896,9 @@ class SlaveBot {
 
         } catch (err) {
             console.error('Ошибка startConfigProcess:', err);
-            await this.bot.sendMessage(chatId, '❌ Произошла ошибка при настройке.');
+            await this.bot.sendMessage(chatId, '❌ Произошла ошибка при настройке.', {
+                message_thread_id: messageThreadId || undefined
+            });
         }
     }
 
@@ -939,7 +966,9 @@ class SlaveBot {
         try {
             const pending = this.pendingConfigs.get(chatId);
             if (!pending) {
-                await this.bot.sendMessage(chatId, '❌ Сессия настройки истекла. Начните заново с /config');
+                await this.bot.sendMessage(chatId, '❌ Сессия настройки истекла. Начните заново с /config', {
+                    message_thread_id: messageThreadId || undefined
+                });
                 return;
             }
 
@@ -947,14 +976,18 @@ class SlaveBot {
             const offsetNum = parseInt(timezoneOffset, 10);
             if (isNaN(offsetNum)) {
                 console.error('handleTimezoneSelection: Неверный формат timezoneOffset', timezoneOffset);
-                await this.bot.sendMessage(chatId, '❌ Ошибка: неверный формат часового пояса');
+                await this.bot.sendMessage(chatId, '❌ Ошибка: неверный формат часового пояса', {
+                    message_thread_id: pending.message_thread_id || undefined
+                });
                 return;
             }
             
             // Проверяем диапазон часового пояса (от -12 до +14 часов в минутах)
             if (offsetNum < -720 || offsetNum > 840) { // -12*60 до +14*60 минут
                 console.error('handleTimezoneSelection: Часовой пояс вне диапазона', offsetNum);
-                await this.bot.sendMessage(chatId, '❌ Ошибка: часовой пояс вне допустимого диапазона (-12...+14 часов)');
+                await this.bot.sendMessage(chatId, '❌ Ошибка: часовой пояс вне допустимого диапазона (-12...+14 часов)', {
+                    message_thread_id: pending.message_thread_id || undefined
+                });
                 return;
             }
 
@@ -971,7 +1004,10 @@ class SlaveBot {
 
         } catch (err) {
             console.error('Ошибка handleTimezoneSelection:', err);
-            await this.bot.sendMessage(chatId, '❌ Произошла ошибка при выборе часового пояса.');
+            const pending = this.pendingConfigs.get(chatId);
+            await this.bot.sendMessage(chatId, '❌ Произошла ошибка при выборе часового пояса.', {
+                message_thread_id: pending ? pending.message_thread_id || undefined : undefined
+            });
         }
     }
 
@@ -979,7 +1015,9 @@ class SlaveBot {
         try {
             const pending = this.pendingConfigs.get(chatId);
             if (!pending) {
-                await this.bot.sendMessage(chatId, '❌ Сессия настройки истекла. Начните заново с /config');
+                await this.bot.sendMessage(chatId, '❌ Сессия настройки истекла. Начните заново с /config', {
+                    message_thread_id: pending ? pending.message_thread_id || undefined : undefined
+                });
                 return;
             }
 
@@ -1009,7 +1047,10 @@ class SlaveBot {
 
         } catch (err) {
             console.error('Ошибка showContentSelection:', err);
-            await this.bot.sendMessage(chatId, '❌ Произошла ошибка при настройке контента.');
+            const pending = this.pendingConfigs.get(chatId);
+            await this.bot.sendMessage(chatId, '❌ Произошла ошибка при настройке контента.', {
+                message_thread_id: pending ? pending.message_thread_id || undefined : undefined
+            });
         }
     }
 
@@ -1041,7 +1082,9 @@ class SlaveBot {
         try {
             const pending = this.pendingConfigs.get(chatId);
             if (!pending) {
-                await this.bot.sendMessage(chatId, '❌ Сессия настройки истекла. Начните заново с /config');
+                await this.bot.sendMessage(chatId, '❌ Сессия настройки истекла. Начните заново с /config', {
+                    message_thread_id: pending ? pending.message_thread_id || undefined : undefined
+                });
                 return;
             }
 
@@ -1095,7 +1138,10 @@ class SlaveBot {
         } catch (err) {
             console.error('Ошибка handleContentSelection:', err);
             try {
-                await this.bot.sendMessage(chatId, '❌ Произошла ошибка при выборе контента.');
+                const pending = this.pendingConfigs.get(chatId);
+                await this.bot.sendMessage(chatId, '❌ Произошла ошибка при выборе контента.', {
+                    message_thread_id: pending ? pending.message_thread_id || undefined : undefined
+                });
             } catch (e) {}
         }
     }
@@ -1128,7 +1174,9 @@ class SlaveBot {
 
             // Проверяем, что часовой пояс выбран
             if (pending.timezoneOffset === null) {
-                await this.bot.sendMessage(chatId, '❌ Ошибка: часовой пояс не выбран');
+                await this.bot.sendMessage(chatId, '❌ Ошибка: часовой пояс не выбран', {
+                    message_thread_id: pending.message_thread_id || undefined
+                });
                 return;
             }
 
@@ -1138,7 +1186,10 @@ class SlaveBot {
                 await this.bot.sendMessage(chatId, 
                     '❌ *Ошибка: должен быть выбран хотя бы один тип контента*\n\n' +
                     `*Выберите Ежедневник или Новости (или оба) и нажмите "Сохранить"*`,
-                    { parse_mode: 'Markdown' }
+                    { 
+                        parse_mode: 'Markdown',
+                        message_thread_id: pending.message_thread_id || undefined
+                    }
                 );
                 return;
             }
@@ -1246,11 +1297,16 @@ class SlaveBot {
                     `🌍 *Часовой пояс:* UTC${sign}${hours} ч.\n` +
                     `*Получаем:*\n${contentInfo}` +
                     threadInfo,
-                    { parse_mode: 'Markdown' }
+                    { 
+                        parse_mode: 'Markdown',
+                        message_thread_id: pending.message_thread_id || undefined
+                    }
                 );
             } else {
                 const targetUserId = pending.userId || chatId;
-                await this.bot.sendMessage(targetUserId, '❌ Ошибка сохранения конфигурации.');
+                await this.bot.sendMessage(targetUserId, '❌ Ошибка сохранения конфигурации.', {
+                    message_thread_id: pending.message_thread_id || undefined
+                });
             }
 
             // Очищаем временные данные
@@ -1260,15 +1316,21 @@ class SlaveBot {
             console.error('Ошибка finishConfig:', err);
             // Пытаемся определить userId для отправки сообщения об ошибке
             let targetUserId = chatId;
+            let messageThreadId = undefined;
             try {
                 const pending = this.pendingConfigs.get(chatId);
                 if (pending && pending.userId) {
                     targetUserId = pending.userId;
                 }
+                if (pending && pending.message_thread_id) {
+                    messageThreadId = pending.message_thread_id;
+                }
             } catch (e) {
                 // Игнорируем ошибку поиска
             }
-            await this.bot.sendMessage(targetUserId, '❌ Произошла ошибка при сохранении настроек.');
+            await this.bot.sendMessage(targetUserId, '❌ Произошла ошибка при сохранении настроек.', {
+                message_thread_id: messageThreadId || undefined
+            });
         }
     }
 
@@ -1304,7 +1366,8 @@ class SlaveBot {
                             offset: parseInt(timezoneKey, 10),
                             timezoneKey,
                             Eg: chat.Eg !== undefined ? chat.Eg : false,
-                            News: chat.News !== undefined ? chat.News : false
+                            News: chat.News !== undefined ? chat.News : false,
+                            threadId: chat.message_thread_id || ""
                         };
                     }
                 }
@@ -1350,7 +1413,10 @@ class SlaveBot {
             if (!existing) {
                 if (showConfirm) {
                     await this.bot.sendMessage(chatId, 
-                        '❌ Этот чат не найден в настройках рассылки.'
+                        '❌ Этот чат не найден в настройках рассылки.',
+                        {
+                            message_thread_id: existing && existing.threadId ? existing.threadId : undefined
+                        }
                     );
                 }
                 return false;
@@ -1359,11 +1425,14 @@ class SlaveBot {
             // Удаляем без подтверждения
             const removed = this.removeChatFromAllTimezones(chatId, true);
             
-            if (removed) {
+            if (removed && showConfirm) {
                 // Пытаемся отправить сообщение (если бот еще в чате)
                 try {
                     await this.bot.sendMessage(chatId, 
-                        `✅ Чат "${this.escapeMarkdown(existing.title)}" удален из рассылки публикаций.`
+                        `✅ Чат "${this.escapeMarkdown(existing.title)}" удален из рассылки публикаций.`,
+                        {
+                            message_thread_id: existing && existing.threadId ? existing.threadId : undefined
+                        }
                     );
                 } catch (err) {
                     // Игнорируем ошибку, бот уже удален
@@ -1376,7 +1445,10 @@ class SlaveBot {
             console.error('Ошибка removeChatFromConfig:', err);
             if (showConfirm) {
                 try {
-                    await this.bot.sendMessage(chatId, '❌ Ошибка при удалении чата.');
+                    const existing = this.findChatInConfig(chatId);
+                    await this.bot.sendMessage(chatId, '❌ Ошибка при удалении чата.', {
+                        message_thread_id: existing && existing.threadId ? existing.threadId : undefined
+                    });
                 } catch (e) {
                     // Игнорируем, бот может быть уже удален
                 }
@@ -1830,7 +1902,7 @@ class SlaveBot {
                 }
             }
             
-            // Очищаем старую сессию
+            // Очищаем старую сессия
             this.pendingConfigs.delete(userId);
             
             // Сначала проверяем, не настроен ли уже этот канал
@@ -1874,7 +1946,7 @@ class SlaveBot {
                     userId: userId,
                     chatId: channelId,
                     timestamp: Date.now(),
-                    lastMessageId: sentMessage.message_id,
+                    lastMessageId = sentMessage.message_id,
                     lastContentMessageId: null,
                     configType: 'channel_manage'
                 });
