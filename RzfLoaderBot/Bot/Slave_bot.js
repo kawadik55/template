@@ -1504,7 +1504,10 @@ class SlaveBot {
     }
 
     setupCleanupTimer() {
-        // Очистка старых pending конфигураций каждые 10 минут
+        const CHAT_CLEANUP_INTERVAL = 6 * 60 * 60 * 1000; // 6 часов
+		let nextChatCleanup = Date.now() + CHAT_CLEANUP_INTERVAL;
+		
+		// Очистка старых pending конфигураций каждые 10 минут
         this.cleanupTimer = setInterval(() => {
             const now = Date.now();
             const timeout = 20 * 60 * 1000; // 20 минут
@@ -1540,8 +1543,9 @@ class SlaveBot {
             }
             
             // Раз в сутки проверяем существование чатов
-            if (Math.random() < 0.1) { // ~10% вероятность при каждом запуске
-                this.cleanupDeadChats();
+            if (now >= nextChatCleanup) { //каждые 6 часов
+                nextChatCleanup = now + CHAT_CLEANUP_INTERVAL;
+				this.cleanupDeadChats();
             }
         }, 10 * 60 * 1000);
     }
