@@ -83,7 +83,10 @@ class SlaveBot {
                     }
                 }
                 
-                // Проверяем тип чата
+                // Задержка 1000мс прямо здесь
+				await new Promise(resolve => setTimeout(resolve, 1000));
+				
+				// Проверяем тип чата
                 let chatType;
                 try {
                     const chat = await this.bot.getChat(chatId);
@@ -249,18 +252,18 @@ class SlaveBot {
                 if ((oldStatus === 'left' || oldStatus === 'kicked') && 
                     (newStatus === 'member' || newStatus === 'administrator')) {
                     
-                    // Проверяем тип чата
-                    let chatType;
-                    try {
-                        const chat = await this.bot.getChat(chatId);
-                        chatType = chat.type;
-                    } catch (e) {
-                        chatType = 'unknown';
-                    }
-                    
                     setTimeout(async () => {
                         try {
-                            if (chatType === 'channel') {
+                            // Проверяем тип чата
+							let chatType;
+							try {
+								const chat = await this.bot.getChat(chatId);
+								chatType = chat.type;
+							} catch (e) {
+								chatType = 'unknown';
+							}
+							
+							if (chatType === 'channel') {
                                 // Для каналов отправляем специальное сообщение
                                 const botInfo = await this.bot.getMe();
                                 const botUsername = this.escapeMarkdown('@' + botInfo.username);
