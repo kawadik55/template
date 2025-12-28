@@ -3212,7 +3212,7 @@ try{
     {	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
 		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
 		let date = !!obj.date?obj.date:'';//запись даты
-		WriteLogFile(obj.type+' "Срочно" в очередь => день='+day+'; дата='+date+timestr);
+		WriteLogFile(obj.type+' "Срочно" в зону '+offset+' => день='+day+'; дата='+date+timestr);
 	 //соберем все чаты в новый массив
 	 //let all_chats = getAllChats();
 	 let all_chats = chat_news[offset] ? chat_news[offset] : [];
@@ -4109,7 +4109,7 @@ async function send_Images(now,offset)
 			}
           }
 		  let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
-		  if(flag>0) {WriteLogFile('image "'+key+'"'+' в очередь => день='+day+'; дата='+date+timestr);made++;}
+		  if(flag>0) {WriteLogFile('image "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);made++;}
           
           //публикуем файлы
           if(flag) 
@@ -4269,7 +4269,7 @@ async function send_Text(now,offset)
 			}
           }
 		  let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
-		  if(flag>0) {WriteLogFile('text "'+key+'"'+' в очередь => день='+day+'; дата='+date+timestr);made++;}
+		  if(flag>0) {WriteLogFile('text "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);made++;}
           
           //публикуем текст
 		  if(flag)
