@@ -1946,7 +1946,7 @@ class SlaveBot {
                     userId: userId,
                     chatId: channelId,
                     timestamp: Date.now(),
-                    lastMessageId = sentMessage.message_id,
+                    lastMessageId: sentMessage.message_id,
                     lastContentMessageId: null,
                     configType: 'channel_manage'
                 });
