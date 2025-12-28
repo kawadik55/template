@@ -1507,7 +1507,7 @@ class SlaveBot {
         // Очистка старых pending конфигураций каждые 10 минут
         this.cleanupTimer = setInterval(() => {
             const now = Date.now();
-            const timeout = 30 * 60 * 1000; // 30 минут
+            const timeout = 20 * 60 * 1000; // 20 минут
             
             for (const [chatId, data] of this.pendingConfigs.entries()) {
                 if (now - data.timestamp > timeout) {
