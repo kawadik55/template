@@ -1601,11 +1601,12 @@ try{
 			}
 			else if(button=='Статистика')//которые на модерацию
 			{	let str='';
-				if(Object.keys(chat_news).length > 0)
+				let offset = Object.keys(chat_news);
+				if(offset.length > 0)
 				{
 					str = 'Статистика на сегодня:\n';
 					let len = 0;
-					for(let i=0;i<Object.keys(chat_news).length;i++) len += chat_news[i].length;
+					for(let i=0;i<offset.length;i++) len += chat_news[offset[i]].length;
 					str = '*Кол-во подписчиков* - '+len+'\n';
 				}
                 else str = '*Упс... На сегодня ничего нет!*\n';
