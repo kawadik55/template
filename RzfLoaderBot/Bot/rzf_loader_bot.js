@@ -8,7 +8,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const SlaveBot = require('./Slave_bot');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const PathToImages = currentDir+'/images';//путь к файлам на выполнение.
+const PathToImages = currentDir+'/images';//путь к файлам на выполнение
 const PathToImagesModer = currentDir+'/moder';//путь к файлам на выполнение
 const FileUserList = currentDir+"/UserList.txt";//имя файла белого листа
 const FileBlackList = currentDir+"/BlackList.txt";//имя файла черного листа
@@ -148,6 +148,7 @@ try
 }
 if(!!RunList.FileEg) FileEg = currentDir+RunList.FileEg;
 if(!!RunList.FileRaspis) FileRaspis = currentDir+RunList.FileRaspis;
+if(RunList.Raspis == true){RunList.Raspis = false; WriteFileJson(FileRun,RunList);}//принуд. отключаем
 //файл кнопок
 try 
 { Buttons = JSON.parse(fs.readFileSync(FileButtons));
@@ -252,11 +253,11 @@ var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
 		let offset = Object.keys(chat_news).length>0 ? Object.keys(chat_news) :[];
 		//публикуем тексты
 		if(RunList.Text===true) 
-		{	for(let i=0;i<offset.length;i++) {WriteLogFile(offset[i]); await send_Text(now, offset[i]);}
+		{	for(let i=0;i<offset.length;i++) {await send_Text(now, offset[i]);}
 		}
 		//публикуем фото и пр
 		if(RunList.Image===true)
-		{	for(let i=0;i<offset.length;i++) await send_Images(now, offset[i]);
+		{	for(let i=0;i<offset.length;i++) {await send_Images(now, offset[i]);}
 		}	
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
@@ -367,8 +368,8 @@ catch (err)//если файл отсутствует, то создадим е�
 try 
 {let bl = fs.readFileSync(FileImagesList);
  ImagesList = JSON.parse(bl);
- ImagesList = shiftObject(ImagesList);//упорядочиваем номера-ключи в массиве
- WriteFileJson(FileImagesList,ImagesList);
+ let newlist = shiftObject(ImagesList);//упорядочиваем номера-ключи в массиве
+ if(JSON.stringify(ImagesList) !== JSON.stringify(newlist)) WriteFileJson(FileImagesList,newlist);
 }
 catch (err)//если файл отсутствует, то создадим его 
 {WriteFileJson(FileImagesList,ImagesList);
@@ -378,8 +379,8 @@ catch (err)//если файл отсутствует, то создадим е�
 try 
 {let bl = fs.readFileSync(FileTextList);
  TextList = JSON.parse(bl);
- TextList = shiftObject(TextList);//упорядочиваем номера-ключи в массиве
- WriteFileJson(FileTextList,TextList);
+ let newlist = shiftObject(TextList);//упорядочиваем номера-ключи в массиве
+ if(JSON.stringify(TextList) !== JSON.stringify(newlist)) WriteFileJson(FileTextList,newlist);
 }
 catch (err)//если файл отсутствует, то создадим его 
 {WriteFileJson(FileTextList,TextList);
@@ -389,8 +390,8 @@ catch (err)//если файл отсутствует, то создадим е�
 try 
 {let bl = fs.readFileSync(FileModerImagesList);
  ModerImagesList = JSON.parse(bl);
- ModerImagesList = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
- WriteFileJson(FileModerImagesList,ModerImagesList);
+ let newlist = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
+ if(JSON.stringify(ModerImagesList) !== JSON.stringify(newlist)) WriteFileJson(FileModerImagesList,newlist);
 }
 catch (err)//если файл отсутствует, то создадим его 
 {WriteFileJson(FileModerImagesList,ModerImagesList);
@@ -400,18 +401,22 @@ catch (err)//если файл отсутствует, то создадим е�
 try 
 {let bl = fs.readFileSync(FileModerTextList);
  ModerTextList = JSON.parse(bl);
- ModerTextList = shiftObject(ModerTextList);//упорядочиваем номера-ключи в массиве
- WriteFileJson(FileModerTextList,ModerTextList);
+ let newlist = shiftObject(ModerTextList);//упорядочиваем номера-ключи в массиве
+ if(JSON.stringify(ModerTextList) !== JSON.stringify(newlist)) WriteFileJson(FileModerTextList,newlist);
 }
 catch (err)//если файл отсутствует, то создадим его 
 {WriteFileJson(FileModerTextList,ModerTextList);
 }
 
 //загрузим chatId координатора WhatsApp
-let chat_coordinatorWhatsApp;
+let chat_coordinatorWhatsApp = 0;
 if(Object.hasOwn(AdminList, 'coordinatorWhatsApp')&&AdminList.coordinatorWhatsApp !== '') {chat_coordinatorWhatsApp = AdminList.coordinatorWhatsApp;}
-else 
-{chat_coordinatorWhatsApp = 0; AdminList.coordinatorWhatsApp = ''; AdminList.coordinatorName = '';
+else if(!Object.hasOwn(AdminList, 'coordinatorWhatsApp'))
+{AdminList.coordinatorWhatsApp = '';
+ WriteFileJson(FileAdminList,AdminList);
+}
+else if(!Object.hasOwn(AdminList, 'coordinatorName'))
+{AdminList.coordinatorName = '';
  WriteFileJson(FileAdminList,AdminList);
 }
 
@@ -2450,7 +2455,7 @@ function welcome(chatId,name)
 try{
 	let str='';
 	str+='Для загрузки текста или файла (картинка, видео, аудио, документ, альбом) просто нажми соответствующую кнопку и следуй моим подсказкам.';
-	str+='\nВремя выхода публикаций в каналы - ' + timePablic + 'Z' + moment().format('Z');
+	str+='\nВремя выхода публикаций в каналы - ' + timePablic + ' местного времени';
 	sendMessage(chatId, str, klava(begin(chatId)));
 }catch(err){WriteLogFile(err+'\nfrom welcome()','вчат');}	
 }
@@ -3006,7 +3011,7 @@ try{
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
 	if(Object.hasOwn(obj, 'time') && !!obj.time)
-	{	if(moment(obj.time,'DD.MM.YYYY').isValid()) 
+	{	if(moment(obj.time,'HH:mm:ss').isValid()) 
 		{timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
 		}
 	}
@@ -3188,7 +3193,7 @@ try{
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
 	if(Object.hasOwn(obj, 'time') && !!obj.time)
-	{	if(moment(obj.time,'DD.MM.YYYY').isValid()) 
+	{	if(moment(obj.time,'HH:mm:ss').isValid()) 
 		{timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
 		}
 	}
@@ -3208,7 +3213,7 @@ try{
     {	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
 		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
 		let date = !!obj.date?obj.date:'';//запись даты
-		WriteLogFile(obj.type+' "Срочно" в очередь => день='+day+'; дата='+date+timestr);
+		WriteLogFile(obj.type+' "Срочно" в зону '+offset+' => день='+day+'; дата='+date+timestr);
 	 //соберем все чаты в новый массив
 	 //let all_chats = getAllChats();
 	 let all_chats = chat_news[offset] ? chat_news[offset] : [];
@@ -4105,7 +4110,7 @@ async function send_Images(now,offset)
 			}
           }
 		  let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
-		  if(flag>0) {WriteLogFile('image "'+key+'"'+' в очередь => день='+day+'; дата='+date+timestr);made++;}
+		  if(flag>0) {WriteLogFile('image "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);made++;}
           
           //публикуем файлы
           if(flag) 
@@ -4195,11 +4200,8 @@ async function send_Text(now,offset)
 	let made = 0;
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	if(!now || now.isValid()==false) now = moment();//проверяем
-	WriteLogFile('now = '+now.format('DD.MM.YYYY HH:mm:ss'));
-	WriteLogFile('timepublic = '+timepublic.format('DD.MM.YYYY HH:mm:ss'));
 	//читаем список
 	let dayzone = now.clone().utcOffset(Number(offset),true).startOf('day');//текущий день в зоне
-	WriteLogFile('dayzone = '+dayzone.format('DD.MM.YYYY HH:mm:ss'));
 	for(let key in TextList)
 	{   try{  
 		  let date = TextList[key].date;//запись даты
@@ -4208,7 +4210,6 @@ async function send_Text(now,offset)
 		  if(Object.hasOwn(TextList[key], 'time') && !!TextList[key].time)
 		  {	if(moment(TextList[key].time, 'HH:mm').isValid()) 
 			{	timeobj = getDateTimeForZone(TextList[key].time, offset);//приводим к местному времени
-				WriteLogFile('timeobj = '+timeobj.format('DD.MM.YYYY HH:mm:ss'));
 			}
 		  }
           let flag = 0;
@@ -4229,7 +4230,7 @@ async function send_Text(now,offset)
 					}
 					else //по дням недели
 					{ 	//сегодняшний день недели в зоне: 0-воскресенье, 1-понедельник
-						let dayWeek = now.utcOffset(Number(offset),true).day();
+						let dayWeek = now.clone().utcOffset(Number(offset),true).day();
 						if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
 						if(dayWeek==masDay.indexOf(day))//совпали дни, публикуем 
 						{	let sec;
@@ -4266,11 +4267,10 @@ async function send_Text(now,offset)
 				//иначе публикуем во время timeobj
 				else sec = now.diff(timeobj, 'seconds');//разница в секундах
 				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
-				WriteLogFile('sec = '+sec);
 			}
           }
 		  let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
-		  if(flag>0) {WriteLogFile('text "'+key+'"'+' в очередь => день='+day+'; дата='+date+timestr);made++;}
+		  if(flag>0) {WriteLogFile('text "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);made++;}
           
           //публикуем текст
 		  if(flag)
