@@ -1599,6 +1599,18 @@ try{
 					await sendMessage(chatId, str, klava(keyboard['102']));//Назад
 				}		
 			}
+			else if(button=='Статистика')//которые на модерацию
+			{	let str='';
+				if(Object.keys(chat_news).length > 0)
+				{
+					str = 'Статистика на сегодня:\n';
+					let len = 0;
+					for(let i=0;i<Object.keys(chat_news).length;i++) len += chat_news[i].length;
+					str = '*Кол-во подписчиков* - '+len+'\n';
+				}
+                else str = '*Упс... На сегодня ничего нет!*\n';
+                await sendMessage(chatId, str, klava(keyboard['102']));//Назад		
+			}
 		}
 		//------------ набор 'Да + Нет' при удалении текста на модерацию--------
 		else if(state==101 && numOfDelete[chatId]!='')
@@ -3747,6 +3759,12 @@ var keyList =
       {
         "text": "Публиковать Файлы",
         "callback_data": "100_Публиковать Файлы"
+      }
+    ],
+	[
+      {
+        "text": "Статистика",
+        "callback_data": "100_Статистика"
       }
     ],
     [
