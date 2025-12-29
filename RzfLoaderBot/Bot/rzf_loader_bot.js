@@ -3011,7 +3011,7 @@ try{
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
 	if(Object.hasOwn(obj, 'time') && !!obj.time)
-	{	if(moment(obj.time,'HH:mm:ss').isValid()) 
+	{	if(moment(obj.time,'HH:mm').isValid()) 
 		{timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
 		}
 	}
@@ -3031,7 +3031,7 @@ try{
 	{	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
 		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
 		let date = !!obj.date?obj.date:'';//запись даты
-		WriteLogFile('text "Срочно" => день='+day+'; дата='+date+timestr);
+		WriteLogFile('text "Сегодня" в зону '+offset+' => день='+day+'; дата='+date+timestr);
 		//соберем все чаты в новый массив
 		//let all_chats = getAllChats();//посылаем без разбору по зонам
 		let all_chats = chat_news[offset] ? chat_news[offset] : [];
@@ -3193,7 +3193,7 @@ try{
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
 	if(Object.hasOwn(obj, 'time') && !!obj.time)
-	{	if(moment(obj.time,'HH:mm:ss').isValid()) 
+	{	if(moment(obj.time,'HH:mm').isValid()) 
 		{timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
 		}
 	}
@@ -3213,7 +3213,7 @@ try{
     {	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
 		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
 		let date = !!obj.date?obj.date:'';//запись даты
-		WriteLogFile(obj.type+' "Срочно" в зону '+offset+' => день='+day+'; дата='+date+timestr);
+		WriteLogFile(obj.type+' "Сегодня" в зону '+offset+' => день='+day+'; дата='+date+timestr);
 	 //соберем все чаты в новый массив
 	 //let all_chats = getAllChats();
 	 let all_chats = chat_news[offset] ? chat_news[offset] : [];
@@ -3916,7 +3916,7 @@ async function send_Eg()
 		}		
 		let eg = (await fs.promises.readFile(refpath)).toString();//получаем "сегодняшний" для юзера Ежик
 		
-		WriteLogFile('Рассылка Ежика в каналы '+groffset+' через очередь:');
+		WriteLogFile('Рассылка Ежика подписчикам '+groffset+':');
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
 			let chatId = '', threadId = '', opt = {};
