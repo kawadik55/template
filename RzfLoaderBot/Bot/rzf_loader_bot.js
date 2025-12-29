@@ -450,7 +450,7 @@ if(queue.queue.length>0) queue.forceProcess();//запускаем не пуст
 })();*/
 //====================================================================
 // СТАРТ
-LoaderBot.onText(/\/start/, async (msg) => 
+LoaderBot.onText(/^\/start/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -1737,7 +1737,7 @@ try{
 });
 //====================================================================
 // Показать список команд
-LoaderBot.onText(/\/help/, async (msg) => 
+LoaderBot.onText(/^\/help/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -1769,7 +1769,7 @@ try{
 });
 //====================================================================
 // Показать UserList
-LoaderBot.onText(/\/UserList/, async (msg) => 
+LoaderBot.onText(/^\/UserList/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -1790,7 +1790,7 @@ try{
 });
 //====================================================================
 // Показать BlackList
-LoaderBot.onText(/\/BlackList/, async (msg) => 
+LoaderBot.onText(/^\/BlackList/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -1806,7 +1806,7 @@ try{
 });
 //====================================================================
 // Показать AdminList
-LoaderBot.onText(/\/AdminList/, async (msg) => 
+LoaderBot.onText(/^\/AdminList/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -1825,7 +1825,7 @@ try{
 });
 //====================================================================
 // Добавить Админа Бота
-LoaderBot.onText(/\/AddAdmin/, async (msg) => 
+LoaderBot.onText(/^\/AddAdmin/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -1860,7 +1860,7 @@ try{
 });
 //====================================================================
 // Добавить Координатора Вотсап
-LoaderBot.onText(/\/AddWhatsApp/, async (msg) => 
+LoaderBot.onText(/^\/AddWhatsApp/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -1895,7 +1895,7 @@ try{
 });
 //====================================================================
 // Добавить Юзера
-LoaderBot.onText(/\/AddUser/, async (msg) => 
+LoaderBot.onText(/^\/AddUser/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -1936,7 +1936,7 @@ try{
 });
 //====================================================================
 // Добавить в Черный список
-LoaderBot.onText(/\/AddBan/, async (msg) => 
+LoaderBot.onText(/^\/AddBan/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -1969,7 +1969,7 @@ try{
 });
 //====================================================================
 // Показать ImagesList
-LoaderBot.onText(/\/ImagesList/, async (msg) => 
+LoaderBot.onText(/^\/ImagesList/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -1993,7 +1993,7 @@ try{
 });
 //====================================================================
 // Показать срок действия регистрации юзеров lifeTime
-LoaderBot.onText(/\/ShowLifeTime/, async (msg) => 
+LoaderBot.onText(/^\/ShowLifeTime/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -2004,7 +2004,7 @@ try{
 });
 //====================================================================
 // Показать TextList
-LoaderBot.onText(/\/TextList/, async (msg) => 
+LoaderBot.onText(/^\/TextList/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -2016,7 +2016,7 @@ try{
 });
 //====================================================================
 // Показать сообщения TextList
-LoaderBot.onText(/\/ShowTextList/, async (msg) => 
+LoaderBot.onText(/^\/ShowTextList/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -2028,7 +2028,7 @@ try{
 });
 //====================================================================
 // Удаление Админа Бота
-LoaderBot.onText(/\/DelAdmin/, async (msg) => 
+LoaderBot.onText(/^\/DelAdmin/, async (msg) => 
 {	
 try{
 	const chatId = msg.chat.id;
@@ -2056,7 +2056,7 @@ try{
 });
 //====================================================================
 // Удаление Координатора Вотсап
-LoaderBot.onText(/\/DelWhatsApp/, async (msg) => 
+LoaderBot.onText(/^\/DelWhatsApp/, async (msg) => 
 {	
 try{
 	const chatId = msg.chat.id;
@@ -2076,7 +2076,7 @@ try{
 });
 //====================================================================
 // Удаление Юзера
-LoaderBot.onText(/\/DelUser/, async (msg) => 
+LoaderBot.onText(/^\/DelUser/, async (msg) => 
 {	
 try{
 	const chatId = msg.chat.id;
@@ -2102,7 +2102,7 @@ try{
 });
 //====================================================================
 // Удаление из Черного списка
-LoaderBot.onText(/\/DelBan/, async (msg) => 
+LoaderBot.onText(/^\/DelBan/, async (msg) => 
 {	
 try{
 	const chatId = msg.chat.id;
@@ -2166,7 +2166,7 @@ try{
 });*/
 //====================================================================
 // Изменить ссылку в кнопке Вопросы
-LoaderBot.onText(/\/EditUrl/, async (msg) => 
+LoaderBot.onText(/^\/EditUrl/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
@@ -2198,7 +2198,7 @@ try{
 });
 //====================================================================
 // Изменить срок действия допуска юзеров
-LoaderBot.onText(/\/EditLifeTime/, async (msg) => 
+LoaderBot.onText(/^\/EditLifeTime/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id;
