@@ -1604,12 +1604,12 @@ try{
 				let offset = Object.keys(chat_news);
 				if(offset.length > 0)
 				{
-					str = 'Статистика на сегодня:\n';
+					str += 'Статистика на сегодня:\n';
 					let len = 0;
 					for(let i=0;i<offset.length;i++) len += chat_news[offset[i]].length;
-					str = '*Кол-во подписчиков* - '+len+'\n';
+					str += '*Кол-во подписчиков* - '+len+'\n';
 				}
-                else str = '*Упс... На сегодня ничего нет!*\n';
+                else str += '*Упс... На сегодня ничего нет!*\n';
                 await sendMessage(chatId, str, klava(keyboard['102']));//Назад		
 			}
 		}
