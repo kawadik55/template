@@ -3046,6 +3046,7 @@ try{
 		let date = !!obj.date?obj.date:'';//запись даты
 		WriteLogFile('text "Сегодня" в зону '+offset+' => день='+day+'; дата='+date+timestr);
 		//соберем все чаты в новый массив
+		let count_chats = 0;
 		//let all_chats = getAllChats();//посылаем без разбору по зонам
 		let all_chats = chat_news[offset] ? chat_news[offset] : [];
 		for(let i=0;i<all_chats.length;i++)
@@ -3067,11 +3068,12 @@ try{
 			{	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 				let res = await sendTextToBot(NewsBot, chatId, obj.text, opt);//посылаем пост
 				if(res===false) WriteLogFile('Не смог послать текст text "'+key+'"'+' в '+name[0]);
-				else WriteLogFile('в '+key[0]+' = ОК');
+				else count_chats++;//WriteLogFile('в '+key[0]+' = ОК');
 			}
 		  }
 		 }catch(err){WriteLogFile(err+'\nfrom publicText()=>for()','вчат');}
 		}
+		await WriteLogFile('Всего чатов = '+count_chats+' = ОК');
 	}
 }catch(err){WriteLogFile(err+'\nfrom publicText()','вчат');}
 }
@@ -3223,6 +3225,7 @@ try{//проверяем разрешение на публикацию неме
 		let date = !!obj.date?obj.date:'';//запись даты
 		WriteLogFile(obj.type+' "Сегодня" в зону '+offset+' => день='+day+'; дата='+date+timestr);
 	 //соберем все чаты в новый массив
+	 count_chats = 0;
 	 //let all_chats = getAllChats();
 	 let all_chats = chat_news[offset] ? chat_news[offset] : [];
 	 for(let i=0;i<all_chats.length;i++) 
@@ -3255,10 +3258,11 @@ try{//проверяем разрешение на публикацию неме
 				}
 			}
 			else sendPhoto(NewsBot, chatId, obj.path, opt);//без типа - картинка
-			WriteLogFile('в '+key[0]+' = ОК');
+			count_chats++;//WriteLogFile('в '+key[0]+' = ОК');
 		  }
 		}catch(err){WriteLogFile(err+'\nfrom publicImage()=>for()','вчат');}
 	 }
+	 await WriteLogFile('Всего чатов = '+count_chats+' = ОК');
 	}
 }catch(err){WriteLogFile(err+'\nfrom publicImage()','вчат');}
 }
@@ -3935,6 +3939,7 @@ async function send_Eg()
 		let eg = (await fs.promises.readFile(refpath)).toString();//получаем "сегодняшний" для юзера Ежик
 		
 		WriteLogFile('Рассылка Ежика подписчикам '+groffset+':');
+		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
 			let chatId = '', threadId = '', opt = {};
@@ -3962,10 +3967,11 @@ async function send_Eg()
 					await WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
 				}
 			}
-			else await WriteLogFile('в '+name[0]+' = ОК');
+			else count_chats++;//await WriteLogFile('в '+name[0]+' = ОК');
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Eg()=>for()','вчат');}
 		}
+		await WriteLogFile('Всего чатов = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Eg()','вчат');
@@ -4052,8 +4058,7 @@ try{
 //используется в рассылке
 async function send_Images(now,offset)
 { try
-  {	let good = 0;
-    //WriteLogFile('Рассылка картинок:');
+  {	//WriteLogFile('Рассылка картинок:');
 	//if(Object.keys(ImagesList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
 	let made = 0;
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
@@ -4135,6 +4140,7 @@ async function send_Images(now,offset)
           { //выделим массив по смещению
 			//let all_chats = getAllChats();
 			let all_chats = chat_news[offset] ? chat_news[offset] : [];
+			let count_chats = 0;
 			//основной канал новостей
 			for(let i=0;i<all_chats.length;i++) 
 			{	let chatId = '', threadId = '';
@@ -4177,10 +4183,11 @@ async function send_Images(now,offset)
 					}
 				}
 				else 
-				{	good++;//если без ошибок
-					WriteLogFile('в '+name[0]+' = ОК');
+				{	//если без ошибок
+					count_chats++;//WriteLogFile('в '+name[0]+' = ОК');
 				}
 			}
+			await WriteLogFile('Всего чатов = '+count_chats+' = ОК');
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Images()=>for()','вчат');}
 	}
@@ -4213,7 +4220,6 @@ try{
 async function send_Text(now,offset)
 { try
   {	
-	let good = 0;
 	//WriteLogFile('Рассылка текстов:');
 	//if(Object.keys(TextList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
 	let made = 0;
@@ -4296,6 +4302,7 @@ async function send_Text(now,offset)
           { //соберем все чаты в новый массив
 			//let all_chats = getAllChats();
 			let all_chats = chat_news[offset] ? chat_news[offset] : [];
+			let count_chats = 0;
 			//основной канал новостей
 			for(let i=0;i<all_chats.length;i++) 
 			{	let chatId = '';
@@ -4328,10 +4335,11 @@ async function send_Text(now,offset)
 					}
 				}
 				else 
-				{	good++;//если без ошибок
-					WriteLogFile('в '+name[0]+' = ОК');
+				{	//если без ошибок
+					count_chats++;//WriteLogFile('в '+name[0]+' = ОК');
 				}
 			}
+			await WriteLogFile('Всего чатов = '+count_chats+' = ОК');
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Text()=>for()','вчат');}
 	}
