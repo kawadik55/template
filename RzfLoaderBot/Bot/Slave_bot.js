@@ -1227,7 +1227,7 @@ class SlaveBot {
             const chatTitle = pending.chatTitle || `chat_${targetChatId}`;
             
             // Добавляем ID чата
-            chatEntry[this.escapeMarkdown(chatTitle)] = targetChatId.toString();
+            chatEntry[chatTitle] = targetChatId.toString();
             
             // Добавляем message_thread_id
             chatEntry.message_thread_id = pending.message_thread_id || "";
