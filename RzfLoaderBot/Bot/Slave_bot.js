@@ -1365,7 +1365,7 @@ class SlaveBot {
                     if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && 
                         (value.toString() === chatId.toString() || value === chatId)) {
                         return {
-                            title: this.unescapeMarkdown(key),  // ← Раскрываем экранирование
+                            title: key,
                             offset: parseInt(timezoneKey, 10),
                             timezoneKey,
                             Eg: chat.Eg !== undefined ? chat.Eg : false,
