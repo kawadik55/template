@@ -3048,17 +3048,16 @@ try{
 		//соберем все чаты в новый массив
 		//let all_chats = getAllChats();//посылаем без разбору по зонам
 		let all_chats = chat_news[offset] ? chat_news[offset] : [];
-		for(let i=0;i<all_chats.length;i++) 
-		try{
+		for(let i=0;i<all_chats.length;i++)
+		{try{
 		  if(!!all_chats[i])
 		  {	let opt = {};
-			let chatId = '', threadId = '';
+			if(!!obj.entities) opt.entities = obj.entities;
+			let chatId = '';
 			if(!!all_chats[i] && !all_chats[i].News) continue;//не выбран News в доставке
 			let key = Object.keys(all_chats[i]);
 			if(!!all_chats[i][key[0]]) chatId = all_chats[i][key[0]];
-			if(!!all_chats[i].message_thread_id) threadId = all_chats[i].message_thread_id;
-			opt.entities = obj.entities;
-			if(!!threadId) opt.message_thread_id = threadId;
+			if(!!all_chats[i].message_thread_id) opt.message_thread_id = all_chats[i].message_thread_id;
 			if(Object.hasOwn(obj, 'link_preview_options'))
 			{opt.link_preview_options=JSON.stringify(obj.link_preview_options);
 			 if(Object.hasOwn(obj.link_preview_options, 'is_disabled')) opt.disable_web_page_preview = true;
@@ -3071,7 +3070,8 @@ try{
 				else WriteLogFile('в '+key[0]+' = ОК');
 			}
 		  }
-		}catch(err){WriteLogFile(err+'\nfrom publicText()=>for()','вчат');}
+		 }catch(err){WriteLogFile(err+'\nfrom publicText()=>for()','вчат');}
+		}
 	}
 }catch(err){WriteLogFile(err+'\nfrom publicText()','вчат');}
 }
@@ -3196,12 +3196,7 @@ try{
 //эта функция используется только при загрузке поста, в рассылке не участвует
 async function publicImage(obj,offset)
 {
-try{
-	let opt = new Object();
-	if(Object.hasOwn(obj, 'caption')) opt.caption = obj.caption;
-	if(Object.hasOwn(obj, 'caption_entities')) opt.caption_entities = obj.caption_entities;
-	if(Object.hasOwn(obj, 'parse_mode')) opt.parse_mode = obj.parse_mode;
-	//проверяем разрешение на публикацию немедленно
+try{//проверяем разрешение на публикацию немедленно
 	let flag = check_permissions(obj,offset);
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
@@ -3238,6 +3233,10 @@ try{
 			let key = Object.keys(all_chats[i]);
 			if(!!all_chats[i][key[0]]) chatId = all_chats[i][key[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
+			let opt = {};
+			if(Object.hasOwn(obj, 'caption')) opt.caption = obj.caption;
+			if(Object.hasOwn(obj, 'caption_entities')) opt.caption_entities = obj.caption_entities;
+			if(Object.hasOwn(obj, 'parse_mode')) opt.parse_mode = obj.parse_mode;
 			if(!!all_chats[i].message_thread_id) threadId = all_chats[i].message_thread_id;
 			if(!!threadId) opt.message_thread_id = threadId;
 			while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
@@ -4133,11 +4132,7 @@ async function send_Images(now,offset)
           
           //публикуем файлы
           if(flag) 
-          { let opt = new Object();
-            if(Object.hasOwn(ImagesList[key], 'caption')) opt.caption = ImagesList[key].caption;
-			if(Object.hasOwn(ImagesList[key], 'caption_entities')) opt.caption_entities = ImagesList[key].caption_entities;
-            if(Object.hasOwn(ImagesList[key], 'parse_mode')) opt.parse_mode = ImagesList[key].parse_mode;
-			//выделим массив по смещению
+          { //выделим массив по смещению
 			//let all_chats = getAllChats();
 			let all_chats = chat_news[offset] ? chat_news[offset] : [];
 			//основной канал новостей
@@ -4147,8 +4142,13 @@ async function send_Images(now,offset)
 				let name = Object.keys(all_chats[i]);
 				if(!!all_chats[i][name[0]]) chatId = all_chats[i][name[0]];//привязан к порядку в объекте!
 				if(!chatId) continue;//пропускаем цикл, если нет chatId
+				let opt = {};
+				if(Object.hasOwn(ImagesList[key], 'caption')) opt.caption = ImagesList[key].caption;
+				if(Object.hasOwn(ImagesList[key], 'caption_entities')) opt.caption_entities = ImagesList[key].caption_entities;
+				if(Object.hasOwn(ImagesList[key], 'parse_mode')) opt.parse_mode = ImagesList[key].parse_mode;
 				if(!!all_chats[i].message_thread_id) threadId = all_chats[i].message_thread_id;
 				if(!!threadId) opt.message_thread_id = threadId;
+				//посылаем пост
 				let res;
 				if(!!ImagesList[key].type)
 				{if(ImagesList[key].type == 'image') res = await sendPhoto(NewsBot, chatId, ImagesList[key].path, opt);
@@ -4293,26 +4293,26 @@ async function send_Text(now,offset)
           
           //публикуем текст
 		  if(flag)
-          { let opt = new Object();
-            opt.entities = TextList[key].entities;
-			if(Object.hasOwn(TextList[key], 'link_preview_options'))
-			{opt.link_preview_options=JSON.stringify(TextList[key].link_preview_options);
-			 if(Object.hasOwn(TextList[key].link_preview_options, 'is_disabled')) opt.disable_web_page_preview = true;
-			}
-			if(!!TextList[key].parse_mode) opt.parse_mode = TextList[key].parse_mode;
-            //соберем все чаты в новый массив
+          { //соберем все чаты в новый массив
 			//let all_chats = getAllChats();
 			let all_chats = chat_news[offset] ? chat_news[offset] : [];
 			//основной канал новостей
 			for(let i=0;i<all_chats.length;i++) 
-			{	let chatId = '', threadId = '';
+			{	let chatId = '';
 				if(!!all_chats[i] && !all_chats[i].News) continue;//не выбран News в доставке
 				let name = Object.keys(all_chats[i]);
 				if(!!all_chats[i][name[0]]) chatId = all_chats[i][name[0]];//привязан к порядку в объекте!
 				if(!chatId) continue;//пропускаем цикл, если нет chatId
-				if(!!all_chats[i].message_thread_id) threadId = all_chats[i].message_thread_id;
-				if(!!threadId) opt.message_thread_id = threadId;
-				let res = await sendTextToBot(NewsBot, chatId, TextList[key].text, opt);//посылаем пост
+				let opt = {};
+				opt.entities = TextList[key].entities;
+				if(Object.hasOwn(TextList[key], 'link_preview_options'))
+				{opt.link_preview_options=JSON.stringify(TextList[key].link_preview_options);
+				 if(Object.hasOwn(TextList[key].link_preview_options, 'is_disabled')) opt.disable_web_page_preview = true;
+				}
+				if(!!TextList[key].parse_mode) opt.parse_mode = TextList[key].parse_mode;
+				if(!!all_chats[i].message_thread_id) opt.message_thread_id = all_chats[i].message_thread_id;
+				//посылаем пост
+				let res = await sendTextToBot(NewsBot, chatId, TextList[key].text, opt);
 				if(res===false) WriteLogFile('Не смог послать текст text "'+key+'"'+' в '+name[0]);
 				else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 				{	
