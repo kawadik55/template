@@ -938,6 +938,88 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(document)','вчат');}
 });
 //====================================================================
+// ДОКУМЕНТ
+LoaderBot.on('animation', async (msg) => 
+{	
+try{
+	const chatId = msg.chat.id;
+	const name = ' '+msg.chat.first_name;
+	const user = '@'+msg.chat.username;
+	let ban = banUser(chatId);
+	let valid = validUser(chatId);
+	let media_group_id = msg.media_group_id;
+	
+	//проверим юзера
+	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
+	else if(!valid)
+	{	sendMessage(chatId, 'Извините, ' + name + ', но Вам необходимо сначала пройти авторизацию!');
+		send_instruction(chatId,user,'');
+	}
+	else //все в порядке
+	{	
+		if(media_group_id) return;//не пропускаем пока, если альбом
+		//проверяем, действительно ли что-то ожидается
+		if(!TempPost[chatId] || !WaitFlag[chatId] || WaitFlag[chatId] != 1) 
+		{	sendMessage(chatId, '🤷🏻‍♂️');
+			return;
+		}
+		let date = '', day = '';
+		if(WaitFlag[chatId]==1)
+		{	if(!!TempPost[chatId] && !!TempPost[chatId].date) 		date = TempPost[chatId].date;//дата
+			if(!!TempPost[chatId] && !!TempPost[chatId].dayOfWeek) 	day = TempPost[chatId].dayOfWeek;//день
+			delete WaitFlag[chatId];
+		}
+		if(!day || !date)
+		{	clearTempWait(chatId);
+			sendMessage(chatId, 'Неожиданно... игнорирую.', klava(begin(chatId)));
+			return;
+		}
+		//проверяем подпись
+		if(Object.hasOwn(msg, 'caption') && msg.caption.length > 1000)
+		{	sendMessage(chatId, '🤷‍♂️Сожалею, но подпись к файлу не может превышать 1000 символов!🤷‍♂️', klava(keyboard['3']));
+			delete TempPost[chatId];
+			numOfDelete[chatId]='';
+			return;
+		}
+		//если дата корявая или нет периода, то уходим
+		if(date != moment(date,'DD.MM.YYYY').format('DD.MM.YYYY') || !day)  
+		{	numOfDelete[chatId]='';
+			delete TempPost[chatId];
+			sendMessage(chatId, 'Неожиданная дата или период... игнорирую.', klava(begin(chatId)));
+			return;
+		}
+		
+		//загружаем гиф на модерацию
+		let path;
+		try {path = await LoaderBot.downloadFile(msg.animation.file_id, TmpPath);}
+		catch(err)
+		{sendMessage(chatId, 'Этот файл слишком велик, разрешено не более 20Мб', klava(begin(chatId)));
+		 numOfDelete[chatId]='';
+		 delete TempPost[chatId];
+		 return;
+		}
+		
+		let mas = path.split('/');
+		let fileName = moment().format('DDMMYYYY-HH_mm_ss_ms')+'-'+mas[mas.length-1];//вытащим и изменим имя файла
+        let newpath = PathToImagesModer+'/'+fileName;//новый путь файла для модерации
+		if(Object.hasOwn(msg, 'caption')) TempPost[chatId].caption = msg.caption;//подпись
+		if(Object.hasOwn(msg, 'caption_entities')) TempPost[chatId].caption_entities = JSON.stringify(msg.caption_entities);//форматирование
+		TempPost[chatId].type = 'animation';//тип - animation
+		if(!Object.hasOwn(TempPost[chatId], 'userName')) TempPost[chatId].userName = user;
+		if(!Object.hasOwn(TempPost[chatId], 'chatId')) TempPost[chatId].chatId = chatId;
+		TempPost[chatId].timeload = moment().format('DD.MM.YY HH:mm:ss');//время загрузки
+		//переносим ролик и записываем в список файлов на модерацию
+		let len = await setToModerImagesList(path, newpath, TempPost[chatId]);//получаем последний индекс
+            
+		//пошлем сообщение админам
+		sendMessageToAdmin('Юзер "'+name+'" ('+user+') просит добавить анимацию '+'"'+date+' ('+day+')"');
+			
+		sendMessage(chatId, 'Поздравляю, '+name+'! Анимация "'+date+' ('+day+')" отправлена на модерацию!', klava(begin(chatId)));
+		delete TempPost[chatId];
+	}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(animation)','вчат');}
+});
+//====================================================================
 // ловим тексты
 LoaderBot.on('message', async (msg) => 
 {	
@@ -1078,6 +1160,7 @@ try{
 			  else if(List[num].type == 'audio') {await sendAudio(LoaderBot, chatId, List[num].path, opt);}
 			  else if(List[num].type == 'document') {await sendDocument(LoaderBot, chatId, List[num].path, opt);}
 			  else if(List[num].type=='album') {await sendAlbum(LoaderBot, chatId, List[num].media);}
+			  else if(List[num].type=='animation') {await sendAnimation(LoaderBot, chatId, List[num].path, opt);}
 			 }
 			 else await sendPhoto(LoaderBot, chatId, List[num].path, opt);
 			}
@@ -1106,6 +1189,7 @@ try{
 			 else if(ImagesList[num].type == 'audio') {await sendAudio(LoaderBot, chatId, ImagesList[num].path, opt);}
 			 else if(ImagesList[num].type == 'document') {await sendDocument(LoaderBot, chatId, ImagesList[num].path, opt);}
 			 else if(ImagesList[num].type=='album') {await sendAlbum(LoaderBot, chatId, ImagesList[num].media);}
+			 else if(ImagesList[num].type=='animation') {await sendAnimation(LoaderBot, chatId, ImagesList[num].path, opt);}
 			}
 			else await sendPhoto(LoaderBot, chatId, ImagesList[num].path, opt);
 			//ждем выполнения очереди
@@ -1148,6 +1232,7 @@ try{
 			 else if(ModerImagesList[num].type == 'audio') {await sendAudio(LoaderBot, chatId, ModerImagesList[num].path, opt);}
 			 else if(ModerImagesList[num].type == 'document') {await sendDocument(LoaderBot, chatId, ModerImagesList[num].path, opt);}
 			 else if(ModerImagesList[num].type=='album') {await sendAlbum(LoaderBot, chatId, ModerImagesList[num].media);}
+			 else if(ModerImagesList[num].type=='animation') {await sendAnimation(LoaderBot, chatId, ModerImagesList[num].path, opt);}
 			}
 			else await sendPhoto(LoaderBot, chatId, ModerImagesList[num].path, opt);
 			//ждем выполнения очереди
@@ -1190,6 +1275,7 @@ try{
 		  else if(ModerImagesList[numOfDelete[chatId]].type == 'audio') {await sendAudio(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
 		  else if(ModerImagesList[numOfDelete[chatId]].type == 'document') {await sendDocument(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
 		  else if(ModerImagesList[numOfDelete[chatId]].type == 'album') {await sendAlbum(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].media);}
+		  else if(ModerImagesList[numOfDelete[chatId]].type=='animation') {await sendAnimation(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
 		 }
 		 else await sendPhoto(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);
 		 await sendMessage(ModerImagesList[numOfDelete[chatId]].chatId, '😢 К сожалению этот файл не прошел модерацию и был удален по причине:\n'+msg.text);
@@ -1703,6 +1789,7 @@ try{
 					  else if(ModerImagesList[key].type == 'audio') {await sendAudio(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
 					  else if(ModerImagesList[key].type == 'document') {await sendDocument(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
 					  else if(ModerImagesList[key].type == 'album') {await sendAlbum(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].media);}
+					  else if(ModerImagesList[key].type=='animation') {await sendAnimation(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].path, opt);}
 					 }
 					 else await sendPhoto(LoaderBot, ModerImagesList[key].chatId, ModerImagesList[key].path, opt);
 					 //ждем выполнения очереди
@@ -2586,6 +2673,20 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom sendDocument()','вчат');return Promise.reject(false);}
 }
 //====================================================================
+async function sendAnimation(Bot, chatId, path, opt)
+{
+try{
+	//if(Number(chatId)<0) return;//отрицательные chatId не пускаем
+	if(!isValidChatId(chatId)) return;//если не число, то не пускаем
+	if(!fs.existsSync(path)) return false;
+	//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
+	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
+	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
+	await queue.addToQueue({type:'sendAnimation', chatId:chatId, data:path, options:opt, bot:Bot});
+	return true;
+}catch(err){WriteLogFile(err+'\nfrom sendAnimation()','вчат');return Promise.reject(false);}
+}
+//====================================================================
 async function remove_buttons(str,messId,chatId,ent)
 {	try{await LoaderBot.editMessageText(str,{message_id:messId,chat_id:chatId,entities:ent});}catch(err){console.error(err);}
 }
@@ -2757,6 +2858,7 @@ try{
 				 else if(List[mas[i]].type=='video') {await sendVideo(LoaderBot, chatId, List[mas[i]].path, opt);}
 				 else if(List[mas[i]].type=='audio') {await sendAudio(LoaderBot, chatId, List[mas[i]].path, opt);}
 				 else if(List[mas[i]].type=='document') {await sendDocument(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='animation') {await sendAnimation(LoaderBot, chatId, List[mas[i]].path, opt);}
 				}
 				else await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);
 				//ждем выполнения очереди
@@ -2831,6 +2933,7 @@ try{
 			 else if(ImagesList[key].type=='audio') {await sendAudio(LoaderBot, chatId, ImagesList[key].path, opt);}
 			 else if(ImagesList[key].type=='document') {await sendDocument(LoaderBot, chatId, ImagesList[key].path, opt);}
 			 else if(ImagesList[key].type=='album') {await sendAlbum(LoaderBot, chatId, ImagesList[key].media, opt);}
+			 else if(ImagesList[key].type=='animation') {await sendAnimation(LoaderBot, chatId, ImagesList[key].path, opt);}
 			}
 			else await sendPhoto(LoaderBot, chatId, ImagesList[key].path, opt);
 			//ждем выполнения очереди
@@ -2865,6 +2968,7 @@ try{
 			 else if(ModerImagesList[key].type=='audio') {await sendAudio(LoaderBot, chatId, ModerImagesList[key].path, opt);}
 			 else if(ModerImagesList[key].type=='document') {await sendDocument(LoaderBot, chatId, ModerImagesList[key].path, opt);}
 			 else if(ModerImagesList[key].type=='album') {await sendAlbum(LoaderBot, chatId, ModerImagesList[key].media, opt);}
+			 else if(ModerImagesList[key].type=='animation') {await sendAnimation(LoaderBot, chatId, ModerImagesList[key].path, opt);}
 			}
 			else await sendPhoto(LoaderBot, chatId, ModerImagesList[key].path, opt);
 			//ждем выполнения очереди
@@ -3256,6 +3360,7 @@ try{//проверяем разрешение на публикацию неме
 					if(!!threadId) tmp.message_thread_id = threadId;
 					await sendAlbum(NewsBot, chatId, tmp);
 				}
+				else if(obj.type=='animation') {await sendAnimation(NewsBot, chatId, obj.path, opt);}
 			}
 			else sendPhoto(NewsBot, chatId, obj.path, opt);//без типа - картинка
 			count_chats++;//WriteLogFile('в '+key[0]+' = ОК');
@@ -4166,6 +4271,7 @@ async function send_Images(now,offset)
 					if(!!threadId) tmp.message_thread_id = threadId;
 					res = await sendAlbum(NewsBot, chatId, tmp);
 				 }
+				 else if(ImagesList[key].type == 'animation') {res = await sendAnimation(NewsBot, chatId, ImagesList[key].path, opt);}
 				}
 				else res = await sendPhoto(NewsBot, chatId, ImagesList[key].path, opt);
 				if(res===false) WriteLogFile('Не смог послать файл image "'+key+'"'+' в '+name[0]); 

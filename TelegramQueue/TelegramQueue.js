@@ -248,6 +248,9 @@ class TelegramQueue extends EventEmitter {
             case 'sendSticker':
                 return await bot.sendSticker(chatId, data, options); break;
 			
+			case 'sendAnimation':
+                return await bot.sendAnimation(chatId, data, options); break;
+			
 			default:
                 throw new Error(`Unsupported message type: ${type}`);
           }
