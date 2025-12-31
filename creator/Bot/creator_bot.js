@@ -4877,7 +4877,7 @@ try{
 						if(files[k].toLowerCase().indexOf('.gif')+1) 
 						{	//let res = await sendDocument(chatId, files[k]);
 							while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-							let res = await queue.addToQueue({type:'sendDocument', chatId:chatId, data:files[k], options:{}, bot:null});
+							let res = await queue.addToQueue({type:'sendAnimation', chatId:chatId, data:files[k], options:{}, bot:null});
 							if(!(String(res).indexOf('ETELEGRAM')+1)) WriteLogFile('Послал салют '+username+' из ubik_srok');
 							else WriteLogFile('Ошибка при посылке салюта '+username+' из ubik_srok');
 						}
