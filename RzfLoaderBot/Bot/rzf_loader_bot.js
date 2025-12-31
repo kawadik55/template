@@ -246,7 +246,7 @@ var Cron1 = cron.schedule(timeCron, async function()
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
 //установим службу публикаций по времени, каждую нечетную мин
-var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
+var Cron2 = cron.schedule('10 '+'*/2,0 * * * *', async function()
 {	if(rassilka)//если рассылка включена
 	{	let now = moment();
 		now = now.subtract(10, 'seconds');//приводим к 0 сек
