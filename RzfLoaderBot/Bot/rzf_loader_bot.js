@@ -246,7 +246,7 @@ var Cron1 = cron.schedule(timeCron, async function()
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
 //установим службу публикаций по времени, каждую нечетную мин
-var Cron2 = cron.schedule('10 '+'0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58 * * * *', async function()
+var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
 {	if(rassilka)//если рассылка включена
 	{	let now = moment();
 		now = now.subtract(10, 'seconds');//приводим к 0 сек
@@ -3127,10 +3127,8 @@ try{
 	let flag = check_permissions(obj,offset);
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
-	if(Object.hasOwn(obj, 'time') && !!obj.time)
-	{	if(moment(obj.time,'HH:mm').isValid()) 
-		{timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
-		}
+	if(Object.hasOwn(obj, 'time') && !!obj.time && moment(obj.time,'HH:mm').isValid())
+	{	timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
 	}
 	// до или после глобальной публикации
 	let now = moment();//текущее время
@@ -3306,10 +3304,8 @@ try{//проверяем разрешение на публикацию неме
 	let flag = check_permissions(obj,offset);
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
-	if(Object.hasOwn(obj, 'time') && !!obj.time)
-	{	if(moment(obj.time,'HH:mm').isValid()) 
-		{timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
-		}
+	if(Object.hasOwn(obj, 'time') && !!obj.time && moment(obj.time,'HH:mm').isValid())
+	{	timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
 	}
 	// до или после утренней публикации
 	let now = moment();//текущее время
@@ -4165,20 +4161,18 @@ async function send_Images(now,offset)
 { try
   {	//WriteLogFile('Рассылка картинок:');
 	//if(Object.keys(ImagesList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
-	let made = 0;
-	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	if(!now || now.isValid()==false) now = moment();//проверяем
-	//читаем список
+	let made = 0;
 	let dayzone = now.clone().utcOffset(Number(offset),true).startOf('day');//текущий день в зоне
+	let timepublic = addTimeForZone(timePablic, dayzone);//время "Ч" в зоне в текущий день
+	//читаем список
 	for(let key in ImagesList)
 	{	try{  
 		  let date = ImagesList[key].date;//запись даты
           let day = ImagesList[key].dayOfWeek;//запись дня
 		  let timeobj;
-		  if(Object.hasOwn(ImagesList[key], 'time') && !!ImagesList[key].time)
-		  {	if(moment(ImagesList[key].time, 'HH:mm').isValid()) 
-			{	timeobj = getDateTimeForZone(ImagesList[key].time, offset);//приводим к местному времени
-			}
+		  if(Object.hasOwn(ImagesList[key], 'time') && !!ImagesList[key].time && moment(ImagesList[key].time, 'HH:mm').isValid())
+		  {	timeobj = addTimeForZone(ImagesList[key].time, dayzone);//прибавляем к началу дня
 		  }
           let flag = 0;
           
@@ -4328,20 +4322,18 @@ async function send_Text(now,offset)
   {	
 	//WriteLogFile('Рассылка текстов:');
 	//if(Object.keys(TextList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
-	let made = 0;
-	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	if(!now || now.isValid()==false) now = moment();//проверяем
-	//читаем список
+	let made = 0;
 	let dayzone = now.clone().utcOffset(Number(offset),true).startOf('day');//текущий день в зоне
+	let timepublic = addTimeForZone(timePablic, dayzone);//время "Ч" в зоне в текущий день
+	//читаем список
 	for(let key in TextList)
 	{   try{  
 		  let date = TextList[key].date;//запись даты
 		  let day = TextList[key].dayOfWeek;//запись дня
 		  let timeobj;
-		  if(Object.hasOwn(TextList[key], 'time') && !!TextList[key].time)
-		  {	if(moment(TextList[key].time, 'HH:mm').isValid()) 
-			{	timeobj = getDateTimeForZone(TextList[key].time, offset);//приводим к местному времени
-			}
+		  if(Object.hasOwn(TextList[key], 'time') && !!TextList[key].time && moment(TextList[key].time, 'HH:mm').isValid())
+		  {	timeobj = addTimeForZone(TextList[key].time, dayzone);//прибавляем к началу дня
 		  }
           let flag = 0;
           
@@ -4574,7 +4566,7 @@ function getDateTimeForZone(inputStr, offset)
         return moment.utc(inputStr, 'DD.MM.YYYY')
             .utcOffset(offsetNum, true)
             .startOf('day');
-    } 
+    }
 	else if (inputStr.includes(':'))
 	{
         // Это время HH:mm:ss - возвращаем это время сегодня в зоне
@@ -4585,6 +4577,16 @@ function getDateTimeForZone(inputStr, offset)
             .hours(hours)
             .minutes(minutes)
             .seconds(seconds || 0);
+    }
+	else throw new Error('Неизвестный формат: ' + inputStr);
+}
+//====================================================================
+function addTimeForZone(inputStr, dayzone)
+{
+    if (inputStr.includes(':'))
+	{
+        const [hours, minutes, sec = 0] = inputStr.split(':').map(Number);
+		return dayzone.clone().add({ hours: hours, minutes: minutes, seconds: sec});//прибавляем время к началу дня
     } 
 	else throw new Error('Неизвестный формат: ' + inputStr);
 }
