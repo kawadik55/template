@@ -212,17 +212,21 @@ const slaveBot = new SlaveBot(
 );
 //====================================================================
 if(!timeCron)//всегда выполняется
-{	if(timePablic != moment(timePablic,'HH:mm:ss').format('HH:mm:ss'))
+{	if(moment(timePablic,'HH:mm:ss').isValid()==false)
 	{WriteLogFile('Ошибка в timePublic','вчат'); timePablic = '06:00:00';
 	}
 	let tmp=timePablic.split(':');
 	//timeCron = tmp[1]+' '+tmp[0]+' * * *';
 	timeCron = tmp[1]+' * * * *';//теперь будем проверять каждый час для мультизонности
 }
+let cronIsRunning = false;
+
 //установим службу стандартных утренних публикаций в каналах
 var Cron1 = cron.schedule(timeCron, async function() 
 {	if(rassilka)//если рассылка включена
-	{	//WriteLogFile('Начинаем стандартную Рассылку:');
+	{	cronIsRunning = true;
+	  try{
+		//WriteLogFile('Начинаем стандартную Рассылку:');
 		//обновим список чатов
 		try{chat_news = require(currentDir+"/chatId.json");}catch(e){}
 		if(typeof chat_news === 'object')
@@ -243,12 +247,20 @@ var Cron1 = cron.schedule(timeCron, async function()
 		if(RunList.Raspis===true) await send_Raspis();
 		
 		//WriteLogFile('Далее рассылка текстов и картинок:');
+	  } finally {
+            cronIsRunning = false;
+      }
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
-//установим службу публикаций по времени, каждую нечетную мин
+//установим службу публикаций по времени, каждую четную мин
 var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
 {	if(rassilka)//если рассылка включена
 	{	let now = moment();
+		if(cronIsRunning)//ждем маленько, если первый крон еще выполняется
+		{	const startWait = Date.now();
+            const maxWaitTime = 60000; // 1 минута
+            while(cronIsRunning && (Date.now() - startWait) < maxWaitTime) await sleep(100); // ждем 100мс
+		}
 		now = now.subtract(10, 'seconds');//приводим к 0 сек
 		let offset = Object.keys(chat_news).length>0 ? Object.keys(chat_news) :[];
 		//публикуем тексты
