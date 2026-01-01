@@ -240,7 +240,7 @@ var Cron1 = cron.schedule(timeCron, async function()
 		//ежик
 		if(RunList.Eg===true) await send_Eg();
 		//расписание
-		//if(RunList.Raspis===true) await send_Raspis();
+		if(RunList.Raspis===true) await send_Raspis();
 		
 		//WriteLogFile('Далее рассылка текстов и картинок:');
 	}
