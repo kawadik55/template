@@ -1051,8 +1051,8 @@ try{
 			if(Object.hasOwn(List[num], 'text'))
 			{await sendMessage(chatId, List[num].text, {entities:List[num].entities});//показываем выбранный текст
 			}
-			//это файл
-			else if(Object.hasOwn(List[num], 'path'))
+			//это файл или альбом
+			else if(Object.hasOwn(List[num], 'path') || Object.hasOwn(List[num], 'media'))
 			{let opt = new Object();
 			 opt.caption = List[num].caption;
 			 opt.caption_entities = List[num].caption_entities;
