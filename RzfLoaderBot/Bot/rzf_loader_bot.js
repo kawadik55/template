@@ -1858,22 +1858,16 @@ try{
 	{	let str = 'Команды бота:\n';
 		str += '` /help` - список команд бота\n';
 		str += '` /UserList` - список авторизованных юзеров\n';
-		//str += '` /BlackList` - список забаненных юзеров\n';
 		str += '` /AdminList` - посмотреть настройки\n';
-		str += '` /ShowTextList` - посмотреть тексты\n';
-		str += '` /ShowImagesList` - посмотреть картинки\n';
-		str += '` /ShowLifeTime` - посмотреть общий срок действия регистрации юзеров\n';
 		str += '` /AddUser chatID=Имя=НазваниеГруппы` - добавить Юзера\n';
 		str += '` /AddAdmin chatID=Имя` - добавить Админа Бота\n';
 		str += '` /AddWhatsApp chatID=Имя` - добавить Координатора Вотсап\n';
-		//str += '` /AddBan chatID=Имя` - добавить в Черный список\n';
-		//str += '` /DeleteFiles` - удаление старых картинок\n';
 		str += '` /DelAdmin chatID` - удалить Админа Бота\n';
 		str += '` /DelWhatsApp` - удалить Координатора Вотсап\n';
 		str += '` /DelUser chatID` - удалить Юзера\n';
 		str += '` /EditUrl новыйUrl` - изменить ссылку в Вопросах\n';
 		str += '` /EditLifeTime новыйСрок` - изменить срок действия регистрации юзеров, в днях\n';
-		//str += '` /DelBan chatID` - удалить из Черного списка\n';
+		str += '` /ShowLifeTime` - посмотреть общий срок действия регистрации юзеров\n';
 		sendMessage(chatId, str, {parse_mode:"markdown"});
 	}
 	else sendMessage(chatId, smilik);
@@ -2092,18 +2086,6 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ImagesList/)','вчат');}	
 });
 //====================================================================
-// Показать файлы из ImagesList
-LoaderBot.onText(/\/ShowImagesList/, async (msg) => 
-{
-try{
-	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
-	await readImagesList();//читаем список из файла
-    if(valid) {showImagesList(chatId, 0);}
-	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ShowUserList/)','вчат');}	
-});
-//====================================================================
 // Показать срок действия регистрации юзеров lifeTime
 LoaderBot.onText(/^\/ShowLifeTime/, async (msg) => 
 {
@@ -2125,18 +2107,6 @@ try{
 	if(valid) sendMessage(chatId, 'Список текстов:\r\n'+JSON.stringify(TextList,null,2));
 	else sendMessage(chatId, smilik);
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/TextList/)','вчат');}	
-});
-//====================================================================
-// Показать сообщения TextList
-LoaderBot.onText(/^\/ShowTextList/, async (msg) => 
-{
-try{
-	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
-	await readTextList();//читаем файл текстов в TextList
-	if(valid) showTextList(chatId, 0); 
-	else sendMessage(chatId, smilik);
-}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ShowTextList/)','вчат');}	
 });
 //====================================================================
 // Удаление Админа Бота
@@ -2336,38 +2306,6 @@ try{
 	}
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/EditLifeTime/)','вчат');}	
 });
-//====================================================================
-// СМЕНА ПАРОЛЯ
-/*LoaderBot.onText(/\/changepassword (.+)/, async (msg, match) => 
-{
-	const chatId = msg.chat.id;
-	const name = ' '+msg.chat.first_name;
-	const user = '@'+msg.chat.username;
-	let pass = match[1]; 
-	pass = pass.trim();
-	let ban = banUser(chatId);
-	let valid = validAdmin(chatId);
-	
-	//проверяем только незарегистрированного юзера
-	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
-	else if(!valid)
-	{	sendMessage(chatId, 'Извините, ' + name + ', но у Вас нет прав на эту операцию!');	
-	}
-	else //если все ОК
-	{
-		if(pass != '' && pass != undefined)
-		{
-			AdminList['password'] = pass;
-			WriteFileJson(FileAdminList,AdminList);
-			password = AdminList['password'];
-			sendMessage(chatId, 'Пароль успешно изменен!', klava(keyboard['1']));
-            //если пароль изменен, то надо убить список авторизованных
-            UserList=new Object();//чистим массив
-            WriteFileJson(FileUserList,UserList);//сохраняем пустой список
-		}
-		else sendMessage(chatId, 'Пароль не может быть пустым!', klava(begin(chatId)));
-	}
-});*/
 //====================================================================
 // периодически будем проверять список файлов и текстов на просрочку и удалять
 // старые записи
@@ -2811,29 +2749,6 @@ function readModerTextList()
     catch (err) {WriteLogFile(err+'\nfrom readModerTextList()','вчат');}
 }
 //====================================================================
-async function showTextList(chatId, flag)
-{	
-try{	
-	await readTextList();//читаем файл текстов в TextList
-	await sendMessage(chatId, '*<< Показываю Тексты из списка >>*\n👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻', {parse_mode:"markdown"});
-	let mas = Object.keys(TextList);
-	if(mas.length > 0)
-	{	for(let i in mas)
-		{	let str = '';
-			let time = !!TextList[mas[i]].time?(' - '+TextList[mas[i]].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
-			if(flag!=0) str = TextList[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+TextList[mas[i]].date+' - '+TextList[mas[i]].dayOfWeek+time+') - '+TextList[mas[i]].userName;//с номером
-			else str = TextList[mas[i]].text + '\n\n('+TextList[mas[i]].date+' - '+TextList[mas[i]].dayOfWeek+time+') - '+TextList[mas[i]].userName;//без номера
-			let opt = {};
-			opt.entities = TextList[mas[i]].entities; 
-			opt.link_preview_options=TextList[mas[i]].link_preview_options;
-			if(!!TextList[mas[i]].parse_mode) opt.parse_mode = TextList[mas[i]].parse_mode;
-			await sendMessage(chatId, str, opt);
-		}
-	}
-	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
-}catch(err){WriteLogFile(err+'\nfrom showTextList()','вчат');}
-}
-//====================================================================
 async function showPostList(chatId, flag)
 {	
 try{	
@@ -2919,41 +2834,6 @@ try{
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
 }catch(err){WriteLogFile(err+'\nfrom showModerTextList()','вчат');}
-}
-//====================================================================
-async function showImagesList(chatId, flag)
-{	
-try{	
-	await readImagesList();//читаем список из файла
-    await sendMessage(chatId, '*<< Показываю Файлы из списка >>*\n👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻', {parse_mode:"markdown"});
-	if(Object.keys(ImagesList).length > 0)
-	{	for(var key in ImagesList)
-		{	let opt = new Object();
-			opt.caption = '';
-			if(Object.hasOwn(ImagesList[key], 'caption')) 
-			{	opt.caption = ImagesList[key].caption;
-				if(!!ImagesList[key].caption_entities) opt.caption_entities = ImagesList[key].caption_entities;
-			}
-			if(Object.hasOwn(ImagesList[key], 'parse_mode')) opt.parse_mode = ImagesList[key].parse_mode;
-			let time = !!ImagesList[key].time?(' - '+ImagesList[key].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
-			if(flag!=0) opt.caption += "\n\n** номер: "+key+" ** ("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+time+") - "+ImagesList[key].userName;
-			else opt.caption += "\n\n("+ImagesList[key].date+" - "+ImagesList[key].dayOfWeek+time+") - "+ImagesList[key].userName;
-			if(!!ImagesList[key].parse_mode) opt.parse_mode = ImagesList[key].parse_mode;
-			if(Object.hasOwn(ImagesList[key], 'type'))
-			{if(ImagesList[key].type=='image') {await sendPhoto(LoaderBot, chatId, ImagesList[key].path, opt);}
-			 else if(ImagesList[key].type=='video') {await sendVideo(LoaderBot, chatId, ImagesList[key].path, opt);}
-			 else if(ImagesList[key].type=='audio') {await sendAudio(LoaderBot, chatId, ImagesList[key].path, opt);}
-			 else if(ImagesList[key].type=='document') {await sendDocument(LoaderBot, chatId, ImagesList[key].path, opt);}
-			 else if(ImagesList[key].type=='album') {await sendAlbum(LoaderBot, chatId, ImagesList[key].media, opt);}
-			 else if(ImagesList[key].type=='animation') {await sendAnimation(LoaderBot, chatId, ImagesList[key].path, opt);}
-			}
-			else await sendPhoto(LoaderBot, chatId, ImagesList[key].path, opt);
-			//ждем выполнения очереди
-			//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
-		}
-	}
-	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
-}catch(err){WriteLogFile(err+'\nfrom showImagesList()','вчат');}
 }
 //====================================================================
 async function showModerImagesList(chatId, flag)
