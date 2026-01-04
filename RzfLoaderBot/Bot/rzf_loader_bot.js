@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const moment = require('moment-timezone');
 const cron = require('node-cron');
-//const { execFile } = require('child_process');
 const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const SlaveBot = require('./Slave_bot');
@@ -52,13 +51,14 @@ try{config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
 	if(!config.lifeTime) {config.lifeTime = lifeTime; WriteFileJson(currentDir+"/config.json",config);}
 	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
 }catch(err)
-{config = {"area":area, "timePablic":timePablic, "utcOffset":String(utcOffset), "forDate":forDate, "lifeTime":lifeTime, "rassilka":rassilka, "hostingImg":hostingImg, "pathHostingImg":"/../www/img", "hostname":"https://vps.na-server.ru", "Supervisor":"1234567", "queuelimit":200};
+{config = {"area":area, "timePablic":timePablic, "utcOffset":String(utcOffset), "forDate":forDate, "lifeTime":lifeTime, "rassilka":rassilka, "hostingImg":hostingImg, "pathHostingImg":"/../www/img", "hostname":"https://vps.na-server.ru", "Supervisor":"1234567", "queuelimit":200, "slavebot":false};
  WriteFileJson(currentDir+"/config.json",config);
 }
 if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset','вчат');}
 area = config.area; timePablic = config.timePablic; utcOffset = Number(config.utcOffset); forDate = config.forDate; lifeTime = config.lifeTime; rassilka = config.rassilka; 
 const QUEUELIMIT = config.queuelimit ? Number(config.queuelimit) : 200;//ограничение макс размера очереди
 if(!config.queuelimit) {config.queuelimit = QUEUELIMIT; WriteFileJson(currentDir+"/config.json",config);}
+if(!Object.hasOwn(config,'slavebot')) {config.slavebot = false; WriteFileJson(currentDir+"/config.json",config);}
 if(!!config.hostingImg) hostingImg = config.hostingImg;
 if(!!config.pathHostingImg) PathToHostImg = currentDir+config.pathHostingImg;
 if(!!config.hostname) hostname = config.hostname;
@@ -204,12 +204,12 @@ const onConfigUpdate = (update) => {
 	WriteFileJson(currentDir+"/chatId.json",chat_news);
 };
 
-//Создаем экземпляр SlaveBot
-const slaveBot = new SlaveBot(
+//Создаем экземпляр SlaveBot, если разрешено
+const slaveBot = (config.slavebot===true) ? new SlaveBot(
     tokenNews, 				// Токен слэйв бота
     onConfigUpdate,        // Колбэк для уведомлений
     chat_news              // Ссылка на объект конфига
-);
+) : null;
 //====================================================================
 if(!timeCron)//всегда выполняется
 {	if(moment(timePablic,'HH:mm:ss').isValid()==false)
@@ -1081,7 +1081,7 @@ try{
 			return;
 		}
 	  //----------------------------------------------------------------
-	  //первый стейт - текст
+	  //первый стейт - текст, если сюда пришло
 	  //проверим лист ожиданий
 	  if(!!TempPost[chatId] && !!WaitFlag[chatId] && WaitFlag[chatId] == 1)
 	  {	delete WaitFlag[chatId];//удаляем из листа ожиданий
@@ -1132,12 +1132,6 @@ try{
 		else if(date == moment(date,'DD.MM.YYYY').format('DD.MM.YYYY'))//если дата верна
 		{	
 			TempPost[chatId].date = date;//запоминаем дату
-			/*let str = 'Теперь пришлите мне один пост (текст, картинка, видео, аудио, документ, альбом), который необходимо опубликовать. ';
-			str += 'Его можно просто скопировать-вставить из любого чата, или загрузить из хранилища. ';
-			str += 'Форматирование текста и подписи сохраняется.';
-			WaitFlag[chatId]=1;//взводим флаг ожидания текста или файла от юзера
-			await sendMessage(chatId, str, klava(keyboard['3']));
-			//теперь будем ждать или текст, или файл*/
 			let str = 'Хотите ввести особое *ВРЕМЯ* публикации? Если нажмете *Нет*, то пост будет опубликован ';
 			str += 'в стандартное время - '+timePablic+'Z'+moment().format('Z');
 			await sendMessage(chatId, str, klava(keyboard['10']));//Да/Нет/В начало
@@ -1183,36 +1177,43 @@ try{
 		else await sendMessage(chatId, 'В списке такого номера нет!', klava(begin(chatId)));
 	  }
 	  //----------------------------------------------------------------
-	  //четвертый стейт - ловим номер удаляемого файла
-	  else if(WaitFlag[chatId]==4)
+	  //следующий стейт - ловим номер удаляемого поста на модерацию
+	  else if(WaitFlag[chatId]=='удалить_модер_пост')
 	  {	delete WaitFlag[chatId];//удаляем из листа ожиданий
 		let num=msg.text;
-		await readImagesList();//читаем файл ImagesList
-		let mas = Object.keys(ImagesList);//создаем массив ключей из списка файлов
+		let List = await readModerPostList();//читаем файлы постов
+		let mas = Object.keys(List);//создаем массив ключей из списка постов
 		if(mas.indexOf(num)+1)//если список включает в себя присланный номер
 		{	numOfDelete[chatId]=num;//сохраняем номер записи в глобальной переменной
-			await sendMessage(chatId, 'Вы выбрали файл:\n** номер: '+num+' ** ('+ImagesList[num].date+')');
-			let opt = new Object();
-			opt.caption = ImagesList[num].caption;
-			opt.caption_entities = ImagesList[num].caption_entities;
-			if(Object.hasOwn(ImagesList[num], 'type'))
-			{if(ImagesList[num].type == 'image') {await sendPhoto(LoaderBot, chatId, ImagesList[num].path, opt);}
-			 else if(ImagesList[num].type == 'video') {await sendVideo(LoaderBot, chatId, ImagesList[num].path, opt);}
-			 else if(ImagesList[num].type == 'audio') {await sendAudio(LoaderBot, chatId, ImagesList[num].path, opt);}
-			 else if(ImagesList[num].type == 'document') {await sendDocument(LoaderBot, chatId, ImagesList[num].path, opt);}
-			 else if(ImagesList[num].type=='album') {await sendAlbum(LoaderBot, chatId, ImagesList[num].media);}
-			 else if(ImagesList[num].type=='animation') {await sendAnimation(LoaderBot, chatId, ImagesList[num].path, opt);}
+			await sendMessage(chatId, 'Вы выбрали пост:\n** номер: '+num+' ** ('+List[num].date+')');
+			//это текст
+			if(Object.hasOwn(List[num], 'text'))
+			{await sendMessage(chatId, List[num].text, {entities:List[num].entities});//показываем выбранный текст
 			}
-			else await sendPhoto(LoaderBot, chatId, ImagesList[num].path, opt);
+			//это файл или альбом
+			else if(Object.hasOwn(List[num], 'path') || Object.hasOwn(List[num], 'media'))
+			{let opt = new Object();
+			 opt.caption = List[num].caption;
+			 opt.caption_entities = List[num].caption_entities;
+			 if(Object.hasOwn(List[num], 'type'))
+			 {if(List[num].type == 'image') {await sendPhoto(LoaderBot, chatId, List[num].path, opt);}
+			  else if(List[num].type == 'video') {await sendVideo(LoaderBot, chatId, List[num].path, opt);}
+			  else if(List[num].type == 'audio') {await sendAudio(LoaderBot, chatId, List[num].path, opt);}
+			  else if(List[num].type == 'document') {await sendDocument(LoaderBot, chatId, List[num].path, opt);}
+			  else if(List[num].type=='album') {await sendAlbum(LoaderBot, chatId, List[num].media);}
+			  else if(List[num].type=='animation') {await sendAnimation(LoaderBot, chatId, List[num].path, opt);}
+			 }
+			 else await sendPhoto(LoaderBot, chatId, List[num].path, opt);
+			}
 			//ждем выполнения очереди
 			try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
-			sendMessage(chatId, '👆 Удаляем этот файл? 👆', klava(keyboard['8']));
+			sendMessage(chatId, '👆 Удаляем этот пост? 👆', klava(keyboard['103']));
 		}
 		else await sendMessage(chatId, 'В списке такого номера нет!', klava(begin(chatId)));
 	  }
 	  //----------------------------------------------------------------
 	  //ловим номер удаляемого текста на модерацию
-	  else if(WaitFlag[chatId]==10)
+	  /*else if(WaitFlag[chatId]==10)
 	  {	delete WaitFlag[chatId];//удаляем из листа ожиданий
 		let num=msg.text;
 		readModerTextList();//читаем файл текстов в TextList
@@ -1271,44 +1272,117 @@ try{
 		ModerTextList = shiftObject(ModerTextList);//упорядочиваем номера-ключи в массиве
 		WriteFileJson(FileModerTextList,ModerTextList);//сохраняем вычищенный список
 		numOfDelete[chatId]='';
-	  }
+	  }*/
 	  //----------------------------------------------------------------
-	  // ловим текст с причиной удаления файла
+	  // ловим текст с причиной удаления поста на модерацию
 	  else if(WaitFlag[chatId]==22 && numOfDelete[chatId]!='')
 	  {	delete WaitFlag[chatId];//удаляем из листа ожиданий
-		readModerImagesList();//читаем файл ModerImagesList
-		//сначала уведомим отправителя об удалении
-		if(Object.hasOwn(ModerImagesList[numOfDelete[chatId]], 'chatId'))
-		{let opt=new Object();
-		 opt.caption = ModerImagesList[numOfDelete[chatId]].caption;
-		 if(Object.hasOwn(ModerImagesList[numOfDelete[chatId]], 'type'))
-		 {if(ModerImagesList[numOfDelete[chatId]].type == 'image') {await sendPhoto(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
-		  else if(ModerImagesList[numOfDelete[chatId]].type == 'video') {await sendVideo(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
-		  else if(ModerImagesList[numOfDelete[chatId]].type == 'audio') {await sendAudio(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
-		  else if(ModerImagesList[numOfDelete[chatId]].type == 'document') {await sendDocument(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
-		  else if(ModerImagesList[numOfDelete[chatId]].type == 'album') {await sendAlbum(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].media);}
-		  else if(ModerImagesList[numOfDelete[chatId]].type=='animation') {await sendAnimation(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);}
-		 }
-		 else await sendPhoto(LoaderBot, ModerImagesList[numOfDelete[chatId]].chatId, ModerImagesList[numOfDelete[chatId]].path, opt);
-		 await sendMessage(ModerImagesList[numOfDelete[chatId]].chatId, '😢 К сожалению этот файл не прошел модерацию и был удален по причине:\n'+msg.text);
-		}
-		try//удаляем сам файл
-		{	if(!!ModerImagesList[numOfDelete[chatId]].path) fs.unlinkSync(ModerImagesList[numOfDelete[chatId]].path);
-			if(!!ModerImagesList[numOfDelete[chatId]].media)
-			{	let mas = Object.keys(ModerImagesList[numOfDelete[chatId]].media);
-				for(let i=0;i<mas.length;i++)
-				{	if(fs.existsSync(ModerImagesList[numOfDelete[chatId]].media[i].media))
-					{	fs.unlinkSync(ModerImagesList[numOfDelete[chatId]].media[i].media);
+		let List = await readModerPostList();//читаем файлы постов
+		let date = List[numOfDelete[chatId]].date;//временно сохраняем дату для Админов
+		let mask = JSON.stringify(List[numOfDelete[chatId]]);
+		
+		//это текст
+		if(Object.hasOwn(List[numOfDelete[chatId]], 'text'))
+		{	await readModerTextList();//читаем файл ModerTextList
+			let keys = Object.keys(ModerTextList);
+			//ищем объект в ModerTextList
+			for(i in keys) 
+			{	if(JSON.stringify(ModerTextList[keys[i]]) === mask) 
+				{	//сначала уведомим отправителя об удалении
+					if(Object.hasOwn(ModerTextList[keys[i]], 'chatId'))
+					{let opt=new Object();
+					 opt.caption = ModerTextList[keys[i]].caption;
+					 opt.caption_entities = ModerTextList[keys[i]].caption_entities;
+					 await sendMessage(ModerTextList[keys[i]].chatId, ModerTextList[keys[i]].text, opt);
+					 await sendMessage(ModerTextList[keys[i]].chatId, '😢 К сожалению этот текст не прошел модерацию и был удален по причине:\n'+msg.text);
 					}
+					
+					delete ModerTextList[keys[i]]; 
+					await sendMessage(chatId, 'Выбранный текст успешно удален!', klava(begin(chatId)));
+					ModerTextList = shiftObject(ModerTextList);//упорядочиваем номера-ключи в массиве
+					WriteFileJson(FileModerTextList,ModerTextList);//сохраняем вычищенный список
+					sendMessageToAdmin('Юзер "'+name+'" ('+user+') удалил Текст "'+date+'"');//Админам
+					break;
 				}
 			}
-		} catch (e) {console.log(e);}
-		delete ModerImagesList[numOfDelete[chatId]];//удаляем запись в списке
-		//ждем выполнения очереди
-		try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
-		await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(get_keyb100()));
-		ModerImagesList = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
-		WriteFileJson(FileModerImagesList,ModerImagesList);//сохраняем вычищенный список
+		}
+		
+		//это файл
+		else if(Object.hasOwn(List[numOfDelete[chatId]], 'path'))
+		{	await readModerImagesList();//читаем файл ModerImagesList
+			let keys = Object.keys(ModerImagesList);
+			//ищем объект в ModerImagesList
+			for(i in keys) 
+			{	if(JSON.stringify(ModerImagesList[keys[i]]) === mask) 
+				{	//сначала уведомим отправителя об удалении
+					if(Object.hasOwn(ModerImagesList[keys[i]], 'chatId'))
+					{let opt=new Object();
+					 opt.caption = ModerImagesList[keys[i]].caption;
+					 if(Object.hasOwn(ModerImagesList[keys[i]], 'type'))
+					 {if(ModerImagesList[keys[i]].type == 'image') {await sendPhoto(LoaderBot, ModerImagesList[keys[i]].chatId, ModerImagesList[keys[i]].path, opt);}
+					  else if(ModerImagesList[keys[i]].type == 'video') {await sendVideo(LoaderBot, ModerImagesList[keys[i]].chatId, ModerImagesList[keys[i]].path, opt);}
+					  else if(ModerImagesList[keys[i]].type == 'audio') {await sendAudio(LoaderBot, ModerImagesList[keys[i]].chatId, ModerImagesList[keys[i]].path, opt);}
+					  else if(ModerImagesList[keys[i]].type == 'document') {await sendDocument(LoaderBot, ModerImagesList[keys[i]].chatId, ModerImagesList[keys[i]].path, opt);}
+					  else if(ModerImagesList[keys[i]].type == 'album') {await sendAlbum(LoaderBot, ModerImagesList[keys[i]].chatId, ModerImagesList[keys[i]].media);}
+					  else if(ModerImagesList[keys[i]].type=='animation') {await sendAnimation(LoaderBot, ModerImagesList[keys[i]].chatId, ModerImagesList[keys[i]].path, opt);}
+					 }
+					 else await sendPhoto(LoaderBot, ModerImagesList[keys[i]].chatId, ModerImagesList[keys[i]].path, opt);
+					 //ждем выполнения очереди
+					 try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+					 await sendMessage(ModerImagesList[keys[i]].chatId, '😢 К сожалению этот файл не прошел модерацию и был удален по причине:\n'+msg.text);
+					}
+					
+					try//удаляем сам файл
+					{	fs.unlinkSync(ModerImagesList[keys[i]].path);
+					} catch (e) {console.log(e);} 
+					delete ModerImagesList[keys[i]];//удаляем запись в списке
+					await sendMessage(chatId, 'Выбранный файл успешно удален!', klava(begin(chatId)));
+					ModerImagesList = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
+					WriteFileJson(FileModerImagesList,ModerImagesList);//сохраняем вычищенный список
+					sendMessageToAdmin('Юзер "'+name+'" ('+user+') удалил Файл "'+date+'"');//Админам	
+					break;
+				}
+			}
+		}
+		
+		//это альбом
+		else if(Object.hasOwn(List[numOfDelete[chatId]], 'media'))
+		{	await readModerImagesList();//читаем файл ModerImagesList
+			let keys = Object.keys(ModerImagesList);
+			//ищем объект в ModerImagesList
+			for(i in keys) 
+			{	if(JSON.stringify(ImagesList[keys[i]]) === mask) 
+				{	//сначала уведомим отправителя об удалении
+					if(Object.hasOwn(ModerImagesList[keys[i]], 'chatId'))
+					{let opt=new Object();
+					 opt.caption = ModerImagesList[keys[i]].caption;
+					 if(Object.hasOwn(ModerImagesList[keys[i]], 'type'))
+					 {if(ModerImagesList[keys[i]].type == 'album') {await sendAlbum(LoaderBot, ModerImagesList[keys[i]].chatId, ModerImagesList[keys[i]].media);}
+					 }
+					 else await sendPhoto(LoaderBot, ModerImagesList[keys[i]].chatId, ModerImagesList[keys[i]].path, opt);
+					 //ждем выполнения очереди
+					 try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+					 await sendMessage(ModerImagesList[keys[i]].chatId, '😢 К сожалению этот файл не прошел модерацию и был удален по причине:\n'+msg.text);
+					}
+					
+					try//удаляем сам альбом
+					{	let mas = Object.keys(ModerImagesList[keys[i]].media);
+						for(let j=0;j<mas.length;j++)
+						{	if(fs.existsSync(ModerImagesList[keys[i]].media[j].media))
+							{	fs.unlinkSync(ModerImagesList[keys[i]].media[j].media);
+							}
+						}
+					} catch (e) {console.log(e);} 
+					delete ModerImagesList[keys[i]];//удаляем запись в списке
+					await sendMessage(chatId, 'Выбранный альбом успешно удален!', klava(begin(chatId)));
+					ModerImagesList = shiftObject(ModerImagesList);//упорядочиваем номера-ключи в массиве
+					WriteFileJson(FileModerImagesList,ModerImagesList);//сохраняем вычищенный список
+					sendMessageToAdmin('Юзер "'+name+'" ('+user+') удалил Альбом "'+date+'"');//Админам	
+					break;
+				}
+			}
+		}
+		
 		numOfDelete[chatId]='';
 	  }
 	  //----------------------------------------------------------------
@@ -1448,7 +1522,7 @@ try{
             welcome(chatId,name);
 		}
 		//------------ набор 'Да + Нет' при удалении файлов -------------------------
-		else if(state==4)
+		/*else if(state==4)
 		{	if(button=='Да')//удаляем файлы
 			{	if(forDeleteList.length > 0)
 				{	for(let i in forDeleteList)
@@ -1463,7 +1537,7 @@ try{
 			{	await sendMessage(chatId, 'Вот и хорошо, торопиться не будем!', klava(begin(chatId)));
 			}
 			forDeleteList = [];//очищаем список удаляемых файлов
-		}
+		}*/
 		//------------ Дни недели для Постов ----------------------------------------
 		else if(state==5)
 		{	let str = 'Вы выбрали "'+button+'".\n';
@@ -1647,52 +1721,25 @@ try{
 		}
 		//------------ набор 'Админ Бота' -------------------------
 		else if(state==100)
-		{	if(button=='Удалить Тексты')//которые на модерацию
+		{	if(button=='Удалить Посты')//которые на модерацию
 			{	let str='';
-				if(Object.keys(ModerTextList).length > 0)
+				if(Object.keys(ModerTextList).length > 0 || Object.keys(ModerImagesList).length > 0)
 				{
-					await showModerTextList(chatId, 1);
-					str = 'Теперь пришлите мне *номер* Текста, который нужно удалить.\n';
-					WaitFlag[chatId]=10;//взводим флаг ожидания номера от юзера
+					await showModerPostList(chatId, 1);
+					str = 'Теперь пришлите мне *номер* Поста, который нужно удалить.\n';
+					WaitFlag[chatId]='удалить_модер_пост';//взводим флаг ожидания номера от юзера
 				}
                 else str = '*Упс... А список то пустой!*\n';
                 await sendMessage(chatId, str, klava(keyboard['102']));//Назад		
 			}
-			else if(button=='Публиковать Тексты')
-			{	if(Object.keys(ModerTextList).length > 0)
+			else if(button=='Публиковать Посты')
+			{	if(Object.keys(ModerTextList).length > 0 || Object.keys(ModerImagesList).length > 0)
 				{
-					await showModerTextList(chatId, 0);
-					let str = 'Публикуем эти тексты?';
+					await showModerPostList(chatId, 0);
+					let str = 'Публикуем эти посты?';
 					await sendMessage(chatId, str, klava(keyboard['104']));//Да-Нет
 				}
 				else 
-				{	let str = '*Упс... А список то пустой!*\n';
-					await sendMessage(chatId, str, klava(keyboard['102']));//Назад
-				}		
-			}
-			else if(button=='Удалить Файлы')
-			{	let str='';
-				if(Object.keys(ModerImagesList).length > 0)
-				{
-					await showModerImagesList(chatId, 1);
-					str = 'Теперь пришлите мне *номер* Файла, который нужно удалить.\n';
-					WaitFlag[chatId]=11;//взводим флаг ожидания номера от юзера
-				}
-				else str = '*Упс... А список то пустой!*\n';
-				//ждем выполнения очереди
-				try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
-				await sendMessage(chatId, str, klava(keyboard['102']));//Назад	
-			}
-			else if(button=='Публиковать Файлы')
-			{	if(Object.keys(ModerImagesList).length > 0)
-				{
-					await showModerImagesList(chatId, 0);
-					let str = 'Публикуем эти файлы?';
-					//ждем выполнения очереди
-					try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
-					await sendMessage(chatId, str, klava(keyboard['105']));//Да-Нет
-				}
-				else
 				{	let str = '*Упс... А список то пустой!*\n';
 					await sendMessage(chatId, str, klava(keyboard['102']));//Назад
 				}		
@@ -1711,28 +1758,15 @@ try{
                 await sendMessage(chatId, str, klava(keyboard['102']));//Назад		
 			}
 		}
-		//------------ набор 'Да + Нет' при удалении текста на модерацию--------
-		else if(state==101 && numOfDelete[chatId]!='')
-		{
-			if(button=='Да')//удаляем текст
-			{	if(WaitFlag[chatId] && WaitFlag[chatId]==21) return;
-				WaitFlag[chatId] = 21;//взводим признак ожидания текста причины
-				await sendMessage(chatId, 'Пожалуйста, опишите причину удаления. Я сообщу ее отправителю поста.');				
-			}
-			else
-			{	await sendMessage(chatId, 'Вот и хорошо, торопиться не будем!', klava(get_keyb100()));
-				clearTempWait(chatId);
-			}
-		}
 		//------------ Назад ----------------------------------------
 		else if(state==102)
 		{	clearTempWait(chatId);
             await sendMessage(chatId, 'Вот и хорошо, торопиться не будем!', klava(begin(chatId)));
 		}
-		//------------ набор 'Да + Нет' при удалении файла на модерацию--------
+		//------------ набор 'Да + Нет' при удалении поста на модерацию--------
 		else if(state==103 && numOfDelete[chatId]!='')
 		{
-			if(button=='Да')//удаляем файл
+			if(button=='Да')//удаляем пост
 			{	if(WaitFlag[chatId] && WaitFlag[chatId]==22) return;
 				WaitFlag[chatId] = 22;//взводим признак ожидания текста причины
 				await sendMessage(chatId, 'Пожалуйста, опишите причину удаления. Я сообщу ее отправителю поста.');
@@ -1742,16 +1776,17 @@ try{
 				clearTempWait(chatId);//удаляем из листа ожиданий
 			}
 		}
-		//------------ набор 'Да + Нет' при публикации текста--------
+		//------------ набор 'Да + Нет' при публикации постов--------
 		else if(state==104)
 		{
 			if(button=='Да')
-			{	readModerTextList();//читаем файл текстов в ModerTextList
+			{	//сначала тексты
+				readModerTextList();//читаем файл ModerTextList
 				//отправляем координатору вотсап, если он есть
 				let ss = await sendTextToWhatsup(ModerTextList);
 				if(ss != 'OK') console.log(ss);
 				//переносим тексты
-				const keys = Object.keys(ModerTextList);
+				let keys = Object.keys(ModerTextList);
 				for(let key of keys)
 				{	await setToTextList(ModerTextList[key]);//сохраняем в списке текстов
 					//публикуем текст прямо сейчас, если дата или день недели совпадает
@@ -1771,23 +1806,16 @@ try{
 					delete ModerTextList[key];//теперь удалим эту запись из списка
 				}
 				WriteFileJson(FileModerTextList,ModerTextList);//сохраняем вычищенный список
-				if(Object.keys(ModerTextList).length===0) await sendMessage(chatId, 'Сделано, шеф!', klava(get_keyb100()));
-				else await sendMessage(chatId, 'Не всё получилось, шеф :(\nЕсть ошибки...', klava(get_keyb100()));
-			}
-			else
-			{	await sendMessage(chatId, 'Вот и хорошо, торопиться не будем!', klava(get_keyb100()));
-			}
-		}
-		//------------ набор 'Да + Нет' при публикации файлов--------
-		else if(state==105)
-		{
-			if(button=='Да')
-			{	readModerImagesList();//читаем файл ModerImagesList
+				//if(Object.keys(ModerTextList).length===0) await sendMessage(chatId, 'Сделано, шеф!', klava(get_keyb100()));
+				//else await sendMessage(chatId, 'Не всё получилось, шеф :(\nЕсть ошибки...', klava(get_keyb100()));
+				
+				//теперь файлы
+				readModerImagesList();//читаем файл ModerImagesList
 				//отправляем координатору вотсап, если он есть
-				let ss = await sendImageToWhatsup(ModerImagesList);
+				ss = await sendImageToWhatsup(ModerImagesList);
 				if(ss != 'OK') console.log(ss);
 				//переносим файлы
-				let keys = Object.keys(ModerImagesList);
+				keys = Object.keys(ModerImagesList);
 				for(let key of keys)
 				{ try
 				  {	//сообщаем отправителю
@@ -1833,11 +1861,14 @@ try{
 					if(!!ModerImagesList[key].type) str += ', тип='+ModerImagesList[key].type;
 					if(!!ModerImagesList[key].date) str += ', дата='+ModerImagesList[key].date;
 					sendMessage(chatId, str);
-					WriteLogFile(e+'\nfrom state=105'+'\n'+str,'вчат');
+					WriteLogFile(e+'\nfrom state=104'+'\n'+str,'вчат');
 				  }
 				}
 				WriteFileJson(FileModerImagesList,ModerImagesList);//сохраняем оставшийся список
-				if(Object.keys(ModerImagesList).length===0) await sendMessage(chatId, 'Сделано, шеф!', klava(get_keyb100()));
+				
+				if(Object.keys(ModerImagesList).length===0 && Object.keys(ModerTextList).length===0) 
+				{await sendMessage(chatId, 'Сделано, шеф!', klava(get_keyb100()));
+				}
 				else await sendMessage(chatId, 'Не всё получилось, шеф :(\nЕсть ошибки...', klava(get_keyb100()));
 			}
 			else
@@ -2677,7 +2708,7 @@ catch(err){
 			await WriteFileJson(currentDir+'/queue.json', state);
 			await WriteLogFile('Остатки очереди='+queue.queue.length+', записали в queue.json');
 		}
-		await slaveBot.stop();
+		if(!!slaveBot) await slaveBot.stop();
 		await WriteLogFile('выход из процесса по '+event);
 		process.exit();
 	});
@@ -2715,16 +2746,22 @@ async function readImagesList()
     catch (err) {WriteLogFile(err+'\nfrom readImagesList()','вчат'); return 'NO';}
 }
 //====================================================================
+async function readTextList()
+{   //список текстов
+    try {TextList = shiftObject(JSON.parse(fs.readFileSync(FileTextList))); return 'OK';}
+    catch (err) {WriteLogFile(err+'\nfrom readTextList()','вчат'); return 'NO';}
+}
+//====================================================================
 function readModerImagesList()
 {   //список файлов
     try {ModerImagesList = shiftObject(JSON.parse(fs.readFileSync(FileModerImagesList)));}
     catch (err) {WriteLogFile(err+'\nfrom readModerImagesList()','вчат');}
 }
 //====================================================================
-async function readTextList()
+function readModerTextList()
 {   //список текстов
-    try {TextList = shiftObject(JSON.parse(fs.readFileSync(FileTextList))); return 'OK';}
-    catch (err) {WriteLogFile(err+'\nfrom readTextList()','вчат'); return 'NO';}
+    try {ModerTextList = shiftObject(JSON.parse(fs.readFileSync(FileModerTextList)));}
+    catch (err) {WriteLogFile(err+'\nfrom readModerTextList()','вчат');}
 }
 //====================================================================
 async function readPostList()
@@ -2743,10 +2780,20 @@ async function readPostList()
 }catch(err){WriteLogFile(err+'\nfrom readPostList()','вчат');}
 }
 //====================================================================
-function readModerTextList()
-{   //список текстов
-    try {ModerTextList = shiftObject(JSON.parse(fs.readFileSync(FileModerTextList)));}
-    catch (err) {WriteLogFile(err+'\nfrom readModerTextList()','вчат');}
+async function readModerPostList()
+{try{   
+	//список постов
+    await readModerTextList();
+	await readModerImagesList();
+	let obj={};
+	let num = 1;
+	let keys = Object.keys(ModerTextList);
+	if(!!keys && keys.length > 0) for(i in keys) {obj[num.toString()] = ModerTextList[keys[i]]; num +=1;}
+	keys = Object.keys(ModerImagesList);
+	if(!!keys && keys.length > 0) for(i in keys) {obj[num.toString()] = ModerImagesList[keys[i]]; num +=1;}
+	
+	return obj;
+}catch(err){WriteLogFile(err+'\nfrom readModerPostList()','вчат');}
 }
 //====================================================================
 async function showPostList(chatId, flag)
@@ -2788,8 +2835,6 @@ try{
 				 else if(List[mas[i]].type=='animation') {await sendAnimation(LoaderBot, chatId, List[mas[i]].path, opt);}
 				}
 				else await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);
-				//ждем выполнения очереди
-				//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			}
 			else if(Object.hasOwn(List[mas[i]], 'media'))//это альбом
 			{	let opt = new Object();
@@ -2804,13 +2849,80 @@ try{
 				 else if(List[mas[i]].type=='document') {await sendDocument(LoaderBot, chatId, List[mas[i]].path, opt);}
 				 else if(List[mas[i]].type=='album') {await sendAlbum(LoaderBot, chatId, List[mas[i]].media, opt);}
 				}
-				//ждем выполнения очереди
-				//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			}
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
+	
+	//ждем выполнения очереди
+	try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+					
 }catch(err){WriteLogFile(err+'\nfrom showPostList()','вчат');}
+}
+//====================================================================
+async function showModerPostList(chatId, flag)
+{	
+try{	
+	let List = await readModerPostList();//читаем общий список постов на модерацию
+	await sendMessage(chatId, '*<< Показываю Посты на модерацию >>*\n👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻👇🏻', {parse_mode:"markdown"});
+	let mas = Object.keys(List);
+	if(mas.length > 0)
+	{	for(let i in mas)
+		{	if(Object.hasOwn(List[mas[i]], 'text'))//это текст
+			{	let str = '';
+				let time = !!List[mas[i]].time?(' - '+List[mas[i]].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
+				if(flag!=0) str = List[mas[i]].text + '\n\n** номер: '+mas[i]+' ** ('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+time+') - '+List[mas[i]].userName;//с номером
+				else str = List[mas[i]].text + '\n\n('+List[mas[i]].date+' - '+List[mas[i]].dayOfWeek+time+') - '+List[mas[i]].userName;//без номера
+				let opt = {};
+				if(!!List[mas[i]].entities) opt.entities = List[mas[i]].entities; 
+				if(!!List[mas[i]].link_preview_options) opt.link_preview_options=List[mas[i]].link_preview_options;
+				if(!!List[mas[i]].parse_mode) opt.parse_mode = List[mas[i]].parse_mode;
+				await sendMessage(chatId, str, opt);
+			}
+			else if(Object.hasOwn(List[mas[i]], 'path'))//это одиночный файл
+			{	let opt = new Object();
+				if(Object.hasOwn(List[mas[i]], 'caption')) 
+				{	opt.caption = List[mas[i]].caption;
+					if(!!List[mas[i]].caption_entities) opt.caption_entities = List[mas[i]].caption_entities;
+				}
+				else opt.caption = '';
+				if(Object.hasOwn(List[mas[i]], 'parse_mode')) opt.parse_mode = List[mas[i]].parse_mode;
+				let time = !!List[mas[i]].time?(' - '+List[mas[i]].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
+				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+time+") - "+List[mas[i]].userName;
+				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+time+") - "+List[mas[i]].userName;
+				if(!!List[mas[i]].parse_mode) opt.parse_mode = List[mas[i]].parse_mode;
+				if(Object.hasOwn(List[mas[i]], 'type'))
+				{if(List[mas[i]].type=='image') {await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='video') {await sendVideo(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='audio') {await sendAudio(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='document') {await sendDocument(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='animation') {await sendAnimation(LoaderBot, chatId, List[mas[i]].path, opt);}
+				}
+				else await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);
+			}
+			else if(Object.hasOwn(List[mas[i]], 'media'))//это альбом
+			{	let opt = new Object();
+				opt.caption = '';
+				let time = !!List[mas[i]].time?(' - '+List[mas[i]].time):(' - '+moment(timePablic,'HH:mm').format('HH:mm'));
+				if(flag!=0) opt.caption += "\n\n** номер: "+mas[i]+" ** ("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+time+") - "+List[mas[i]].userName;
+				else opt.caption += "\n\n("+List[mas[i]].date+" - "+List[mas[i]].dayOfWeek+time+") - "+List[mas[i]].userName;
+				if(Object.hasOwn(List[mas[i]], 'type'))
+				{if(List[mas[i]].type=='image') {await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='video') {await sendVideo(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='audio') {await sendAudio(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='document') {await sendDocument(LoaderBot, chatId, List[mas[i]].path, opt);}
+				 else if(List[mas[i]].type=='album') {await sendAlbum(LoaderBot, chatId, List[mas[i]].media, opt);}
+				 else if(List[mas[i]].type=='animation') {await sendAnimation(LoaderBot, chatId, List[mas[i]].path, opt);}
+				}
+			}
+		}
+	}
+	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
+	
+	//ждем выполнения очереди
+	try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+	
+}catch(err){WriteLogFile(err+'\nfrom showModerPostList()','вчат');}
 }
 //====================================================================
 async function showModerTextList(chatId, flag)
@@ -2863,11 +2975,13 @@ try{
 			 else if(ModerImagesList[key].type=='animation') {await sendAnimation(LoaderBot, chatId, ModerImagesList[key].path, opt);}
 			}
 			else await sendPhoto(LoaderBot, chatId, ModerImagesList[key].path, opt);
-			//ждем выполнения очереди
-			//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
+	
+	//ждем выполнения очереди
+	try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+	
 }catch(err){WriteLogFile(err+'\nfrom showModerImagesList()','вчат');}
 }
 //====================================================================
@@ -3297,10 +3411,12 @@ function begin(chatId)
 function get_keyb100()
 {try{	
 	let mas = keyboard['100'];
-	if(Object.keys(ModerTextList).length > 0) mas[1][0].text = '❗️Публиковать Тексты❗️';
+	/*if(Object.keys(ModerTextList).length > 0) mas[1][0].text = '❗️Публиковать Тексты❗️';
 	else mas[1][0].text = 'Публиковать Тексты';
 	if(Object.keys(ModerImagesList).length > 0) mas[1][1].text = '❗️Публиковать Файлы❗️';
-	else mas[1][1].text = 'Публиковать Файлы';
+	else mas[1][1].text = 'Публиковать Файлы';*/
+	if(Object.keys(ModerTextList).length > 0 || Object.keys(ModerImagesList).length > 0) mas[1][0].text = '❗️Публиковать Посты❗️';
+	else mas[1][0].text = 'Публиковать Посты';
 	return mas;
 }catch(err){WriteLogFile(err+'\nfrom get_keyb100()','вчат');}
 }
@@ -3363,7 +3479,7 @@ function setContextFiles()
 		if(!fs.existsSync(currentDir+'/config.json')) 
 		{	if(fs.existsSync(cBot+'/config.json')) {fs.copyFileSync(cBot+'/config.json',currentDir+'/config.json');}
 			else
-			{	let obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru", obj.Supervisor='123456';
+			{	let obj={}; obj.area = "НашаМестность"; obj.timePablic = "06:00:00"; obj.forDate = [3,0]; obj.lifeTime = 180; obj.rassilka = true; obj.hostingImg = false; obj.pathHostingImg = "/../www/img", obj.hostname = "https://vps.na-ufa.ru", obj.Supervisor='123456', obj.slavebot=false;
 				WriteFileJson(currentDir+'/config.json',obj);
 			}
 		}
@@ -3380,6 +3496,7 @@ function setContextFiles()
 			if(!Object.hasOwn(obj,'rassilka')) {obj.rassilka = true; WriteFileJson(currentDir+'/config.json',obj);}
 			if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+'/config.json',obj);}
 			if(!Object.hasOwn(obj,'Supervisor')) {obj.Supervisor = '123456'; WriteFileJson(currentDir+'/config.json',obj);}
+			if(!Object.hasOwn(obj,'slavebot')) {obj.slavebot = false; WriteFileJson(currentDir+'/config.json',obj);}
 			//если запрошено изменение конфига в ENV
 			if(!!CONFIG_OBJ) 
 			{	let mas;
@@ -3577,18 +3694,6 @@ var keyList =
       }
     ]
   ],
-  "4": [
-    [
-      {
-        "text": "Да",
-        "callback_data": "4_Да"
-      },
-      {
-        "text": "Нет",
-        "callback_data": "4_Нет"
-      }
-    ]
-  ],
   "5": [
 	[
       {
@@ -3740,22 +3845,14 @@ var keyList =
   "100": [
     [
       {
-        "text": "Удалить Тексты",
-        "callback_data": "100_Удалить Тексты"
-      },
-      {
-        "text": "Удалить Файлы",
-        "callback_data": "100_Удалить Файлы"
+        "text": "Удалить Посты",
+        "callback_data": "100_Удалить Посты"
       }
     ],
-    [
+	[
       {
-        "text": "Публиковать Тексты",
-        "callback_data": "100_Публиковать Тексты"
-      },
-      {
-        "text": "Публиковать Файлы",
-        "callback_data": "100_Публиковать Файлы"
+        "text": "Публиковать Посты",
+        "callback_data": "100_Публиковать Посты"
       }
     ],
 	[
@@ -3768,24 +3865,6 @@ var keyList =
       {
         "text": "Назад",
         "callback_data": "3_Вначало"
-      }
-    ]
-  ],
-  "101": [
-    [
-      {
-        "text": "Да",
-        "callback_data": "101_Да"
-      },
-      {
-        "text": "Нет",
-        "callback_data": "101_Нет"
-      }
-    ],
-    [
-      {
-        "text": "Назад",
-        "callback_data": "1_Админ Бота"
       }
     ]
   ],
@@ -3824,24 +3903,6 @@ var keyList =
       {
         "text": "Нет",
         "callback_data": "104_Нет"
-      }
-    ],
-    [
-      {
-        "text": "Назад",
-        "callback_data": "1_Админ Бота"
-      }
-    ]
-  ],
-  "105": [
-    [
-      {
-        "text": "Да",
-        "callback_data": "105_Да"
-      },
-      {
-        "text": "Нет",
-        "callback_data": "105_Нет"
       }
     ],
     [
