@@ -3397,7 +3397,7 @@ try{
 			flag++;
 		}
 	}
-	if(flag) return 'OK'; else return 'NO';
+	if(flag) return 'OK'; else return 'NO Whatsup';
 }catch(err){WriteLogFile(err+'\nfrom sendImageToWhatsup()','вчат'); return -1;}
 }
 //====================================================================
