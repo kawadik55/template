@@ -80,7 +80,7 @@ logs_bot.json - бот для важных системных сообщений
 
 2. Теперь запустим контейнер с ботом, и он сам развернет в созданных папках все необходимые для своей работы файлы:
 
-docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/LoaderBot" --user "$(id -u):$(id -g)" kawadiyk/fullloaderbot:latest ./full_loader_bot
+docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/LoaderBot" --user "$(id -u):$(id -g)" kawadiyk/rzfloaderbot:latest ./rzf_loader_bot
 и следом остановить контейнер командой:
 docker stop name_bot
 
@@ -97,35 +97,5 @@ docker restart name_bot
 где name_bot нужно заменить на имя вашего контейнера, о чем говорилось выше.
 После этого бот должен полноценно заработать.
 Вот и все, что нужно сделать для запуска бота в докер-контейнере!
-//-----------------------------------------------------------------------------------
-Теперь запустить контейнер с ботом можно одной командой, без остановки и заполнения файлов настроек.
-Нужно просто послать в контейнер все(или только нужные) параметры настроек, разместив их в переменных окружения.
-В примере ниже прописаны все возможные переменные, но допустимо использовать их в любом сочетании или кол-ве.
-Если остановить, удалить и запустить контейнер с новым набором окружения, то перезаписаны в нужные файлы на диске
-будут только эти параметры.
-
-1.
-docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d \
--e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" \
--e "SUPERVISOR=chatId_Супервизора" \
--e "TOKEN_BOT=токен основного бота как есть" \
--e "NAME_BOT=это_мой_bot или как хотите" \
--e "TOKEN_LOG=токен для бота логов, если нужен" \
--e "NAME_LOG=это_лог_bot или как хотите" \
--e "TOKEN_NEWS=токен новостного бота, как есть" \
--e "NAME_NEWS=это_news_bot или как хотите" \
--e 'CONFIG_OBJ={"area":"Название вашей местности","timePablic":"06:00:00","forDate":[3,1,0],"lifeTime":"180","rassilka":true,"utcOffset":"+180","Supervisor":"chatId_Супервизора"}' \
--e 'BUTTONS_OBJ={"reply_markup":{ "inline_keyboard":[[{"text": "Духовные принципы на каждый день", "url": "https://t.me/+a8HO46bHu8MwZjZk"}]]}}' \
--e 'RUN_OBJ={"Text": true,"Image": true,"Eg": true,"Raspis": true,"FileEg":"/../Rassilka/eg.txt","FileRaspis":"/../Rassilka/raspis.txt"}' \
---user "$(id -u):$(id -g)" kawadiyk/fullloaderbot:latest ./full_loader_bot
-
-2.
-docker stop name_bot && docker rm name_bot
-
-3.
-docker run --name name_bot -v ДОМ/РЕГИОН:/home/pi/РЕГИОН:rw --restart=unless-stopped -d -e "CURRENT_DIR=/home/pi/РЕГИОН/БОТ" --user "$(id -u):$(id -g)" kawadiyk/fullloaderbot:latest ./full_loader_bot
-
-Если не сделать перезагрузку контейнера после первой команды с настройками, то все последующие рестарты контейнера
-будут перезаписывать эти параметры вновь и вновь, а это не есть хорошо.
 
 Удачи вам!
