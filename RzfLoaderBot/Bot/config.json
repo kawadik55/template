@@ -11,5 +11,6 @@
   "pathHostingImg": "/../www/img",
   "hostname":"https://vps.na-serv.ru",
   "Supervisor":"123456",
-  "queuelimit":200
+  "queuelimit":200,
+  "slavebot": false
 }
