@@ -1276,8 +1276,6 @@ try{
 					WaitFlag[chatId]=3;//взводим флаг ожидания номера от юзера
 				}
                 else str += '*Упс... А список то пустой!*\n';
-                //ждем выполнения очереди
-				try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 				await sendMessage(chatId, str, klava(keyboard['3']));//В Начало
 			}
 			// кнопка Хостинг картинок
@@ -1565,8 +1563,6 @@ try{
 					WaitFlag[chatId]=11;//взводим флаг ожидания номера от юзера
 				}
 				else str = '*Упс... А список то пустой!*\n';
-				//ждем выполнения очереди
-				try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 				await sendMessage(chatId, str, klava(keyboard['102']));//Назад	
 			}
 			else if(button=='Публиковать Файлы')
@@ -1574,8 +1570,6 @@ try{
 				{
 					await showModerImagesList(chatId, 0);
 					let str = 'Публикуем эти файлы?';
-					//ждем выполнения очереди
-					try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 					await sendMessage(chatId, str, klava(keyboard['105']));//Да-Нет
 				}
 				else
@@ -2685,6 +2679,7 @@ try{
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
+			
 }catch(err){WriteLogFile(err+'\nfrom showTextList()','вчат');}
 }
 //====================================================================
@@ -2726,8 +2721,6 @@ try{
 				 else if(List[mas[i]].type=='document') {await sendDocument(LoaderBot, chatId, List[mas[i]].path, opt);}
 				}
 				else await sendPhoto(LoaderBot, chatId, List[mas[i]].path, opt);
-				//ждем выполнения очереди
-				//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			}
 			else if(Object.hasOwn(List[mas[i]], 'media'))//это альбом
 			{	let opt = new Object();
@@ -2742,12 +2735,14 @@ try{
 				 else if(List[mas[i]].type=='document') {await sendDocument(LoaderBot, chatId, List[mas[i]].path, opt);}
 				 else if(List[mas[i]].type=='album') {await sendAlbum(LoaderBot, chatId, List[mas[i]].media, opt);}
 				}
-				//ждем выполнения очереди
-				//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 			}
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
+	
+	//ждем выполнения очереди
+	try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+	
 }catch(err){WriteLogFile(err+'\nfrom showPostList()','вчат');}
 }
 //====================================================================
@@ -2800,11 +2795,13 @@ try{
 			 else if(ImagesList[key].type=='album') {await sendAlbum(LoaderBot, chatId, ImagesList[key].media, opt);}
 			}
 			else await sendPhoto(LoaderBot, chatId, ImagesList[key].path, opt);
-			//ждем выполнения очереди
-			//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
+	
+	//ждем выполнения очереди
+	try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+	
 }catch(err){WriteLogFile(err+'\nfrom showImagesList()','вчат');}
 }
 //====================================================================
@@ -2834,11 +2831,13 @@ try{
 			 else if(ModerImagesList[key].type=='album') {await sendAlbum(LoaderBot, chatId, ModerImagesList[key].media, opt);}
 			}
 			else await sendPhoto(LoaderBot, chatId, ModerImagesList[key].path, opt);
-			//ждем выполнения очереди
-			//try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
 		}
 	}
 	else await sendMessage(chatId, '*Упс... А список то пустой!*\n', {parse_mode:"markdown"});
+	
+	//ждем выполнения очереди
+	try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+	
 }catch(err){WriteLogFile(err+'\nfrom showModerImagesList()','вчат');}
 }
 //====================================================================
@@ -3244,7 +3243,7 @@ try{
 			flag++;
 		}
 	}
-	if(flag) return 'OK'; else return 'NO';
+	if(flag) return 'OK'; else return 'NO Whatsup';
 }catch(err){WriteLogFile(err+'\nfrom sendImageToWhatsup()','вчат'); return -1;}
 }
 //====================================================================
@@ -4134,6 +4133,9 @@ async function send_Images(now)
 		}catch(err){WriteLogFile(err+'\nfrom send_Images()=>for()','вчат');}
 	}
 	//if(made==0) WriteLogFile('К сожалению на сегодня ничего нет :(');
+	//ждем выполнения очереди
+	try{await queue.waitForQueueEmpty(30000);}catch(err){console.log(err);}
+	
   } catch (err) 
   {console.error(getTimeStr()+err); 
    WriteLogFile(err+'\nfrom send_Images()','вчат');
