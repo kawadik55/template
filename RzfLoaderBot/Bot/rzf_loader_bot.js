@@ -148,7 +148,6 @@ try
 }
 if(!!RunList.FileEg) FileEg = currentDir+RunList.FileEg;
 if(!!RunList.FileRaspis) FileRaspis = currentDir+RunList.FileRaspis;
-if(RunList.Raspis == true){RunList.Raspis = false; WriteFileJson(FileRun,RunList);}//принуд. отключаем
 //файл кнопок
 try 
 { Buttons = JSON.parse(fs.readFileSync(FileButtons));
