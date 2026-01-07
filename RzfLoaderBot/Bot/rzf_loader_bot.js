@@ -1351,7 +1351,7 @@ try{
 			let keys = Object.keys(ModerImagesList);
 			//ищем объект в ModerImagesList
 			for(i in keys) 
-			{	if(JSON.stringify(ImagesList[keys[i]]) === mask) 
+			{	if(JSON.stringify(ModerImagesList[keys[i]]) === mask) 
 				{	//сначала уведомим отправителя об удалении
 					if(Object.hasOwn(ModerImagesList[keys[i]], 'chatId'))
 					{let opt=new Object();
