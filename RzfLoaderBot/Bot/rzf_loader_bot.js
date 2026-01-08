@@ -3970,7 +3970,7 @@ async function send_Eg()
 		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 		for(let i=0;i<offset.length;i++)
 		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
-			if(userHour===publicHour) go2public(chat_news[offset[i]],offset[i],now);//передаем массив чатов
+			if(userHour===publicHour) await go2public(chat_news[offset[i]],offset[i],now);//передаем массив чатов
 		}
 	
 	async function go2public(chat,groffset,parnow)
@@ -4054,7 +4054,7 @@ async function send_Raspis()
 		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 		for(let i=0;i<offset.length;i++)
 		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
-			if(userHour===publicHour) go2public(chat_news[offset[i]],offset[i]);//передаем массив чатов
+			if(userHour===publicHour) await go2public(chat_news[offset[i]],offset[i]);//передаем массив чатов
 		}
 		
 	async function go2public(chat,groffset)
