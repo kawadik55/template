@@ -432,6 +432,8 @@ else if(!Object.hasOwn(AdminList, 'coordinatorName'))
 }
 
 WriteLogFile('=======================================================');
+if(slaveBot) WriteLogFile('SlaveBot активен');
+else WriteLogFile('SlaveBot выключен');
 WriteLogFile('Запуск бота @'+namebot);
 if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic+'Z'+moment().format('Z'));
 
