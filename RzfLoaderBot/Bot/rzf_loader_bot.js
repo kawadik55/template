@@ -63,6 +63,44 @@ if(!!config.hostingImg) hostingImg = config.hostingImg;
 if(!!config.pathHostingImg) PathToHostImg = currentDir+config.pathHostingImg;
 if(!!config.hostname) hostname = config.hostname;
 setTimezoneByOffset(utcOffset);//устанавливаем локальную таймзону
+//проверяем старый файл списка запуска функций рассылки
+if(fs.existsSync(FileRun)&&!config.FileEg&&!config.FileRaspis)
+{	let RunList = {};
+	try 
+	{	RunList = JSON.parse(fs.readFileSync(FileRun));
+	} catch (err) 
+	{	WriteLogFile('Ошибка парсинга RunList\n'+err,'вбот');
+		RunList.Text = false; RunList.Image = false; RunList.Eg = false; RunList.Raspis = false;
+		RunList.FileEg = '/eg.txt';
+		RunList.FileRaspis = '/raspis.txt';
+	}
+	//переносим настройки в конфига
+	config.News = (RunList.Text==true&&RunList.Image==true) ? true : false;//это новое поле вместо Text и Image
+	config.Eg = RunList.Eg ? RunList.Eg : false;
+	config.Raspis = RunList.Raspis ? RunList.Raspis : false;
+	config.FileEg = RunList.FileEg ? RunList.FileEg : '/eg.txt';
+	config.FileRaspis = RunList.FileRaspis ? RunList.FileRaspis : '/raspis.txt';
+	WriteFileJson(currentDir+"/config.json",config);
+	fs.unlinkSync(FileRun);//удаляем старый файл
+}
+if(!Object.hasOwn(config,'FileEg')) {config.FileEg = '/eg.txt'; WriteFileJson(currentDir+"/config.json",config);}
+if(!Object.hasOwn(config,'FileRaspis')) {config.FileRaspis = '/raspis.txt'; WriteFileJson(currentDir+"/config.json",config);}
+if(!Object.hasOwn(config,'Eg')) {config.Eg = false; WriteFileJson(currentDir+"/config.json",config);}
+if(!Object.hasOwn(config,'Raspis')) {config.Raspis = false; WriteFileJson(currentDir+"/config.json",config);}
+if(!Object.hasOwn(config,'News')) {config.News = false; WriteFileJson(currentDir+"/config.json",config);}
+FileEg = currentDir+config.FileEg;
+FileRaspis = currentDir+config.FileRaspis;
+//проверяем старый файл со ссылкой на поддержку
+if(fs.existsSync(currentDir+"/Url.txt")&&!config.UrlSupport)
+{try{	let url = fs.readFileSync(currentDir+"/Url.txt").toString();
+		if(url.search(/^http+s?:\/\//)<0) url = 'https://t.me/битаяСсылка';
+		config.UrlSupport = url;
+		WriteFileJson(currentDir+"/config.json",config);
+		fs.unlinkSync(currentDir+"/Url.txt");//удаляем старый файл
+	}
+	catch (err) {console.log(err);}
+}
+if(!Object.hasOwn(config,'UrlSupport')) {config.UrlSupport = 'https://t.me/ссылкаДляВопросов'; WriteFileJson(currentDir+"/config.json",config);}
 
 //список чатов
 try{chat_news = require(currentDir+"/chatId.json");
@@ -134,20 +172,8 @@ let dayOfWeek=new Object();
 let numOfDelete=new Object();
 let timeCron='';//время для крона
 let MediaList=new Object();//массив группы медиа файлов
-let RunList = {};//список запуска функций
 let Buttons = {};//кнопки
 
-//файл списка запуска функций рассылки
-try 
-{ RunList = JSON.parse(fs.readFileSync(FileRun));
-} catch (err) 
-{WriteLogFile('Ошибка парсинга RunList\n'+err,'вбот');
- RunList.Text = false; RunList.Image = false; RunList.Eg = false; RunList.Raspis = false;
- RunList.FileEg = '/eg.txt';
- RunList.FileRaspis = '/raspis.txt';
-}
-if(!!RunList.FileEg) FileEg = currentDir+RunList.FileEg;
-if(!!RunList.FileRaspis) FileRaspis = currentDir+RunList.FileRaspis;
 //файл кнопок
 try 
 { Buttons = JSON.parse(fs.readFileSync(FileButtons));
@@ -160,16 +186,10 @@ try
 //если файл отсутствует, то создадим его 
 catch (err) {WriteFileJson(currentDir+"/LastMessId.txt",LastMessId);}
 
-//прочитаем файл Url.txt со ссылкой для Вопросов
+//подложим в кнопку ссылку для Вопросов
 let keyboard = getKeyList();// массив клавиатур
-try 
-{let url = fs.readFileSync(currentDir+"/Url.txt").toString();
- if(url.search(/^http+s?:\/\//)<0) url = 'https://t.me/битаяСсылка';
- if(!!keyboard['1'][1][0].url) keyboard['1'][1][0].url = url;
- if(!!keyboard['adm1'][2][0].url) keyboard['adm1'][2][0].url = url;
-}
-//если файл отсутствует, то создадим его 
-catch (err) {fs.writeFileSync(currentDir+"/Url.txt",'https://t.me/ссылкаДляВопросов');}
+if(!!keyboard['1'][1][0].url) keyboard['1'][1][0].url = config.UrlSupport;
+if(!!keyboard['adm1'][2][0].url) keyboard['adm1'][2][0].url = config.UrlSupport;
 //добавим клавишу хостинга, если разрешено
 if(hostingImg && !!PathToHostImg)
 {	let obj = [{"text": "Хостинг картинок","callback_data": "1_Хостинг картинок"}];
@@ -241,9 +261,9 @@ var Cron1 = cron.schedule(timeCron, async function()
 			}
 		}
 		//ежик
-		if(RunList.Eg===true) await send_Eg();
+		if(config.Eg===true) await send_Eg();
 		//расписание
-		if(RunList.Raspis===true) await send_Raspis();
+		if(config.Raspis===true) await send_Raspis();
 		
 		//WriteLogFile('Далее рассылка текстов и картинок:');
 	  } finally {
@@ -251,9 +271,10 @@ var Cron1 = cron.schedule(timeCron, async function()
       }
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
+
 //установим службу публикаций по времени, каждую четную мин
 var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
-{	if(rassilka)//если рассылка включена
+{	if(rassilka && config.News===true)//если рассылка включена
 	{	let now = moment();
 		if(cronIsRunning)//ждем маленько, если первый крон еще выполняется
 		{	const startWait = Date.now();
@@ -263,15 +284,12 @@ var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
 		now = now.subtract(10, 'seconds');//приводим к 0 сек
 		let offset = Object.keys(chat_news).length>0 ? Object.keys(chat_news) :[];
 		//публикуем тексты
-		if(RunList.Text===true) 
-		{	for(let i=0;i<offset.length;i++) {await send_Text(now, offset[i]);}
-		}
+		for(let i=0;i<offset.length;i++) {await send_Text(now, offset[i]);}
 		//публикуем фото и пр
-		if(RunList.Image===true)
-		{	for(let i=0;i<offset.length;i++) {await send_Images(now, offset[i]);}
-		}	
+		for(let i=0;i<offset.length;i++) {await send_Images(now, offset[i]);}	
 	}
 },{timezone:moment().tz()});//в локальной таймзоне
+
 //установим службу удаления старых картинок из хостинга
 var Cron3 = cron.schedule('15 2 * * *', function()//ночью каждый день
 {	if(hostingImg && fs.existsSync(PathToHostImg))//если хостинг разрешен
@@ -2300,13 +2318,10 @@ try{
 		if(url.indexOf('https://t.me/')<0) return;
 		if(!!keyboard['1'][1][0].url) keyboard['1'][1][0].url = url;
 		if(!!keyboard['adm1'][2][0].url) keyboard['adm1'][2][0].url = url;
-		WriteFileJson(currentDir+"/Url.txt", url);
+		config.UrlSupport = url;
+		WriteFileJson(currentDir+"/config.json",config);
 		let str='Новый URl '+url+' принят!';
 		sendMessage(chatId, str);
-		if(!!config && !!config.url)//удаляем от сюда, щас по другому
-		{	delete config.url;
-			WriteFileJson(currentDir+"/config.json", config);
-		}
 	}
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/EditUrl/)','вчат');}	
 });
@@ -3532,28 +3547,6 @@ function setContextFiles()
 					) 
 					{WriteFileJson(currentDir+'/buttons.txt',mas);}
 					}catch(err){WriteLogFile('Ошибка в объекте BUTTONS_OBJ');}
-				}
-			}
-		}
-	//run.txt
-		if(!fs.existsSync(currentDir+'/run.txt')) {WriteFileJson(currentDir+'/run.txt',{});}
-		if(fs.existsSync(currentDir+'/run.txt'))//если файл уже имеется
-		{	let obj;
-			try{obj = JSON.parse(fs.readFileSync(currentDir+'/run.txt'));}catch(err){console.log(err);}
-			if(typeof(obj) != 'object' || Object.keys(obj).length === 0) 
-			{	obj={}; obj.Text = true; obj.Image = true; obj.Eg = false; obj.Raspis = false;
-				obj.FileEg = '/../Rassilka/eg.txt';
-				obj.FileRaspis = '/../Rassilka/raspis.txt';
-				WriteFileJson(currentDir+'/run.txt',obj);
-			}
-			//если запрошено изменение RUN_OBJ в ENV
-			if(!!RUN_OBJ) 
-			{	let mas;
-				try{mas = JSON.parse(RUN_OBJ);}catch(err){console.log(err); mas = '';}
-				if(!mas) WriteLogFile('RUN_OBJ - не объект');
-				else 
-				{	if(Object.hasOwn(mas,'Text') && Object.hasOwn(mas,'Image') && Object.hasOwn(mas,'Eg') && Object.hasOwn(mas,'Raspis') && !!mas.FileEg && !!mas.FileRaspis)
-					WriteFileJson(currentDir+'/run.txt',mas);
 				}
 			}
 		}

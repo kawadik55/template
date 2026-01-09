@@ -1,8 +1,0 @@
-{
-  "Text": true,
-  "Image": true,
-  "Eg": false,
-  "Raspis": false,
-  "FileEg": "/../Rassilka/eg.txt",
-  "FileRaspis": "/../Rassilka/raspis.txt"
-}

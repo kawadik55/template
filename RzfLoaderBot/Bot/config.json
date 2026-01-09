@@ -12,5 +12,11 @@
   "hostname":"https://vps.na-serv.ru",
   "Supervisor":"123456",
   "queuelimit":200,
-  "slavebot": false
+  "slavebot": false,
+  "News": true,
+  "Eg": false,
+  "Raspis": false,
+  "FileEg": "/../Rassilka/eg.txt",
+  "FileRaspis": "/../Rassilka/raspis.txt",
+  "UrlSupport": "https://t.me/ссылкаДляВопросов"
 }
