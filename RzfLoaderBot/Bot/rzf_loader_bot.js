@@ -119,27 +119,21 @@ if(chat_Supervisor==='1234') {WriteLogFile('Отсутствует chat_Supervis
 
 //если chat_news находится в старом файле, то переносим в новый
 if(config && config.chat_news)
-{	chat_news = config.chat_news;
-	//в старом файле нету некоторых полей, добавим
+{	chat_news = structuredClone(config.chat_news);
+    //в старом файле нету некоторых полей, добавим
 	// Проходим по всем часовым поясам
-    const timezones = Object.keys(config.chat_news);
-    for (let t = 0; t < timezones.length; t++)
-	{	const timezone = timezones[t];
-        const chatArray = config.chat_news[timezone];
-        if (!Array.isArray(chatArray)) continue;
-        // Проходим по всем чатам
-        for (let i = 0; i < chatArray.length; i++)
-		{	const chatObj = chatArray[i];
-            if (chatObj && typeof chatObj === 'object')
-			{	// Добавляем только если ключ не существует
-                if (!chatObj.hasOwnProperty('Eg')) chatObj.Eg = true;
-                if (!chatObj.hasOwnProperty('News')) chatObj.News = true;
+	for (const [timezone, chatArray] of Object.entries(chat_news))
+	{	if (!Array.isArray(chatArray)) continue;
+        for (const chatObj of chatArray)
+		{	if (chatObj && typeof chatObj === 'object')
+			{	if (!Object.hasOwn(chatObj, 'Eg')) chatObj.Eg = true;
+				if (!Object.hasOwn(chatObj, 'News')) chatObj.News = true;
             }
         }
     }
-	WriteFileJson(currentDir+"/chatId.json",chat_news);
-	delete config.chat_news;//удаляем в старом
-	WriteFileJson(currentDir+"/config.json",config);	
+    WriteFileJson(currentDir + "/chatId.json", chat_news);
+    delete config.chat_news;
+    WriteFileJson(currentDir + "/config.json", config);
 }
 
 const LoaderBot = new TelegramBot(tokenLoader, {polling: true});
