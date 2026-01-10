@@ -3174,7 +3174,7 @@ try{
 		  {	let opt = {};
 			if(!!obj.entities) opt.entities = obj.entities;
 			let chatId = '';
-			if(!!all_chats[i] && !all_chats[i].News) continue;//не выбран News в доставке
+			if(!all_chats[i].News) continue;//не выбран News в доставке
 			let key = Object.keys(all_chats[i]);
 			if(!!all_chats[i][key[0]]) chatId = all_chats[i][key[0]];
 			if(!!all_chats[i].message_thread_id) opt.message_thread_id = all_chats[i].message_thread_id;
@@ -3349,7 +3349,7 @@ try{//проверяем разрешение на публикацию неме
 	 {	try{
 		  let chatId = '', threadId = '';
 		  if(!!all_chats[i]) 
-		  {	if(!!all_chats[i] && !all_chats[i].News) continue;//не выбран News в доставке
+		  {	if(!all_chats[i].News) continue;//не выбран News в доставке
 			let key = Object.keys(all_chats[i]);
 			if(!!all_chats[i][key[0]]) chatId = all_chats[i][key[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
