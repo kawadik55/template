@@ -128,6 +128,7 @@ if(config && config.chat_news)
 		{	if (chatObj && typeof chatObj === 'object')
 			{	if (!Object.hasOwn(chatObj, 'Eg')) chatObj.Eg = true;
 				if (!Object.hasOwn(chatObj, 'News')) chatObj.News = true;
+				if (!Object.hasOwn(chatObj, 'Raspis')) chatObj.Raspis = false;
             }
         }
     }
@@ -4056,6 +4057,7 @@ async function send_Raspis()
 			let chatId = '', threadId = '';
 			let name = (chat[i] && typeof chat[i] === 'object') ? Object.keys(chat[i]) : [];
 			if(name.length==0) continue;
+			if(!!chat[i] && !chat[i].Raspis) continue;//не выбрано расписание в доставке
 			if(!!chat[i][name[0]]) chatId = chat[i][name[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
 			if(!!chat[i].message_thread_id) threadId = chat[i].message_thread_id;

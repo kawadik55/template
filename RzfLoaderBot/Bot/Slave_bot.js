@@ -835,12 +835,15 @@ class SlaveBot {
             const existing = this.findChatInConfig(chatId);
             
             // Получаем текущие настройки контента из существующего конфига
-            let contentSettings = { Eg: true, News: true };
+            let contentSettings = { Eg: true, News: true, Raspis: false };
             if (existing && existing.Eg !== undefined) {
                 contentSettings.Eg = existing.Eg;
             }
             if (existing && existing.News !== undefined) {
                 contentSettings.News = existing.News;
+            }
+			if (existing && existing.Raspis !== undefined) {
+                contentSettings.Raspis = existing.Raspis;
             }
             
             // Сохраняем информацию о старом чате во временные данные
@@ -1070,6 +1073,12 @@ class SlaveBot {
                     callback_data: 'content_News'
                 }
             ],
+			[
+				{
+					text: `${contentSettings.Raspis ? '✅' : '❌'} Расписание`,
+					callback_data: 'content_Raspis'
+				}
+			],
             [
                 { text: '💾 Сохранить', callback_data: 'save_config' }
             ],
@@ -1092,9 +1101,9 @@ class SlaveBot {
             }
 
             // Переключаем состояние выбранного типа контента
-            const contentSettings = pending.contentSettings || { Eg: true, News: true };
+            const contentSettings = pending.contentSettings || { Eg: true, News: true, Raspis: false };
             
-            if (contentType === 'Eg' || contentType === 'News') {
+            if (contentType === 'Eg' || contentType === 'News' || contentType === 'Raspis') {
                 contentSettings[contentType] = !contentSettings[contentType];
                 
                 // Обновляем временные данные
@@ -1184,11 +1193,11 @@ class SlaveBot {
             }
 
             // Проверяем, что выбран хотя бы один тип контента
-            const contentSettings = pending.contentSettings || { Eg: true, News: true };
-            if (!contentSettings.Eg && !contentSettings.News) {
+            const contentSettings = pending.contentSettings || { Eg: true, News: true, Raspis: false };
+            if (!contentSettings.Eg && !contentSettings.News && !contentSettings.Raspis) {
                 await this.bot.sendMessage(chatId, 
                     '❌ *Ошибка: должен быть выбран хотя бы один тип контента*\n\n' +
-                    `*Выберите Ежедневник или Новости (или оба) и нажмите "Сохранить"*`,
+                    `*Выберите хоть что нибудь и нажмите "Сохранить"*`,
                     { 
                         parse_mode: 'Markdown',
                         message_thread_id: pending.message_thread_id || undefined
@@ -1235,13 +1244,14 @@ class SlaveBot {
             // Добавляем настройки контента
             chatEntry.Eg = Boolean(contentSettings.Eg);
             chatEntry.News = Boolean(contentSettings.News);
+			chatEntry.Raspis = Boolean(contentSettings.Raspis);
             
             // Проверяем, нет ли дубликата в текущей таймзоне
             if (Array.isArray(this.chat_news[offsetKey])) {
                 // Удаляем возможный дубликат (на случай если чат уже был в этой таймзоне)
                 this.chat_news[offsetKey] = this.chat_news[offsetKey].filter(chat => {
                     for (const [key, value] of Object.entries(chat)) {
-                        if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && 
+                        if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && key !== 'Raspis' && 
                             (value.toString() === targetChatId.toString() || value === targetChatId)) {
                             return false; // Удаляем дубликат
                         }
@@ -1285,6 +1295,7 @@ class SlaveBot {
                 const contentTypes = [];
                 if (contentSettings.Eg) contentTypes.push('📔 Ежедневник');
                 if (contentSettings.News) contentTypes.push('🌐 Новости');
+				if (contentSettings.Raspis) contentTypes.push('📅 Расписание');
                 const contentInfo = contentTypes.length > 0 ? contentTypes.join('\n') : '❌ Не выбрано';
                 
                 const completionMessage = pending.isEdit ? 
@@ -1362,7 +1373,7 @@ class SlaveBot {
             for (const chat of chats) {
                 // Ищем chatId среди значений объекта (исключая message_thread_id)
                 for (const [key, value] of Object.entries(chat)) {
-                    if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && 
+                    if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && key !== 'Raspis' && 
                         (value.toString() === chatId.toString() || value === chatId)) {
                         return {
                             title: key,
@@ -1370,6 +1381,7 @@ class SlaveBot {
                             timezoneKey,
                             Eg: chat.Eg !== undefined ? chat.Eg : false,
                             News: chat.News !== undefined ? chat.News : false,
+							Raspis: chat.Raspis !== undefined ? chat.Raspis : false,
                             threadId: chat.message_thread_id || ""
                         };
                     }
@@ -1393,6 +1405,7 @@ class SlaveBot {
         const contentTypes = [];
         if (existing.Eg) contentTypes.push('📔 Ежедневник');
         if (existing.News) contentTypes.push('🌐 Новости');
+		if (existing.Raspis) contentTypes.push('📅 Расписание');
         let contentText;
         if (contentTypes.length > 0) {
             contentText = contentTypes.join('\n');
@@ -1477,7 +1490,7 @@ class SlaveBot {
             this.chat_news[timezoneKey] = chats.filter(chat => {
                 // Ищем chatId среди значений объекта (исключая message_thread_id)
                 for (const [key, value] of Object.entries(chat)) {
-                    if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && 
+                    if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && key !== 'Raspis' && 
                         (value.toString() === chatId.toString() || value === chatId)) {
                         return false; // ← Удаляем этот чат
                     }
@@ -1572,7 +1585,7 @@ class SlaveBot {
                     let chatId = null;
                     // Ищем chatId в объекте
                     for (const [key, value] of Object.entries(chat)) {
-                        if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News') {
+                        if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && key !== 'Raspis') {
                             chatId = value;
                             break;
                         }
@@ -1919,6 +1932,7 @@ class SlaveBot {
                 const contentTypes = [];
                 if (existingConfig.Eg) contentTypes.push('📔 Ежедневник');
                 if (existingConfig.News) contentTypes.push('🌐 Новости');
+				if (existingConfig.Raspis) contentTypes.push('📅 Расписание');
                 const contentInfo = contentTypes.length > 0 ? contentTypes.join('\n') : '❌ Не выбрано';
                 
                 // Спрашиваем, хочет ли пользователь изменить настройки
@@ -2046,7 +2060,7 @@ class SlaveBot {
                 oldSettings: null,
                 message_thread_id: "", // У каналов нет тем
                 timezoneOffset: null,
-                contentSettings: { Eg: true, News: true },
+                contentSettings: { Eg: true, News: true, Raspis: true },
                 lastContentMessageId: null,
                 lastMessageId: null, // Инициализируем поле для активного сообщения
                 configType: 'channel',
@@ -2165,12 +2179,15 @@ class SlaveBot {
             }
             
             // Получаем текущие настройки контента
-            let contentSettings = { Eg: true, News: true };
+            let contentSettings = { Eg: true, News: true, Raspis: true };
             if (existing && existing.Eg !== undefined) {
                 contentSettings.Eg = existing.Eg;
             }
             if (existing && existing.News !== undefined) {
                 contentSettings.News = existing.News;
+            }
+			if (existing && existing.Raspis !== undefined) {
+                contentSettings.Raspis = existing.Raspis;
             }
             
             // Сохраняем временные данные для редактирования
@@ -2200,6 +2217,7 @@ class SlaveBot {
             const contentTypes = [];
             if (contentSettings.Eg) contentTypes.push('📔 Ежедневник');
             if (contentSettings.News) contentTypes.push('🌐 Новости');
+			if (contentSettings.Raspis) contentTypes.push('📅 Расписание');
             const contentInfo = contentTypes.length > 0 ? contentTypes.join('\n') : '❌ Не выбрано';
             
             const keyboard = this.createTimezoneKeyboard();
