@@ -3988,7 +3988,7 @@ async function send_Eg()
 			let chatId = '', threadId = '', opt = {};
 			let name = (chat[i] && typeof chat[i] === 'object') ? Object.keys(chat[i]) : [];
 			if(name.length==0) continue;
-			if(!!chat[i] && !chat[i].Eg) continue;//не выбран ежик в доставке
+			if(!chat[i].Eg) continue;//не выбран ежик в доставке
 			if(!!chat[i][name[0]]) chatId = chat[i][name[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
 			if(!!chat[i].message_thread_id) threadId = chat[i].message_thread_id;
@@ -4057,7 +4057,7 @@ async function send_Raspis()
 			let chatId = '', threadId = '';
 			let name = (chat[i] && typeof chat[i] === 'object') ? Object.keys(chat[i]) : [];
 			if(name.length==0) continue;
-			if(!!chat[i] && !chat[i].Raspis) continue;//не выбрано расписание в доставке
+			if(!chat[i].Raspis) continue;//не выбрано расписание в доставке
 			if(!!chat[i][name[0]]) chatId = chat[i][name[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
 			if(!!chat[i].message_thread_id) threadId = chat[i].message_thread_id;
@@ -4186,7 +4186,7 @@ async function send_Images(now,offset)
 			//основной канал новостей
 			for(let i=0;i<all_chats.length;i++) 
 			{	let chatId = '', threadId = '';
-				if(!!all_chats[i] && !all_chats[i].News) continue;//не выбран News в доставке
+				if(!all_chats[i].News) continue;//не выбран News в доставке
 				let name = Object.keys(all_chats[i]);
 				if(!!all_chats[i][name[0]]) chatId = all_chats[i][name[0]];//привязан к порядку в объекте!
 				if(!chatId) continue;//пропускаем цикл, если нет chatId
@@ -4347,7 +4347,7 @@ async function send_Text(now,offset)
 			//основной канал новостей
 			for(let i=0;i<all_chats.length;i++) 
 			{	let chatId = '';
-				if(!!all_chats[i] && !all_chats[i].News) continue;//не выбран News в доставке
+				if(!all_chats[i].News) continue;//не выбран News в доставке
 				let name = Object.keys(all_chats[i]);
 				if(!!all_chats[i][name[0]]) chatId = all_chats[i][name[0]];//привязан к порядку в объекте!
 				if(!chatId) continue;//пропускаем цикл, если нет chatId
