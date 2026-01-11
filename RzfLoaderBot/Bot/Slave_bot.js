@@ -685,8 +685,8 @@ class SlaveBot {
             try {
                 const userId = msg.from.id;
                 const botInfo = await this.bot.getMe();
-                //const botUsername = this.escapeMarkdown(botInfo.username);
-				const botUsername = botInfo.username;
+                const botUsername = this.escapeMarkdown(botInfo.username);
+				//const botUsername = botInfo.username;
                 
                 const deepLink = `https://t.me/${botUsername}?start=channel_setup`;
                 
@@ -696,7 +696,7 @@ class SlaveBot {
 					`2. Бот предложит выбрать канал\n` +
                     `3. Настройте часовой пояс и контент\n\n` +
                     `*Примечание:* Вы должны быть администратором канала.`,
-                    {/* parse_mode: 'Markdown'*/ }
+                    { parse_mode: 'Markdown' }
                 );
             } catch (err) {
                 console.error('Ошибка /setup_channel:', err);
