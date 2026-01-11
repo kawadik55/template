@@ -685,13 +685,13 @@ class SlaveBot {
             try {
                 const userId = msg.from.id;
                 const botInfo = await this.bot.getMe();
-                const botUsername = this.escapeMarkdown(botInfo.username);
-				//const botUsername = botInfo.username;
+                //const botUsername = this.escapeMarkdown(botInfo.username);
+				const botUsername = botInfo.username;
                 
                 const deepLink = `https://t.me/${botUsername}?start=channel_setup`;
                 
                 await this.bot.sendMessage(userId,
-                    `🔗 Ссылка для настройки канала:\n\n` +
+                    `🔗 *Ссылка для настройки канала:*\n\n` +
                     `1. Перейдите по ссылке: ${deepLink}\n` +
 					`2. Бот предложит выбрать канал\n` +
                     `3. Настройте часовой пояс и контент\n\n` +
