@@ -696,7 +696,7 @@ class SlaveBot {
 					`2. Бот предложит выбрать канал\n` +
                     `3. Настройте часовой пояс и контент\n\n` +
                     `*Примечание:* Вы должны быть администратором канала.`,
-                    { parse_mode: 'Markdown' }
+                    { /*parse_mode: 'Markdown'*/ }
                 );
             } catch (err) {
                 console.error('Ошибка /setup_channel:', err);
