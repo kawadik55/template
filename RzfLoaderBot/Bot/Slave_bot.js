@@ -685,7 +685,8 @@ class SlaveBot {
             try {
                 const userId = msg.from.id;
                 const botInfo = await this.bot.getMe();
-                const botUsername = this.escapeMarkdown(botInfo.username);
+                //const botUsername = this.escapeMarkdown(botInfo.username);
+				const botUsername = botInfo.username;
                 
                 const deepLink = `https://t.me/${botUsername}?start=channel_setup`;
                 
