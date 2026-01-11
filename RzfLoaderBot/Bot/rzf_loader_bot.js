@@ -4051,6 +4051,7 @@ async function send_Raspis()
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		await WriteLogFile('Рассылка Расписания в каналы '+groffset+' через очередь:');
+		let count_chats = 0;
 		let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 		for(let i=0;i<chat.length;i++) 
 		{  try{
@@ -4077,10 +4078,11 @@ async function send_Raspis()
 					await WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
 				}
 			}
-			else await WriteLogFile('в '+name[0]+' = ОК');
+			else count_chats++;//await WriteLogFile('в '+name[0]+' = ОК');
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis()=>for()','вчат');}
 		}
+		await WriteLogFile('Всего чатов = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Raspis()','вчат');
