@@ -109,9 +109,10 @@ try{chat_news = require(currentDir+"/chatId.json");
 // выбор токена
 let tokenLoader = '', tokenNews = '';
 tokenLoader = require(TokenDir+"/loader_bot.json").token;
-var namebot = 'unnown';
+var namebot = 'unnown', nameNews = 'unnown';
 try{namebot = require(TokenDir+"/loader_bot.json").comment;}catch(err){console.log(err);}//юзернейм бота
 tokenNews = require(TokenDir+"/news_bot.json").token;
+try{nameNews = require(TokenDir+"/news_bot.json").comment;}catch(err){console.log(err);}//юзернейм бота
 
 //пользователь 'Supervisor'
 var chat_Supervisor = (config && config.Supervisor) ? config.Supervisor : '1234';
@@ -445,8 +446,8 @@ else if(!Object.hasOwn(AdminList, 'coordinatorName'))
 }
 
 WriteLogFile('=======================================================');
-if(slaveBot) WriteLogFile('SlaveBot активен');
-else WriteLogFile('SlaveBot выключен');
+if(slaveBot) WriteLogFile('SlaveBot @'+nameNews+' активен');
+else WriteLogFile('SlaveBot @'+nameNews+' выключен');
 WriteLogFile('Запуск бота @'+namebot);
 if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic+'Z'+moment().format('Z'));
 
