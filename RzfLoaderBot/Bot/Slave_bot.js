@@ -214,9 +214,6 @@ class SlaveBot {
                                `2. Используйте ${this.escapeMarkdown('/config_channel')}\n`;
                 }
                 
-                helpText += `*Общие команды:*\n` +
-                           `/help - показать эту справку`;
-                
                 await this.bot.sendMessage(chatId, helpText, 
                     { 
                         parse_mode: 'Markdown',
