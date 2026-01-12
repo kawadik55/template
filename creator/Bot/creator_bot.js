@@ -1441,7 +1441,7 @@ try{
 			await fs.promises.writeFile(PathToQuestions+'/'+chatId+'.txt', str);//запишем файл вопросов пользователя
 			await sendMessage(chatId, 'Вот что я получил и запомнил! 👆🏻', klava(LastKey[chatId],null, chatId));
 		}
-		else await sendMessage(chatId, 'Ничего не получилось... 😢', klava(LastKey[chatId],null, chatId));
+		else await sendMessage(chatId, 'Ничего не получилось... 😢', klava(LastKey[chatId], null, chatId));
 	}
 	else if(msg.text === "❌ Отменить")
 	{	//Убираем предыдущее сообщение
@@ -1450,8 +1450,8 @@ try{
 		// Убираем текстовую клавиатуру
 		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
 		try {await remove_message(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
-		let index='0';
-		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
+		let index=LastKey[chatId];
+		await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].caption || null, chatId), index);
 	}
 	else if(msg.text === "Удалить мою локацию")
 	{	//Убираем предыдущее сообщение
@@ -1461,8 +1461,8 @@ try{
 		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
 		try {await remove_message(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
 		delete LastMessId[chatId].location;
-		let index='0';
-		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
+		let index=LastKey[chatId];
+		await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].caption || null, chatId), index);
 	}
 	else
 	{	//если пришел текст 'от фонаря'
@@ -2017,14 +2017,9 @@ try{
 	}
 
 	async function exit()
-	{	let index='0';
-		if(!('text' in Tree[index]))
-		{  	Tree[index].text = 'Тут пока ничего нет\n';
-			if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT))) 
-			{Tree[index].text += '/help - выдаст полный список команд';
-			}
-		}
-		await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].entities, chatId), index);
+	{	let index=LastKey[chatId];
+		let str = (Tree[index] && Tree[index].text) ? Tree[index].text : 'Тут пока ничего нет\n';
+		await sendMessage(chatId, str, klava(index, Tree[index].caption || null, chatId), index);
 	}
 }catch(err){WriteLogFile(err+'\nfrom ловим location','вчат');}
 });
