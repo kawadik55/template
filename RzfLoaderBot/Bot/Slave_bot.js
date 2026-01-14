@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const moment = require('moment-timezone');
 
 class SlaveBot {
-    constructor(token, onConfigUpdate, mainChatNewsRef) {
+    constructor(token, onConfigUpdate, mainChatNewsRef, mainArea) {
         this.bot = new TelegramBot(token, { polling: true });
         this.onConfigUpdate = onConfigUpdate; // Колбэк для обновления конфига.
         this.pendingConfigs = new Map(); // chatId -> временные данные конфигурации
@@ -11,6 +11,9 @@ class SlaveBot {
         
         // Используем ссылку на объект из основного кода
         this.chat_news = mainChatNewsRef || {};
+		
+		// Название местности для приветствия
+		this.area = mainArea || '';
         
         this.setupHandlers();
         this.setupCleanupTimer();
@@ -288,7 +291,7 @@ class SlaveBot {
                             } else {
                                 // Для групп и супергрупп
                                 await this.bot.sendMessage(chatId,
-                                    `👋 *Привет! Я бот для публикаций.*\n\n` +
+                                    `👋 *Привет! Я бот Новостей ${this.area}.*\n\n` +
                                     `Чтобы настроить рассылку в этот чат, используйте команду /config\n` +
                                     `*Только администраторы чата могут выполнить настройку.*`,
                                     { 
@@ -707,7 +710,7 @@ class SlaveBot {
     async showPrivateChatHelp(userId) {
         try {
             await this.bot.sendMessage(userId,
-                `👋 *Привет! Я бот для публикаций.*\n\n` +
+                `👋 *Привет! Я бот Новостей ${this.area}.*\n\n` +
                 `*Вы можете настроить:*\n\n` +
                 `👥 *Приватный чат* - просто используйте /config\n\n` +
 				`👥 *Группы* - добавьте меня в группу и используйте /config\n\n` +

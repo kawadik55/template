@@ -223,7 +223,8 @@ const onConfigUpdate = (update) => {
 const slaveBot = (config.slavebot===true) ? new SlaveBot(
     tokenNews, 				// Токен слэйв бота
     onConfigUpdate,        // Колбэк для уведомлений
-    chat_news              // Ссылка на объект конфига
+    chat_news,              // Ссылка на объект конфига
+	config.area				// Название местности
 ) : null;
 //====================================================================
 if(!timeCron)//всегда выполняется
