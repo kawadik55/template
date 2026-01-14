@@ -892,7 +892,7 @@ class SlaveBot {
             
             // Добавляем информацию о теме форума
             if (messageThreadId) {
-                message += `\n📌 *Настройка для темы форума:* ID ${messageThreadId}`;
+                message += `\n📌 *Тема форума:* ID ${messageThreadId}`;
             }
             
             const sentMessage = await this.bot.sendMessage(chatId, message,
@@ -1295,7 +1295,7 @@ class SlaveBot {
                 
                 let threadInfo = '';
                 if (chatEntry.message_thread_id) {
-                    threadInfo = `\n📌 *Тема форума:* ID ${chatEntry.message_thread_id}`;
+                    threadInfo = `📌 *Тема форума:* ID ${chatEntry.message_thread_id}\n`;
                 }
                 
                 // Формируем информацию о выбранных типах контента
@@ -1315,9 +1315,9 @@ class SlaveBot {
                 await this.bot.sendMessage(targetUserId,
                     `${completionMessage}\n\n` +
                     `📝 *Чат:* "${this.escapeMarkdown(chatTitle)}"\n` +
+					threadInfo +
                     `🌍 *Часовой пояс:* UTC${sign}${hours} ч.\n` +
-                    `*Получаем:*\n${contentInfo}` +
-                    threadInfo,
+                    `*Получаем:*\n${contentInfo}`,
                     { 
                         parse_mode: 'Markdown',
                         message_thread_id: pending.message_thread_id || undefined
@@ -1419,9 +1419,14 @@ class SlaveBot {
         } else {
             contentText = '❌ Не выбрано';
         }
+		let threadInfo = '';
+        if (existing.threadId) {
+			threadInfo = `📌 *Тема форума:* ID ${existing.threadId}\n`;
+        }
         
         return `⚙️ *Настройки бота:*\n\n` +
                `📝 *Чат:* "${this.escapeMarkdown(existing.title)}"\n` +
+			   threadInfo +
                `🌍 *Часовой пояс:* UTC${sign}${hours} ч.\n\n` +
                `*Получает:*\n${contentText}\n\n` +
                `ℹ️ *Команды:*\n` +
