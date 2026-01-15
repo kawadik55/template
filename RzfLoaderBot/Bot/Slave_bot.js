@@ -74,7 +74,6 @@ class SlaveBot {
                 const fromId = msg.from.id;
                 const params = match[1]; // Параметры после /start
                 const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
-                botUsername
                 // Проверяем права
                 const messageId = msg.message_id;
                 if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
@@ -126,7 +125,6 @@ class SlaveBot {
                 
                 // Для приватных чатов отправляем помощь
                 if (chatId > 0) {
-                    await this.bot.sendMessage(chatId, 'Зашел в /start:');
 					await this.showPrivateChatHelp(fromId);
                     return;
                 }
@@ -135,7 +133,6 @@ class SlaveBot {
                 await this.startConfigProcess(chatId, chatTitle, messageThreadId);
             } catch (err) {
                 console.error('Ошибка в /start:', err);
-				//this.bot.sendMessage(chatId, 'Ошибка в /start:' + err);
             }
         });
 
