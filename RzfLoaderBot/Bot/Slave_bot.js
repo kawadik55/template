@@ -67,7 +67,7 @@ class SlaveBot {
             }
         });
         
-        // Команда /start - работает как /config
+        // Команда /start
         this.bot.onText(/^\/start(?: (.+))?$/, async (msg, match) => {
             try {
                 const chatId = msg.chat.id;
@@ -134,7 +134,7 @@ class SlaveBot {
                 await this.startConfigProcess(chatId, chatTitle, messageThreadId);
             } catch (err) {
                 console.error('Ошибка в /start:', err);
-				await this.bot.sendMessage(chatId, 'Ошибка в /start:' + err);
+				this.bot.sendMessage(chatId, 'Ошибка в /start:' + err);
             }
         });
 
