@@ -126,7 +126,8 @@ class SlaveBot {
                 
                 // Для приватных чатов отправляем помощь
                 if (chatId > 0) {
-                    await this.showPrivateChatHelp(fromId);
+                    await this.bot.sendMessage(chatId, 'Зашел в /start:');
+					await this.showPrivateChatHelp(fromId);
                     return;
                 }
                 
