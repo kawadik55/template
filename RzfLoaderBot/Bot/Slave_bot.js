@@ -134,6 +134,7 @@ class SlaveBot {
                 await this.startConfigProcess(chatId, chatTitle, messageThreadId);
             } catch (err) {
                 console.error('Ошибка в /start:', err);
+				await this.bot.sendMessage(chatId, 'Ошибка в /start:' + err);
             }
         });
 
