@@ -449,7 +449,7 @@ else if(!Object.hasOwn(AdminList, 'coordinatorName'))
 WriteLogFile('=======================================================');
 if(slaveBot) WriteLogFile('SlaveBot @'+nameNews+' запущен в polling-режиме');
 else WriteLogFile('SlaveBot @'+nameNews+' запущен в пассивном режиме');
-WriteLogFile('Основной бот @'+namebot+' запущен');
+WriteLogFile('MasterBot @'+namebot+' запущен');
 if(rassilka) WriteLogFile('Установлено время рассылки - '+timePablic+'Z'+moment().format('Z'));
 
 //загружаем очередь, если сохраняли
