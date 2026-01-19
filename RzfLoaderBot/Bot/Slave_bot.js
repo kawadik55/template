@@ -8,23 +8,36 @@ class SlaveBot {
         this.pendingConfigs = new Map(); // chatId -> временные данные конфигурации
         this.pendingChannelSetup = null; // Для настройки каналов через приватный чат
         this.cleanupTimer = null; // Для очистки таймера при остановке
+		this.botName = null;//имя бота
+		this.botUsername = null;//имя бота
         
         // Используем ссылку на объект из основного кода
         this.chat_news = mainChatNewsRef || {};
 		
 		// Название местности для приветствия
 		this.area = mainArea || '';
+		
+		this.initbotname();
         
         this.setupHandlers();
         this.setupCleanupTimer();
         this.setupPrivateChatHandlers(); // Добавляем обработчики для приватного чата
-		
-		this.botName = null;//имя бота
         
         console.log('SlaveBot запущен');
     }
 
-    saveConfig(event = null, data = {}) {
+    async initbotname() {
+			try {
+				const botInfo = await this.bot.getMe();
+				this.botName = botInfo.first_name || '';
+				this.botUsername = botInfo.username || '';
+				console.log(`Имя бота установлено: ${this.botName}`);
+			} catch (err) {
+				console.error('Ошибка получения имени бота:', err);
+			}
+	}
+	
+	saveConfig(event = null, data = {}) {
         try {
             if (this.onConfigUpdate) {
                 this.onConfigUpdate({
@@ -108,18 +121,17 @@ class SlaveBot {
                 
                 // Для каналов отправляем инструкцию
                 if (chatType === 'channel') {
-                    const botInfo = await this.bot.getMe();
-                    const botUsername = this.escapeMarkdown('@' + botInfo.username);
+                    if(!this.botUsername) await this.initbotname();
                     
                     await this.bot.sendMessage(chatId,
-                        `📢 *Настройка бота для канала*\n\n` +
-                        `*Для настройки канала:*\n` +
-                        `1. Перейдите в приватный чат с ботом ${botUsername}\n` +
-                        `2. Используйте команду ${this.escapeMarkdown('/config_channel')}\n` +
+                        `📢 <b>Настройка бота для канала</b>\n\n` +
+                        `<b>Для настройки канала:</b>\n` +
+                        `1. Перейдите в приватный чат с ботом @${this.botUsername}\n` +
+                        `2. Используйте команду /config_channel)}\n` +
                         `3. Выберите этот канал из списка\n\n` +
-                        `*Только администраторы канала могут выполнить настройку.*`,
+                        `<b>Только администраторы канала могут выполнить настройку.</b>`,
                         { 
-                            parse_mode: 'Markdown',
+                            parse_mode: 'HTML',
                             message_thread_id: msg.message_thread_id || undefined
                         }
                     );
@@ -160,7 +172,7 @@ class SlaveBot {
                 const info = await this.getChatInfo(chatId);
                 await this.bot.sendMessage(chatId, info, 
                     {
-                        parse_mode: 'markdown',
+                        parse_mode: 'HTML',
                         message_thread_id: msg.message_thread_id || undefined
                     }
                 );
@@ -195,34 +207,34 @@ class SlaveBot {
                     chatType = 'unknown';
                 }
                 
-                let helpText = `*🤖 Команды бота:*\n\n`;
+                let helpText = `<b>🤖 Команды бота:</b>\n\n`;
                 
                 if (chatType === 'channel') {
-                    helpText += `*📢 Для каналов:*\n` +
+                    helpText += `<b>📢 Для каналов:</b>\n` +
                                `/start - показать инструкцию по настройке\n\n` +
-                               `*Как настроить:*\n` +
+                               `<b>Как настроить:</b>\n` +
                                `1. Перейдите в приватный чат с ботом\n` +
-                               `2. Используйте ${this.escapeMarkdown('/config_channel')}\n` +
+                               `2. Используйте /config_channel\n` +
                                `3. Выберите этот канал\n\n`;
                 } else if (chatType === 'group' || chatType === 'supergroup') {
-                    helpText += `*👥 Для групп:*\n` +
+                    helpText += `👥 <b>Для групп:</b>\n` +
                                `/config - настроить бота\n` +
                                `/info - показать текущие настройки\n\n`;
                 } else {
-                    helpText += `*👤 В приватном чате:*\n` +
+                    helpText += `👤 <b>В приватном чате:</b>\n` +
                                `/start - показать инструкцию по настройке\n` +
 							   `/config - настроить бота\n` +
                                `/info - показать текущие настройки\n\n` +
-							   `*📢 Для каналов:*\n` +
+							   `<b>📢 Для каналов:</b>\n` +
                                `/start - показать инструкцию по настройке\n` +
-                               `*Как настроить на канал:*\n` +
+                               `<b>Как настроить на канал:</b>\n` +
                                `1. Перейдите в приватный чат с ботом\n` +
-                               `2. Используйте ${this.escapeMarkdown('/config_channel')}\n`;
+                               `2. Используйте /config_channel\n`;
                 }
                 
                 await this.bot.sendMessage(chatId, helpText, 
                     { 
-                        parse_mode: 'Markdown',
+                        parse_mode: 'HTML',
                         message_thread_id: msg.message_thread_id || undefined
                     }
                 );
@@ -273,18 +285,17 @@ class SlaveBot {
 							
 							if (chatType === 'channel') {
                                 // Для каналов отправляем специальное сообщение
-                                const botInfo = await this.bot.getMe();
-                                const botUsername = this.escapeMarkdown('@' + botInfo.username);
+                                if(!this.botUsername) await this.initbotname();
                                 
                                 await this.bot.sendMessage(chatId,
-                                    `📢 *Настройка бота для канала*\n\n` +
-                                    `*Для настройки канала:*\n` +
-                                    `1. Перейдите в приватный чат с ботом ${botUsername}\n` +
-                                    `2. Используйте команду ${this.escapeMarkdown('/config_channel')}\n` +
+                                    `📢 <b>Настройка бота для канала</b>\n\n` +
+                                    `<b>Для настройки канала:</b>\n` +
+                                    `1. Перейдите в приватный чат с ботом @${this.botUsername}\n` +
+                                    `2. Используйте команду /config_channel\n` +
                                     `3. Выберите этот канал из списка\n\n` +
-                                    `*Только администраторы канала могут выполнить настройку.*`,
+                                    `<b>Только администраторы канала могут выполнить настройку.</b>`,
                                     { 
-                                        parse_mode: 'Markdown',
+                                        parse_mode: 'HTML',
                                         message_thread_id: msg.message_thread_id || undefined
                                     }
                                 );
@@ -292,20 +303,17 @@ class SlaveBot {
                                 // Для приватных чатов (личных сообщений)
                                 await this.showPrivateChatHelp(chatId);
                             } else {
-                                if(!this.botName)
-								{	const botInfo = await this.bot.getMe();//инфо самого бота
-									this.botName = botInfo.first_name || '';
-								}
+                                if(!this.botName) await this.initbotname();
 								// Для групп и супергрупп
                                 await this.bot.sendMessage(chatId,
-                                    `👋 *Привет! Я бот "${this.botName}".*\n\n` +
+                                    `👋 <b>Привет! Я бот "${this.botName}".</b>\n\n` +
                                     `Чтобы настроить рассылку в этот чат, используйте команду\n` +
                                     `/config\n` +
 									`в нужной теме.\n` +
 									`На время настройки отключите анонимность админа.\n` +
-									`*Только администраторы чата могут выполнить настройку.*`,
+									`<b>Только администраторы чата могут выполнить настройку.</b>`,
                                     { 
-                                        parse_mode: 'Markdown',
+                                        parse_mode: 'HTML',
                                         message_thread_id: msg.message_thread_id || undefined
                                     }
                                 );
@@ -367,12 +375,12 @@ class SlaveBot {
                     
                     // Отправляем новое сообщение
                     const sentMessage = await this.bot.sendMessage(chatId,
-                        `*Отправьте смещение часового пояса в формате:*\n` +
+                        `<b>Отправьте смещение часового пояса в формате:</b>\n` +
                         `• +3 (для UTC+3)\n` +
                         `• -5 (для UTC-5)\n` +
                         `• 0 (для UTC±0)\n`,
                         {
-                            parse_mode: 'Markdown',
+                            parse_mode: 'HTML',
                             reply_markup: { inline_keyboard: [[
                                 { text: 'Отмена', callback_data: 'cancel_config' }
                             ]]},
@@ -528,15 +536,15 @@ class SlaveBot {
                     
                     if (removed) {
                         await this.bot.sendMessage(userId,
-                            `✅ *Канал успешно удален из рассылки.*\n\n` +
-                            `Чтобы снова добавить канал, используйте ${this.escapeMarkdown('/config_channel')}`,
-							{ parse_mode: 'Markdown' }
+                            `✅ <b>Канал успешно удален из рассылки.</b>\n\n` +
+                            `Чтобы снова добавить канал, используйте /config_channel`,
+							{ parse_mode: 'HTML' }
                         );
                     } else {
                         await this.bot.sendMessage(userId,
-                            `❌ *Не удалось удалить канал.*\n` +
+                            `❌ <b>Не удалось удалить канал.</b>\n` +
                             `Возможно, он уже был удален ранее.`,
-							{ parse_mode: 'Markdown' }
+							{ parse_mode: 'HTML' }
                         );
                     }
                     
@@ -633,13 +641,13 @@ class SlaveBot {
                         await this.handleTimezoneSelection(chatId, timezone, pending.message_thread_id || "");
                     } else {
                         const sentMessage = await this.bot.sendMessage(chatId, 
-                            '❌ *Не удалось распознать часовой пояс.*\n\n' +
-                            `*Попробуйте еще раз:*\n` +
+                            '❌ <b>Не удалось распознать часовой пояс.</b>\n\n' +
+                            `<b>Попробуйте еще раз:</b>\n` +
                             `• +3 (для UTC+3)\n` +
                             `• -5 (для UTC-5)\n` +
                             `• 0 (для UTC±0)\n`,
                             { 
-                                parse_mode: 'Markdown',
+                                parse_mode: 'HTML',
                                 message_thread_id: pending.message_thread_id || undefined
                             }
                         );
@@ -699,9 +707,8 @@ class SlaveBot {
         this.bot.onText(/^\/setup_channel$/, async (msg) => {
             try {
                 const userId = msg.from.id;
-                const botInfo = await this.bot.getMe();
-                //const botUsername = this.escapeMarkdown(botInfo.username);
-				const botUsername = botInfo.username;
+                if(!this.botUsername) await this.initbotname();
+				const botUsername = '@' + this.botUsername;
                 
                 const deepLink = `https://t.me/${botUsername}?start=channel_setup`;
                 
@@ -721,20 +728,18 @@ class SlaveBot {
 
     async showPrivateChatHelp(userId) {
         try {
-            if(!this.botName)
-			{	const botInfo = await this.bot.getMe();//инфо самого бота
-				this.botName = botInfo.first_name || '';
-			}
+            if(!this.botName) await this.initbotname();
+			
 			await this.bot.sendMessage(userId,
-                `👋 *Привет! Я бот "${this.botName}".*\n\n` +
-                `*Вы можете настроить:*\n\n` +
-                `👥 *Приватный чат* - просто используйте /config\n\n` +
-				`👥 *Группы* - добавьте меня в группу и используйте /config\n` +
+                `👋 <b>Привет! Я бот "${this.botName}".</b>\n\n` +
+                `<b>Вы можете настроить:</b>\n\n` +
+                `👥 <b>Приватный чат</b> - просто используйте /config\n\n` +
+				`👥 <b>Группы</b> - добавьте меня в группу и используйте /config\n` +
 				`На время настройки отключите анонимность админа.\n\n` +
-				`📢 *Каналы* - используйте ${this.escapeMarkdown('/config_channel')}\n` +
-                `${this.escapeMarkdown('/setup_channel')} - получить ссылку для настройки\n\n` +
-				`*Для получения справки используйте* /help`,
-                { parse_mode: 'Markdown' }
+				`📢 <b>Каналы</b> - используйте /config_channel\n` +
+                `/setup_channel - получить ссылку для настройки\n\n` +
+				`<b>Для получения справки используйте</b> /help`,
+                { parse_mode: 'HTML' }
             );
         } catch (err) {
             console.error('Ошибка showPrivateChatHelp:', err);
@@ -788,15 +793,15 @@ class SlaveBot {
             };
             
             const sentMessage = await this.bot.sendMessage(userId,
-                `📢 *Настройка бота для канала*\n\n` +
-                `*Введите ID канала:*\n\n` +
-                `*🆔 Формат ID:*\n` +
+                `📢 <b>Настройка бота для канала</b>\n\n` +
+                `<b>Введите ID канала:</b>\n\n` +
+                `<b>🆔 Формат ID:</b>\n` +
                 `• -1001234567890\n\n` +
-                `*Требования:*\n` +
+                `<b>Требования:</b>\n` +
                 `✓ Вы должны быть администратором канала\n` +
                 `✓ Бот должен быть добавлен в канал как администратор`,
                 {
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                     reply_markup: keyboard
                 }
             );
@@ -896,25 +901,25 @@ class SlaveBot {
             // Показываем клавиатуру с выбором таймзоны
             const keyboard = this.createTimezoneKeyboard();
             
-            let message = `⚙️ *Настройка бота для ${chatType}:* "${this.escapeMarkdown(chatTitle)}"\n\n` +
-                         `*Шаг 1/2: Выберите часовой пояс*\n` +
+            let message = `⚙️ <b>Настройка бота для ${chatType}:</b> "${this.escapeHtml(chatTitle)}"\n\n` +
+                         `<b>Шаг 1/2: Выберите часовой пояс</b>\n` +
                          `(Публикации будут выходить в указанное время по вашему часовому поясу)`;
             
             // Добавляем информацию, если чат уже настроен
             if (existing) {
                 const hours = Math.abs(existing.offset / 60);
                 const sign = existing.offset >= 0 ? '+' : '-';
-                message += `\n\n📋 *Текущие настройки:* UTC${sign}${hours} ч.`;
+                message += `\n\n📋 <b>Текущие настройки:</b> UTC${sign}${hours} ч.`;
             }
             
             // Добавляем информацию о теме форума
             if (messageThreadId) {
-                message += `\n📌 *Тема форума:* ID ${messageThreadId}`;
+                message += `\n📌 <b>Тема форума:</b> ID ${messageThreadId}`;
             }
             
             const sentMessage = await this.bot.sendMessage(chatId, message,
                 {
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                     reply_markup: { inline_keyboard: keyboard },
                     message_thread_id: messageThreadId || undefined
                 }
@@ -1057,14 +1062,14 @@ class SlaveBot {
             // Создаем клавиатуру для выбора контента
             const keyboard = this.createContentKeyboard(pending.contentSettings);
             
-            const message = `⚙️ *Настройка бота для чата:* "${this.escapeMarkdown(pending.chatTitle)}"\n\n` +
-                          `*Шаг 2/2: Выберите нужный контент*\n\n` +
+            const message = `⚙️ <b>Настройка бота для чата:</b> "${this.escapeHtml(pending.chatTitle)}"\n\n` +
+                          `<b>Шаг 2/2: Выберите нужный контент</b>\n\n` +
                           `✅ - будет получать\n` +
                           `❌ - не будет получать\n\n`;
             
             const sentMessage = await this.bot.sendMessage(chatId, message,
                 {
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                     reply_markup: { inline_keyboard: keyboard },
                     message_thread_id: pending.message_thread_id || undefined
                 }
@@ -1136,8 +1141,8 @@ class SlaveBot {
                 // Редактируем существующее сообщение вместо удаления и отправки нового
                 const keyboard = this.createContentKeyboard(contentSettings);
                 
-                const message = `⚙️ *Настройка бота для чата:* "${this.escapeMarkdown(pending.chatTitle)}"\n\n` +
-                              `*Шаг 2/2: Выберите нужный контент*\n\n` +
+                const message = `⚙️ <b>Настройка бота для чата:</b> "${this.escapeHtml(pending.chatTitle)}"\n\n` +
+                              `<b>Шаг 2/2: Выберите нужный контент</b>\n\n` +
                               `✅ - будет получать\n` +
                               `❌ - не будет получать\n\n`;
                 
@@ -1146,7 +1151,7 @@ class SlaveBot {
                     await this.bot.editMessageText(message, {
                         chat_id: chatId,
                         message_id: pending.lastContentMessageId,
-                        parse_mode: 'Markdown',
+                        parse_mode: 'HTML',
                         reply_markup: { inline_keyboard: keyboard }
                     });
                     
@@ -1158,7 +1163,7 @@ class SlaveBot {
                     // Если не удалось отредактировать, отправляем новое сообщение
                     const sentMessage = await this.bot.sendMessage(chatId, message,
                         {
-                            parse_mode: 'Markdown',
+                            parse_mode: 'HTML',
                             reply_markup: { inline_keyboard: keyboard },
                             message_thread_id: pending.message_thread_id || undefined
                         }
@@ -1220,10 +1225,10 @@ class SlaveBot {
             const contentSettings = pending.contentSettings || { Eg: true, News: true, Raspis: false };
             if (!contentSettings.Eg && !contentSettings.News && !contentSettings.Raspis) {
                 await this.bot.sendMessage(chatId, 
-                    '❌ *Ошибка: должен быть выбран хотя бы один тип контента*\n\n' +
-                    `*Выберите хоть что нибудь и нажмите "Сохранить"*`,
+                    '❌ <b>Ошибка: должен быть выбран хотя бы один тип контента</b>\n\n' +
+                    `<b>Выберите хоть что нибудь и нажмите "Сохранить"</b>`,
                     { 
-                        parse_mode: 'Markdown',
+                        parse_mode: 'HTML',
                         message_thread_id: pending.message_thread_id || undefined
                     }
                 );
@@ -1307,12 +1312,12 @@ class SlaveBot {
                 if (pending.oldSettings) {
                     const oldHours = Math.abs(pending.oldSettings.offset / 60);
                     const oldSign = pending.oldSettings.offset >= 0 ? '+' : '-';
-                    oldSettingsInfo = `\n🔄 *Старый часовой пояс:* UTC${oldSign}${oldHours} ч.`;
+                    oldSettingsInfo = `\n🔄 <b>Старый часовой пояс:</b> UTC${oldSign}${oldHours} ч.`;
                 }
                 
                 let threadInfo = '';
                 if (chatEntry.message_thread_id) {
-                    threadInfo = `📌 *Тема форума:* ID ${chatEntry.message_thread_id}\n`;
+                    threadInfo = `📌 <b>Тема форума:</b> ID ${chatEntry.message_thread_id}\n`;
                 }
                 
                 // Формируем информацию о выбранных типах контента
@@ -1323,20 +1328,20 @@ class SlaveBot {
                 const contentInfo = contentTypes.length > 0 ? contentTypes.join('\n') : '❌ Не выбрано';
                 
                 const completionMessage = pending.isEdit ? 
-                    `✅ *Настройки обновлены!*` : 
-                    `✅ *Настройка завершена!*`;
+                    `✅ <b>Настройки обновлены!</b>` : 
+                    `✅ <b>Настройка завершена!</b>`;
                 
                 // Определяем, куда отправлять сообщение
                 const targetUserId = pending.userId || chatId;
                 
                 await this.bot.sendMessage(targetUserId,
                     `${completionMessage}\n\n` +
-                    `📝 *Чат:* "${this.escapeMarkdown(chatTitle)}"\n` +
+                    `📝 <b>Чат:</b> "${this.escapeHtml(chatTitle)}"\n` +
 					threadInfo +
-                    `🌍 *Часовой пояс:* UTC${sign}${hours} ч.\n` +
-                    `*Получаем:*\n${contentInfo}`,
+                    `🌍 <b>Часовой пояс:</b> UTC${sign}${hours} ч.\n` +
+                    `<b>Получаем:</b>\n${contentInfo}`,
                     { 
-                        parse_mode: 'Markdown',
+                        parse_mode: 'HTML',
                         message_thread_id: pending.message_thread_id || undefined
                     }
                 );
@@ -1419,7 +1424,7 @@ class SlaveBot {
         const existing = this.findChatInConfig(chatId);
         
         if (!existing) {
-            return `❌ *Этот чат не настроен для рассылки.*\nИспользуйте /config для настройки.`;
+            return `❌ <b>Этот чат не настроен для рассылки.</b>\nИспользуйте /config для настройки.`;
         }
         
         const hours = Math.abs(existing.offset / 60);
@@ -1438,15 +1443,15 @@ class SlaveBot {
         }
 		let threadInfo = '';
         if (existing.threadId) {
-			threadInfo = `📌 *Тема форума:* ID ${existing.threadId}\n`;
+			threadInfo = `📌 <b>Тема форума:</b> ID ${existing.threadId}\n`;
         }
         
-        return `⚙️ *Настройки бота:*\n\n` +
-               `📝 *Чат:* "${this.escapeMarkdown(existing.title)}"\n` +
+        return `⚙️ <b>Настройки бота:</b>\n\n` +
+               `📝 <b>Чат:</b> "${this.escapeHtml(existing.title)}"\n` +
 			   threadInfo +
-               `🌍 *Часовой пояс:* UTC${sign}${hours} ч.\n\n` +
-               `*Получает:*\n${contentText}\n\n` +
-               `ℹ️ *Команды:*\n` +
+               `🌍 <b>Часовой пояс:</b> UTC${sign}${hours} ч.\n\n` +
+               `<b>Получает:</b>\n${contentText}\n\n` +
+               `ℹ️ <b>Команды:</b>\n` +
                `/config - перенастроить чат`;
     }
 
@@ -1694,24 +1699,34 @@ class SlaveBot {
 		// Экранируем только то, что действительно ломает Markdown
 		return text.replace(/([_*\[\]()~`>#])/g, '\\$1');
 	}
+	
+	escapeHtml(text) {
+		if (typeof text !== 'string') return text;
+		return text
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#039;');
+	}
 
     // ============ МЕТОДЫ ДЛЯ РАБОТЫ С КАНАЛАМИ ============
 
     async requestChannelId(userId) {
         try {
             const sentMessage = await this.bot.sendMessage(userId,
-                `🆔 *Введите ID канала:*\n\n` +
-                `*Формат:*\n` +
+                `🆔 <b>Введите ID канала:</b>\n\n` +
+                `<b>Формат:</b>\n` +
                 `• -1001234567890\n\n` +
-                `*Как получить ID канала:*\n` +
-                `1. Добавьте бота ${this.escapeMarkdown('@getidsbot')} в канал\n` +
+                `<b>Как получить ID канала:</b>\n` +
+                `1. Добавьте бота @getidsbot в канал\n` +
                 `2. Перешлите любое сообщение этому боту\n` +
                 `3. Бот покажет ID канала\n` +
 				`Или получите ID канала любым другим доступным способом\n\n` +
-                `*Примечание:*\n` +
+                `<b>Примечание:</b>\n` +
                 `• ID канала всегда начинается с -100`,
                 {
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                     reply_markup: {
                         force_reply: true,
                         selective: true,
@@ -1740,24 +1755,24 @@ class SlaveBot {
 
     async showChannelHelp(userId) {
         try {
-            const helpText = `*📚 Помощь по настройке каналов*\n\n` +
-                `*Как получить ID канала:*\n\n` +
-                `*Для любого канала:*\n` +
-                `1. Добавьте бота ${this.escapeMarkdown('@getidsbot')} в канал\n` +
+            const helpText = `<b>📚 Помощь по настройке каналов</b>\n\n` +
+                `<b>Как получить ID канала:</b>\n\n` +
+                `<b>Для любого канала:</b>\n` +
+                `1. Добавьте бота @getidsbot в канал\n` +
                 `2. Перешлите любое сообщение этому боту\n` +
                 `3. Бот покажет ID канала\n` +
 				`Или получите ID канала любым другим доступным способом\n\n` +
-                `*Формат ID канала:*\n` +
+                `<b>Формат ID канала:</b>\n` +
                 `• Всегда начинается с -100\n` +
                 `• Пример: -1001234567890\n\n` +
-                `*Для публичных каналов можно также использовать юзернейм:*\n` +
-                `• Например: ${this.escapeMarkdown('@my_channel')} или просто ${this.escapeMarkdown('my_channel')}\n\n` +
-                `*Проверка прав:*\n` +
+                `<b>Для публичных каналов можно также использовать юзернейм:</b>\n` +
+                `• Например: @my_channel или просто my_channel\n\n` +
+                `<b>Проверка прав:</b>\n` +
                 `• Вы должны быть администратором канала\n` +
                 `• Бот должен быть администратором канала`;
             
             const sentMessage = await this.bot.sendMessage(userId, helpText, {
-                parse_mode: 'Markdown',
+                parse_mode: 'HTML',
                 reply_markup: {
                     inline_keyboard: [
                         [
@@ -1795,13 +1810,13 @@ class SlaveBot {
                     // Проверяем формат юзернейма
                     if (!username.match(/^[a-zA-Z0-9_]{5,32}$/)) {
                         const sentMessage = await this.bot.sendMessage(userId,
-                            `❌ *Неверный формат юзернейма.*\n` +
-                            `*Юзернейм должен содержать 5-32 символа:*\n` +
+                            `❌ <b>Неверный формат юзернейма.</b>\n` +
+                            `<b>Юзернейм должен содержать 5-32 символа:</b>\n` +
                             `• Латинские буквы a-z, A-Z\n` +
                             `• Цифры 0-9\n` +
                             `• Нижнее подчеркивание _\n\n` +
-                            `*Используйте ID канала (начинается с -100)*`,
-                            { parse_mode: 'Markdown' }
+                            `<b>Используйте ID канала (начинается с -100)</b>`,
+                            { parse_mode: 'HTML' }
                         );
                         
                         // Обновляем ID активного сообщения
@@ -1820,10 +1835,10 @@ class SlaveBot {
                         // Проверяем, что это канал
                         if (chat.type !== 'channel') {
                             await this.bot.sendMessage(userId,
-                                `❌ *Это не канал.*\n` +
-                                `"@${this.escapeMarkdown(username)}" — это ${chat.type}.\n` +
-                                `*Используйте ID именно канала.*`,
-								{ parse_mode: 'Markdown' }
+                                `❌ <b>Это не канал.</b>\n` +
+                                `"@${username}" — это ${chat.type}.\n` +
+                                `<b>Используйте ID именно канала.</b>`,
+								{ parse_mode: 'HTML' }
 							);
                             return;
                         }
@@ -1833,9 +1848,9 @@ class SlaveBot {
                         
                     } catch (err) {
                         await this.bot.sendMessage(userId,
-                            `❌ *Канал не найден или является частным.*\n\n` +
-                            `*Используйте ID канала (начинается с -100)*`,
-							{ parse_mode: 'Markdown' }
+                            `❌ <b>Канал не найден или является частным.</b>\n\n` +
+                            `<b>Используйте ID канала (начинается с -100)</b>`,
+							{ parse_mode: 'HTML' }
                         );
                     }
                     return;
@@ -1846,11 +1861,11 @@ class SlaveBot {
                 
                 if (isNaN(channelIdNum)) {
                     const sentMessage = await this.bot.sendMessage(userId,
-                        `❌ *Неверный формат ID.*\n` +
-                        `*ID канала должен быть числом, например:*\n` +
+                        `❌ <b>Неверный формат ID.</b>\n` +
+                        `<b>ID канала должен быть числом, например:</b>\n` +
                         `-1001234567890\n\n` +
-                        `*Используйте ID канала (начинается с -100)*`,
-                        { parse_mode: 'Markdown' }
+                        `<b>Используйте ID канала (начинается с -100)</b>`,
+                        { parse_mode: 'HTML' }
                     );
                     
                     // Обновляем ID активного сообщения
@@ -1870,13 +1885,13 @@ class SlaveBot {
                 // Проверяем, что ID имеет правильный формат для канала
                 if (channelIdNum >= -1000000000000) {
                     const sentMessage = await this.bot.sendMessage(userId,
-                        `❌ *Неверный формат ID канала.*\n\n` +
-                        `*ID канала должен:*\n` +
+                        `❌ <b>Неверный формат ID канала.</b>\n\n` +
+                        `<b>ID канала должен:</b>\n` +
                         `• Начинаться с -100\n` +
                         `• Иметь 13-14 цифр\n\n` +
-                        `*Пример:* -1001234567890\n\n` +
-                        `*Убедитесь, что вы вводите правильный ID канала.*`,
-                        { parse_mode: 'Markdown' }
+                        `<b>Пример:</b> -1001234567890\n\n` +
+                        `<b>Убедитесь, что вы вводите правильный ID канала.</b>`,
+                        { parse_mode: 'HTML' }
                     );
                     
                     // Обновляем ID активного сообщения
@@ -1894,10 +1909,10 @@ class SlaveBot {
                     
                     if (chat.type !== 'channel') {
                         await this.bot.sendMessage(userId,
-                            `❌ *Это не канал.*\n` +
+                            `❌ <b>Это не канал.</b>\n` +
                             `ID ${channelIdNum} — это ${chat.type}.\n` +
-                            `*Укажите ID именно канала.*`,
-							{ parse_mode: 'Markdown' }
+                            `<b>Укажите ID именно канала.</b>`,
+							{ parse_mode: 'HTML' }
 						);
                         return;
                     }
@@ -1907,16 +1922,16 @@ class SlaveBot {
                     
                 } catch (err) {
                     await this.bot.sendMessage(userId,
-                        `❌ *Не удалось получить информацию о канале.*\n\n` +
-                        `*Возможные причины:*\n` +
+                        `❌ <b>Не удалось получить информацию о канале.</b>\n\n` +
+                        `<b>Возможные причины:</b>\n` +
                         `1. Бот не добавлен в этот канал\n` +
                         `2. ID канала указан неверно\n` +
                         `3. Канал не существует\n\n` +
-                        `*Проверьте, что:*\n` +
+                        `<b>Проверьте, что:</b>\n` +
                         `• ID канала правильный (начинается с -100)\n` +
                         `• Бот добавлен в канал как администратор\n` +
                         `• Вы администратор канала`,
-						{ parse_mode: 'Markdown' }
+						{ parse_mode: 'HTML' }
                     );
                 }
             }
@@ -1924,9 +1939,9 @@ class SlaveBot {
         } catch (err) {
             console.error('Ошибка processChannelInput:', err);
             await this.bot.sendMessage(userId,
-                `❌ *Ошибка при обработке данных канала.*\n` +
+                `❌ <b>Ошибка при обработке данных канала.</b>\n` +
                 `Попробуйте еще раз или обратитесь к администратору.`,
-				{ parse_mode: 'Markdown' }
+				{ parse_mode: 'HTML' }
             );
         }
     }
@@ -1973,13 +1988,13 @@ class SlaveBot {
                 
                 // Спрашиваем, хочет ли пользователь изменить настройки
                 const sentMessage = await this.bot.sendMessage(userId,
-                    `⚠️ *Этот канал уже настроен!*\n\n` +
-                    `📢 *Канал:* "${this.escapeMarkdown(existingConfig.title)}"\n` +
-                    `🌍 *Часовой пояс:* UTC${sign}${hours} ч.\n` +
-                    `*Получает:*\n${contentInfo}\n\n` +
-                    `*Что вы хотите сделать?*`,
+                    `⚠️ <b>Этот канал уже настроен!</b>\n\n` +
+                    `📢 <b>Канал:</b> "${this.escapeHtml(existingConfig.title)}"\n` +
+                    `🌍 <b>Часовой пояс:</b> UTC${sign}${hours} ч.\n` +
+                    `<b>Получает:</b>\n${contentInfo}\n\n` +
+                    `<b>Что вы хотите сделать?</b>`,
                     {
-                        parse_mode: 'Markdown',
+                        parse_mode: 'HTML',
                         reply_markup: {
                             inline_keyboard: [
                                 [
@@ -2012,12 +2027,12 @@ class SlaveBot {
             
             if (!isAdmin) {
                 const sentMessage = await this.bot.sendMessage(userId,
-                    `❌ *Доступ запрещен*\n\n` +
+                    `❌ <b>Доступ запрещен</b>\n\n` +
                     `Вы не являетесь администратором этого канала.\n` +
-                    `*Только администраторы могут настраивать бота.*\n\n` +
+                    `<b>Только администраторы могут настраивать бота.</b>\n\n` +
                     `Добавьте себя как администратора в настройках канала.`,
                     {
-                        parse_mode: 'Markdown',
+                        parse_mode: 'HTML',
                         reply_markup: {
                             inline_keyboard: [[
                                 { text: '❌ Отмена', callback_data: 'cancel_channel_setup' }
@@ -2039,23 +2054,22 @@ class SlaveBot {
             }
             
             // Проверяем права бота в канале
-            const botInfo = await this.bot.getMe();
-            const botId = botInfo.id.toString();
-            const botIsAdmin = await this.checkChannelAdminRights(channelId, botId);
+            if(!this.botUsername) await this.initbotname();
+			const botUsername = '@' + this.botUsername;
+            const botId = this.bot.token.split(':')[0];
+			const botIsAdmin = await this.checkChannelAdminRights(channelId, botId);
             
             if (!botIsAdmin) {
-                const botUsername = this.escapeMarkdown('@' + botInfo.username);
-                
                 const sentMessage = await this.bot.sendMessage(userId,
-                    `❌ *Бот не имеет прав*\n\n` +
+                    `❌ <b>Бот не имеет прав</b>\n\n` +
                     `Бот должен быть администратором канала.\n\n` +
-                    `*Добавьте бота в канал как администратора:*\n` +
+                    `<b>Добавьте бота в канал как администратора:</b>\n` +
                     `1. Откройте настройки канала\n` +
                     `2. Добавьте участника: ${botUsername}\n` +
                     `3. Назначьте права администратора\n` +
                     `4. Включите разрешение "Публикация сообщений"`,
                     {
-                        parse_mode: 'Markdown',
+                        parse_mode: 'HTML',
                         reply_markup: {
                             inline_keyboard: [[
                                 { text: '❌ Отмена', callback_data: 'cancel_channel_setup' }
@@ -2117,13 +2131,13 @@ class SlaveBot {
             }
             
             const sentMessage = await this.bot.sendMessage(userId,
-                `✅ *Канал найден!*${sourceInfo}\n\n` +
-                `📢 *Канал:* "${this.escapeMarkdown(channelTitle)}"\n` +
-                `🆔 *ID:* \`${channelId}\`\n\n` +
-                `*Шаг 1/2: Выберите часовой пояс*\n` +
+                `✅ <b>Канал найден!</b>${sourceInfo}\n\n` +
+                `📢 <b>Канал:</b> "${this.escapeHtml(channelTitle)}"\n` +
+                `🆔 <b>ID:</b> ${channelId}\n\n` +
+                `<b>Шаг 1/2: Выберите часовой пояс</b>\n` +
                 `(Публикации будут выходить в указанное время по вашему часовому поясу)`,
                 {
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                     reply_markup: { inline_keyboard: keyboard }
                 }
             );
@@ -2135,12 +2149,12 @@ class SlaveBot {
         } catch (err) {
             console.error('Ошибка startChannelConfig:', err);
             const sentMessage = await this.bot.sendMessage(userId,
-                `❌ *Произошла ошибка при настройке канала.*\n` +
-                `*Проверьте, что:*\n` +
+                `❌ <b>Произошла ошибка при настройке канала.</b>\n` +
+                `<b>Проверьте, что:</b>\n` +
                 `1. Бот добавлен в канал\n` +
                 `2. Вы и бот — администраторы канала`,
                 {
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                     reply_markup: {
                         inline_keyboard: [[
                             { text: '❌ Отмена', callback_data: 'cancel_channel_setup' }
@@ -2190,10 +2204,10 @@ class SlaveBot {
             const existing = this.findChatInConfig(channelId);
             if (!existing) {
                 const sentMessage = await this.bot.sendMessage(userId,
-                    `❌ *Настройки канала не найдены.*\n` +
+                    `❌ <b>Настройки канала не найдены.</b>\n` +
                     `Возможно, канал уже был удален из рассылки.`,
                     {
-                        parse_mode: 'Markdown',
+                        parse_mode: 'HTML',
                         reply_markup: {
                             inline_keyboard: [[
                                 { text: '❌ Отмена', callback_data: 'cancel_channel_setup' }
@@ -2259,14 +2273,14 @@ class SlaveBot {
             const keyboard = this.createTimezoneKeyboard();
             
             const sentMessage = await this.bot.sendMessage(userId,
-                `✏️ *Редактирование настроек канала*\n\n` +
-                `📢 *Канал:* "${this.escapeMarkdown(channelTitle)}"\n` +
-                `🌍 *Текущий часовой пояс:* UTC${sign}${hours} ч.\n` +
-                `*Текущие настройки контента:*\n${contentInfo}\n\n` +
-                `*Шаг 1/2: Выберите новый часовой пояс*\n` +
+                `✏️ <b>Редактирование настроек канала</b>\n\n` +
+                `📢 <b>Канал:</b> "${this.escapeHtml(channelTitle)}"\n` +
+                `🌍 <b>Текущий часовой пояс:</b> UTC${sign}${hours} ч.\n` +
+                `<b>Текущие настройки контента:</b>\n${contentInfo}\n\n` +
+                `<b>Шаг 1/2: Выберите новый часовой пояс</b>\n` +
                 `(или оставьте текущий)`,
                 {
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                     reply_markup: { inline_keyboard: keyboard }
                 }
             );
@@ -2278,9 +2292,9 @@ class SlaveBot {
         } catch (err) {
             console.error('Ошибка startChannelEdit:', err);
             const sentMessage = await this.bot.sendMessage(userId,
-                `❌ *Произошла ошибка при редактировании настроек.*`,
+                `❌ <b>Произошла ошибка при редактировании настроек.</b>`,
                 {
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                     reply_markup: {
                         inline_keyboard: [[
                             { text: '❌ Отмена', callback_data: 'cancel_channel_setup' }
@@ -2306,9 +2320,9 @@ class SlaveBot {
             const existing = this.findChatInConfig(channelId);
             if (!existing) {
                 const sentMessage = await this.bot.sendMessage(userId,
-                    `❌ *Канал не найден в настройках рассылки.*`,
+                    `❌ <b>Канал не найден в настройках рассылки.</b>`,
                     {
-                        parse_mode: 'Markdown',
+                        parse_mode: 'HTML',
                         reply_markup: {
                             inline_keyboard: [[
                                 { text: '❌ Отмена', callback_data: 'cancel_channel_setup' }
@@ -2331,11 +2345,11 @@ class SlaveBot {
             
             // Спрашиваем подтверждение
             const sentMessage = await this.bot.sendMessage(userId,
-                `⚠️ *Вы уверены, что хотите удалить канал из рассылки?*\n\n` +
-                `📢 *Канал:* "${this.escapeMarkdown(existing.title)}"\n` +
-                `*Это действие нельзя отменить.*`,
+                `⚠️ <b>Вы уверены, что хотите удалить канал из рассылки?</b>\n\n` +
+                `📢 <b>Канал:</b> "${this.escapeHtml(existing.title)}"\n` +
+                `<b>Это действие нельзя отменить.</b>`,
                 {
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                     reply_markup: {
                         inline_keyboard: [
                             [
@@ -2359,9 +2373,9 @@ class SlaveBot {
         } catch (err) {
             console.error('Ошибка removeChannelFromConfig:', err);
             const sentMessage = await this.bot.sendMessage(userId,
-                `❌ *Произошла ошибка при удалении канала.*`,
+                `❌ <b>Произошла ошибка при удалении канала.</b>`,
                 {
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                     reply_markup: {
                         inline_keyboard: [[
                             { text: '❌ Отмена', callback_data: 'cancel_channel_setup' }
