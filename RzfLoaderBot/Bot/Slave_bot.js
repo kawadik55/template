@@ -18,6 +18,8 @@ class SlaveBot {
         this.setupHandlers();
         this.setupCleanupTimer();
         this.setupPrivateChatHandlers(); // Добавляем обработчики для приватного чата
+		
+		this.botName = null;//имя бота
         
         console.log('SlaveBot запущен');
     }
@@ -290,9 +292,13 @@ class SlaveBot {
                                 // Для приватных чатов (личных сообщений)
                                 await this.showPrivateChatHelp(chatId);
                             } else {
-                                // Для групп и супергрупп
+                                if(!this.botName)
+								{	const botInfo = await this.bot.getMe();//инфо самого бота
+									this.botName = botInfo.first_name || '';
+								}
+								// Для групп и супергрупп
                                 await this.bot.sendMessage(chatId,
-                                    `👋 *Привет! Я бот ${this.area}.*\n\n` +
+                                    `👋 *Привет! Я бот "${this.botName}".*\n\n` +
                                     `Чтобы настроить рассылку в этот чат, используйте команду\n` +
                                     `/config\n` +
 									`в нужной теме.\n` +
@@ -715,8 +721,12 @@ class SlaveBot {
 
     async showPrivateChatHelp(userId) {
         try {
-            await this.bot.sendMessage(userId,
-                `👋 *Привет! Я бот Новостей ${this.area}.*\n\n` +
+            if(!this.botName)
+			{	const botInfo = await this.bot.getMe();//инфо самого бота
+				this.botName = botInfo.first_name || '';
+			}
+			await this.bot.sendMessage(userId,
+                `👋 *Привет! Я бот "${this.botName}".*\n\n` +
                 `*Вы можете настроить:*\n\n` +
                 `👥 *Приватный чат* - просто используйте /config\n\n` +
 				`👥 *Группы* - добавьте меня в группу и используйте /config\n` +
