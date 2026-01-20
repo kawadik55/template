@@ -909,12 +909,12 @@ class SlaveBot {
             if (existing) {
                 const hours = Math.abs(existing.offset / 60);
                 const sign = existing.offset >= 0 ? '+' : '-';
-                message += `\n\n📋 <b>Текущие настройки:</b> UTC${sign}${hours} ч.`;
+                message += `\n\n📋 <b>Текущие настройки:</b> UTC${sign}${hours} ч.\n`;
             }
             
             // Добавляем информацию о теме форума
             if (messageThreadId) {
-                message += `\n📌 <b>Тема форума:</b> ID ${messageThreadId}`;
+                message += `📌 <b>Тема форума:</b> ID ${messageThreadId}\n`;
             }
             
             const sentMessage = await this.bot.sendMessage(chatId, message,
