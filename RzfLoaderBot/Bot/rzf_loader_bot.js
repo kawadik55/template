@@ -1760,15 +1760,23 @@ try{
 					await sendMessage(chatId, str, klava(keyboard['102']));//Назад
 				}		
 			}
-			else if(button=='Статистика')//которые на модерацию
+			else if(button=='Статистика')
 			{	let str='';
 				let offset = Object.keys(chat_news);
 				if(offset.length > 0)
-				{
-					str += 'Статистика на сегодня:\n';
-					let len = 0;
-					for(let i=0;i<offset.length;i++) len += chat_news[offset[i]].length;
-					str += '*Кол-во подписчиков* - '+len+'\n';
+				{	str += 'Статистика на сегодня:\n';
+					let len = 0, groups = 0, users = 0;
+					for(let i=0;i<offset.length;i++)
+					{	let chats = chat_news[offset[i]];
+						len += chats.length;
+						for(let j=0;j<chats.length;j++)
+						{	let chatId = Object.values(chats[j])[0].toString();
+							chatId.startsWith('-') ? groups++ : users++;
+						}
+					}
+					str += '*Кол-во подписчиков* = '+len+'\n';
+					if(groups>0) str += '*Каналы/Группы* = '+groups+'\n';
+					if(users>0) str += '*Приватные чаты* = '+users+'\n';
 				}
                 else str += '*Упс... На сегодня ничего нет!*\n';
                 await sendMessage(chatId, str, klava(keyboard['102']));//Назад		
