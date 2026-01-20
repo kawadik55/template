@@ -1808,7 +1808,7 @@ try{
 				readModerTextList();//читаем файл ModerTextList
 				//отправляем координатору вотсап, если он есть
 				let ss = await sendTextToWhatsup(ModerTextList);
-				if(ss != 'OK') console.log(ss);
+				//if(ss != 'OK') console.log(ss);
 				//переносим тексты
 				let keys = Object.keys(ModerTextList);
 				for(let key of keys)
@@ -1837,7 +1837,7 @@ try{
 				readModerImagesList();//читаем файл ModerImagesList
 				//отправляем координатору вотсап, если он есть
 				ss = await sendImageToWhatsup(ModerImagesList);
-				if(ss != 'OK') console.log(ss);
+				//if(ss != 'OK') console.log(ss);
 				//переносим файлы
 				keys = Object.keys(ModerImagesList);
 				for(let key of keys)
@@ -3224,8 +3224,8 @@ try{
 			flag++;
 		}		
 	}
-	if(flag) return 'OK'; else return 'NO';
-}catch(err){WriteLogFile(err+'\nfrom sendTextToWhatsApp()','вчат'); return -1;}
+	if(flag) return 'OK'; else return 'NOTextToWhatsup';
+}catch(err){WriteLogFile(err+'\nfrom sendTextToWhatsup()','вчат'); return -1;}
 }
 //====================================================================
 async function setToImagesList(newpath, obj)
@@ -3418,7 +3418,7 @@ try{
 			flag++;
 		}
 	}
-	if(flag) return 'OK'; else return 'NO Whatsup';
+	if(flag) return 'OK'; else return 'NOImageToWhatsup';
 }catch(err){WriteLogFile(err+'\nfrom sendImageToWhatsup()','вчат'); return -1;}
 }
 //====================================================================
