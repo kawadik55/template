@@ -228,12 +228,10 @@ try{
 	let backbutton;
 	let option = new Object();
 	if(!!obj) 
-	{	if(Object.hasOwn(obj, 'parse_mode')) option.parse_mode = obj.parse_mode;
-		else option.entities = obj;
-		if(Object.hasOwn(obj, 'disable_web_page_preview')) option.disable_web_page_preview = obj.disable_web_page_preview;
+	{	option = obj;
 		if(!!obj.backbutton)
-		{	backbutton = obj.backbutton;//если это кнопка Назад и есть
-			delete obj.backbutton; 
+		{	backbutton = obj.backbutton;//если это кнопка Назад, то номер кнопки
+			delete option.backbutton; 
 		}
 	}
 	if(Object.hasOwn(Tree, num) && !!Tree[num].child && Tree[num].child.length>0)//если есть потомки
@@ -333,7 +331,7 @@ try
 				
 				await sendMessage(chatId, str, klava(index, {parse_mode:"markdown"}, chatId), index);
 			}
-			else await sendMessage(chatId, str, klava(index, Tree[index].entities, chatId), index);
+			else await sendMessage(chatId, str, klava(index, Tree[index].entities ? {entities:Tree[index].entities} : null, chatId), index);
 		}
 		//если есть имя файла, то кнопка с картинкой
 		else if(!!Tree[index].filename)
@@ -447,14 +445,14 @@ try
 				{let len=str.length;
 				 let n=parseInt(len/4000);//сколько полных блоков
 				 for(let i=0;i<n;i++) {await sendMessage(chatId, str.substring(4000*i,4000*i+4000));}
-				 await sendMessage(chatId, str.substring(4000*n,len), klava(index, history[LastHistory[chatId]].entities, chatId), index);
+				 await sendMessage(chatId, str.substring(4000*n,len), klava(index, {entities:history[LastHistory[chatId]].entities}, chatId), index);
 				}
-				else await sendMessage(chatId, str, klava(index, history[LastHistory[chatId]].entities, chatId), index);
+				else await sendMessage(chatId, str, klava(index, {entities:history[LastHistory[chatId]].entities}, chatId), index);
 			}
 			else //если файл историй пустой
 			{	await sendMessage(chatId, 'Извините, пока недоступно 🤷', klava(index,null, chatId), index);
 			}
-			console.log(JSON.stringify(klava(index,null, chatId),null,2));
+			//console.log(JSON.stringify(klava(index,null, chatId),null,2));
 		}
 		catch(err) {console.error(err);}
 	}
@@ -812,7 +810,7 @@ try{
 });
 //====================================================================
 // Команда Вставить кнопку
-Bot.onText(/^\/InsertButton/, async (msg) => 
+Bot.onText(/^\/InsertButton$/, async (msg) => 
 {	
 try{
 	
@@ -870,7 +868,7 @@ try{
 });
 //====================================================================
 // Команда Удалить 'мертвых' пользователей
-Bot.onText(/^\/DeadUsers/, async (msg) => 
+Bot.onText(/^\/DeadUsers$/, async (msg) => 
 {	
 try{
 	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
@@ -916,7 +914,7 @@ try{
 });
 //====================================================================
 // СТАРТ
-Bot.onText(/\/start/, async (msg) => 
+Bot.onText(/^\/start$/, async (msg) => 
 {	
 try{
 	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
@@ -937,12 +935,12 @@ try{
        if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT))) 
 		Tree[index].text += '/help - выдаст полный список команд';
     }
-	await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].entities, chatId), index);
+	await sendMessage(chatId, Tree[index].text, klava(index, {entities:Tree[index].entities}, chatId), index);
 }catch(err){WriteLogFile(err+'\nfrom Start()','вчат');}
 });
 //====================================================================
 // СТОП
-Bot.onText(/\/off/, async (msg) => 
+Bot.onText(/^\/off$/, async (msg) => 
 {
 try{
 	const chatId = msg.chat.id.toString();
@@ -984,7 +982,7 @@ try{
 });
 //====================================================================
 // Команда help
-Bot.onText(/\/help/, async (msg) => 
+Bot.onText(/^\/help$/, async (msg) => 
 {	
 try{
 	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
@@ -1451,7 +1449,7 @@ try{
 		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
 		try {await remove_message(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
 		let index=LastKey[chatId];
-		await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].caption || null, chatId), index);
+		await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].entities ? {entities:Tree[index].entities} : null, chatId), index);
 	}
 	else if(msg.text === "Удалить мою локацию")
 	{	//Убираем предыдущее сообщение
@@ -1462,7 +1460,7 @@ try{
 		try {await remove_message(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
 		delete LastMessId[chatId].location;
 		let index=LastKey[chatId];
-		await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].caption || null, chatId), index);
+	await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].entities ? {entities:Tree[index].entities} : null, chatId), index);
 	}
 	else
 	{	//если пришел текст 'от фонаря'
@@ -1473,7 +1471,7 @@ try{
 			if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) 
 				Tree[index].text += '/help - выдаст полный список команд';
 		}
-		await sendMessage(chatId, Tree[index].text, klava('0', Tree[index].entities, chatId), index);
+		await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].entities ? {entities:Tree[index].entities} : null, chatId), index);
 	}
 }catch(err){WriteLogFile(err+'\nfrom ловим message','вчат');}
 });
@@ -2019,7 +2017,7 @@ try{
 	async function exit()
 	{	let index=LastKey[chatId];
 		let str = (Tree[index] && Tree[index].text) ? Tree[index].text : 'Тут пока ничего нет\n';
-		await sendMessage(chatId, str, klava(index, Tree[index].caption || null, chatId), index);
+		await sendMessage(chatId, str, klava(index, Tree[index].entities ? {entities:Tree[index].entities} : null, chatId), index);
 	}
 }catch(err){WriteLogFile(err+'\nfrom ловим location','вчат');}
 });
