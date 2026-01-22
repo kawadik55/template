@@ -1074,10 +1074,7 @@ try{
 			}
 			if(!!Tree[LastKey[chatId]].caption) delete Tree[LastKey[chatId]].caption;
 			if(!!Tree[LastKey[chatId]].caption_entities) delete Tree[LastKey[chatId]].caption_entities;
-			if(!!Tree[LastKey[chatId]].filename) 
-				{	while(Object.hasOwn(FileId, Tree[LastKey[chatId]].filename)) {delete FileId[Tree[LastKey[chatId]].filename];}
-					delete Tree[LastKey[chatId]].filename;
-				}
+
 			WriteFileJson(FileTree,Tree);
 			await sendMessage(chatId, 'Принято! Можно проверять.', klava(LastKey[chatId],null, chatId));
 		}
@@ -1619,7 +1616,7 @@ try{
 			Tree[key].filename = name;//в кнопку имя файла
 			if(!!caption) Tree[key].caption = caption;//в кнопку подпись
 			if(!!caption_entities) Tree[key].caption_entities = caption_entities;//в кнопку форматирование
-			if(!!Tree[key].text) Tree[key].text = '';//очищаем
+			if(!!Tree[key].text) delete Tree[key].text;//очищаем
 			if(!!Tree[key].entities) delete Tree[key].entities;//очищаем
 			WriteFileJson(FileTree,Tree);
 			await sendMessage(chatId, 'Принято! Можно проверять.', klava(key, null, chatId));
