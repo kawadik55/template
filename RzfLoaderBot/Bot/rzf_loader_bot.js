@@ -208,7 +208,7 @@ const onConfigUpdate = (update) => {
                 break;
                 
         case 'chat_removed':
-                WriteLogFile(`Чат ${update.data.chatId} удален из рассылки`);
+                WriteLogFile('Чат '+update.data.chatName+'('+update.data.chatId+') удален из рассылки');
                 break;
                 
         case 'cleanup_completed':

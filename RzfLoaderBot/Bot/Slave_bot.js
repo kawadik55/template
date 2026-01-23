@@ -1509,6 +1509,7 @@ class SlaveBot {
 
     removeChatFromAllTimezones(chatId, cleanupEmpty = true) {
         let removed = false;
+		let chatName = '';
         
         if (!this.chat_news || typeof this.chat_news !== 'object') {
             this.chat_news = {};
@@ -1525,8 +1526,10 @@ class SlaveBot {
                 // Ищем chatId среди значений объекта (исключая message_thread_id)
                 for (const [key, value] of Object.entries(chat)) {
                     if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && key !== 'Raspis' && 
-                        (value.toString() === chatId.toString() || value === chatId)) {
-                        return false; // ← Удаляем этот чат
+                        (value.toString() === chatId.toString() || value === chatId))
+					{
+                        chatName = key;
+						return false; // ← Удаляем этот чат
                     }
                 }
                 return true; // ← Оставляем этот чат
@@ -1546,6 +1549,7 @@ class SlaveBot {
         if (removed) {
             this.saveConfig('chat_removed', {
                 chatId: chatId,
+				chatName: chatName,
                 removedFromTimezones: true
             });
         }
