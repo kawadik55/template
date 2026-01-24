@@ -1762,21 +1762,45 @@ try{
 			}
 			else if(button=='Статистика')
 			{	let str='';
+				// Только российские часовые пояса
+				const zones = 
+				{	'+120': 'Калининград UTC+2',
+					'+180': 'Москва UTC+3',
+					'+240': 'Самара UTC+4',
+					'+300': 'Екатеринбург UTC+5',
+					'+360': 'Омск UTC+6',
+					'+420': 'Красноярск UTC+7',
+					'+480': 'Иркутск UTC+8',
+					'+540': 'Якутск UTC+9',
+					'+600': 'Владивосток UTC+10',
+					'+660': 'Магадан UTC+11',
+					'+720': 'Камчатка UTC+12' 
+				}
+				let obj = {};
 				let offset = Object.keys(chat_news);
 				if(offset.length > 0)
 				{	str += 'Статистика на сегодня:\n';
-					let len = 0, groups = 0, users = 0;
+					let len = 0, allgroups = 0, allusers = 0;
 					for(let i=0;i<offset.length;i++)
 					{	let chats = chat_news[offset[i]];
+						obj[offset[i]] = {}; obj[offset[i]].groups = 0; obj[offset[i]].users = 0;
 						len += chats.length;
 						for(let j=0;j<chats.length;j++)
 						{	let chatId = Object.values(chats[j])[0].toString();
-							chatId.startsWith('-') ? groups++ : users++;
+							if(chatId.startsWith('-')) {allgroups++; obj[offset[i]].groups++;}
+							else {allusers++; obj[offset[i]].users++;}
 						}
 					}
+					obj = sortObjectByKeys(obj);//сортируем по смещениям
 					str += '*Кол-во подписчиков* = '+len+'\n';
-					if(groups>0) str += '*Каналы/Группы* = '+groups+'\n';
-					if(users>0) str += '*Приватные чаты* = '+users+'\n';
+					if(allgroups>0) str += '*Каналы/Группы* = '+allgroups+'\n';
+					if(allusers>0) str += '*Приватные чаты* = '+allusers+'\n\n';
+					for(const key in obj)
+					{	const zoneName = 'Зона '+(zones[key] || `UTC+${key/60}`);
+						str += '*'+zoneName+':*\n';
+						if(obj[key].groups>0) str += '• Каналы/Группы = *'+obj[key].groups+'*\n';
+						if(obj[key].users>0) str += '• Приватные чаты = *'+obj[key].users+'*\n';
+					}
 				}
                 else str += '*Упс... На сегодня ничего нет!*\n';
                 await sendMessage(chatId, str, klava(keyboard['102']));//Назад		
@@ -4574,6 +4598,20 @@ function getEgDateTime(refpath)
 	}
 
 	return now;
+}
+//====================================================================
+function sortObjectByKeys(obj)
+{
+    return Object.keys(obj)
+        .sort((a, b) => {
+            const numA = parseInt(a.toString().replace('+', ''));
+            const numB = parseInt(b.toString().replace('+', ''));
+            return numA - numB;
+        })
+        .reduce((sorted, key) => {
+            sorted[key] = obj[key];
+            return sorted;
+        }, {});
 }
 //====================================================================
 
