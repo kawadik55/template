@@ -201,22 +201,27 @@ let forDeleteList = [];//список файлов на удаление
 //====================================================================
 //Функция-колбэк для уведомлений об изменениях из слэйв бота
 const onConfigUpdate = (update) => {
-    console.log('Конфиг обновлен в SlaveBot!');
+    //console.log('Конфиг обновлен в SlaveBot!');
     switch(update.event) {
         case 'chat_configured':
                 WriteLogFile(`Чат ${update.data.chatTitle} настроен на таймзону ${update.data.timezone}`);
-                break;
+                WriteFileJson(currentDir+"/chatId.json",chat_news);
+				break;
                 
         case 'chat_removed':
                 WriteLogFile('Чат '+update.data.chatName+'('+update.data.chatId+') удален из рассылки');
-                break;
+                WriteFileJson(currentDir+"/chatId.json",chat_news);
+				break;
                 
         case 'cleanup_completed':
                 WriteLogFile(`Очищено ${update.data.cleanedCount} несуществующих чатов`);
-                //console.log(`Статистика: ${update.data.totalChatsBefore} → ${update.data.totalChatsAfter} чатов`);
-                break;
-    }
-	WriteFileJson(currentDir+"/chatId.json",chat_news);
+                WriteFileJson(currentDir+"/chatId.json",chat_news);
+				break;
+    
+		case 'error_message':
+                WriteLogFile(`from SlaveBot: ${update.data.message}`);
+				break;
+	}
 };
 
 //Создаем экземпляр SlaveBot, если разрешено
