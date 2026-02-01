@@ -141,7 +141,7 @@ class TelegramQueue extends EventEmitter {
 			options: messageData.options || '',
 			chatId: messageData.chatId,
             attempts: 0,
-			bot: messageData.bot || this.bot // по умолчанию основной бот
+			bot: messageData.bot || null	//this.bot // по умолчанию основной бот
         };
 
         this.queue.push(queueItem);
@@ -218,7 +218,8 @@ class TelegramQueue extends EventEmitter {
     async _sendMessage(queueItem) {
         // Создаем копию options чтобы избежать мутаций
 		const options = queueItem.options ? JSON.parse(JSON.stringify(queueItem.options)) : {};
-		const { type, data, chatId, bot = this.bot} = queueItem;
+		let { type, data, chatId, bot } = queueItem;
+		if (bot == null) bot = this.bot;
 		// Проверяем, что бот доступен
 		if (!bot) {throw new Error('Bot instance is not available');}
 		let attempts = 0;
