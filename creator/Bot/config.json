@@ -1,4 +1,8 @@
 {
   "community_text": "чистого времени",
-  "utcOffset": "+180"
+  "utcOffset": "+180",
+  "button2col": {
+    "active": true,
+    "lenName": 17
+  }
 }

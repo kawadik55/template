@@ -109,9 +109,14 @@ try
 {	config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
 	if(!config.community_text) {config.community_text = "чистого времени"; WriteFileJson(currentDir+"/config.json",config);}
 	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
+	if(!config.button2col) {config.button2col = {active:true,lenName:17}; WriteFileJson(currentDir+"/config.json",config);}
 } 
 catch (err) 
-{config = {"community_text":"чистого времени","utcOffset":String(moment().utcOffset())};
+{config = 
+ {community_text:"чистого времени",
+  utcOffset:String(moment().utcOffset()),
+  button2col:{active:true,lenName:17}
+ };
  WriteFileJson(currentDir+'/config.json',config);
 }
 //устанавливаем локальную таймзону
@@ -237,6 +242,7 @@ try{
 	if(Object.hasOwn(Tree, num) && !!Tree[num].child && Tree[num].child.length>0)//если есть потомки
 	{	option.reply_markup = new Object();
 		option.reply_markup.inline_keyboard = [];
+		let arr = [];
 		//сначала проверим, а все ли потомки есть в наличии
 		for(let i=0;i<Tree[num].child.length;i++) if(!Object.hasOwn(Tree,Tree[num].child[i])) Tree[num].child.splice(i,1);
 		//собираем кнопки
@@ -249,11 +255,17 @@ try{
 				if(!!Tree[key].type)
 				{if(Tree[key].type=='url') tobj.url = Tree[key].url;//в колбек - url
 				 else tobj.callback_data = key+'_'+Tree[key].type;//в колбек - номер кнопки и тип
-				 if(Tree[key].type!='admin') option.reply_markup.inline_keyboard.push([tobj]);//добавляем кнопку
-				 else if(!!chatId && validAdmin(chatId)) option.reply_markup.inline_keyboard.push([tobj]);//добавляем кнопку
+				 if(Tree[key].type!='admin') arr.push([tobj]);//добавляем кнопку
+				 else if(!!chatId && validAdmin(chatId)) arr.push([tobj]);//добавляем кнопку
 				}
-				else option.reply_markup.inline_keyboard.push([tobj]);//добавляем кнопку
+				else arr.push([tobj]);//добавляем кнопку
 			}
+		}
+		if(arr.length>0)
+		{	if(!!config.button2col && config.button2col.active===true)
+			{	arr = groupedKlava(arr,config.button2col.lenName||17);//группируем кнопки по 2 ряд, если можно
+			}
+			option.reply_markup.inline_keyboard = arr;
 		}
 	}
 	//Добавляем кнопку Следующая, если это Истории
@@ -288,6 +300,41 @@ try{
 	//console.log(JSON.stringify(option,null,2));
 	return option;
 } catch (err){WriteLogFile(err+'\nfrom klava()','вчат');}
+}
+
+function groupedKlava(arr,len)
+{	// группируем короткие кнопки по 2 в ряд
+	let groupedKeyboard = [];
+	if(arr.length > 0 && len > 0)
+	{	let tempRow = [];
+		for(let i = 0; i < arr.length; i++)
+		{	// Берем кнопку из arr[i][0]
+			let button = arr[i][0];
+			// Проверяем длину текста кнопки
+			if(button.text && button.text.length <= len)
+			{	// Короткая кнопка - добавляем во временный ряд
+				tempRow.push(button);
+				// Если в ряду уже 2 кнопки или это последняя кнопка
+				if(tempRow.length === 2 || i === arr.length - 1)
+				{	groupedKeyboard.push(tempRow);
+					tempRow = [];
+				}
+			}
+			else
+			{	// Длинная кнопка - сбрасываем временный ряд если он не пуст
+				if(tempRow.length > 0)
+				{	groupedKeyboard.push(tempRow);
+					tempRow = [];
+				}
+				// Добавляем длинную кнопку отдельным рядом
+				groupedKeyboard.push([button]);
+			}
+		}
+		// Обрабатываем оставшиеся кнопки во временном ряду
+		if(tempRow.length > 0) groupedKeyboard.push(tempRow);
+		return groupedKeyboard;
+	}
+	else return arr;
 }
 //====================================================================
 // обработка ответов от кнопок
@@ -1017,6 +1064,33 @@ try{
 	}
 	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
 }catch(err){WriteLogFile(err+'\nfrom help()','вчат');}
+});
+//====================================================================
+// Команда /SetTwoColumns
+Bot.onText(/^\/SetTwoColumns .+$/, async (msg) =>
+{	
+try{
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
+	const chatId = msg.chat.id.toString();
+	if(!isValidChatId(chatId)) return;//левые chatId не пускаем
+	if(PRIVAT && !validAdmin(chatId) && !validUser(chatId)) return;//приватность
+	if(validAdmin(chatId) || (validUser(chatId) && !PRIVAT))
+	{	// Убираем команду
+		const paramsString = msg.text.replace('/SetTwoColumns', '').trim();
+		// Пытаемся извлечь true/false и число
+		let boolMatch = paramsString.match(/(true|false)/i);
+		let numMatch = paramsString.match(/=(\d+)(?:\s|$)/);// ищем число после =
+		boolMatch = boolMatch ? (boolMatch[0].toLowerCase() === 'true') : null;
+		numMatch = numMatch ? parseInt(numMatch[1], 10) : null;
+		if(boolMatch != null) 
+		{	config.button2col.active = boolMatch;
+			if(numMatch != null && numMatch > 0) config.button2col.lenName = numMatch;
+			WriteFileJson(currentDir+"/config.json",config);
+			await sendMessage(chatId, 'Принято!\n'+JSON.stringify(config.button2col,null,2));
+		}
+	}
+	else await sendMessage(chatId, 'Извините, но Вы не являетесь Админом этого бота!', klava('0',null, chatId));
+}catch(err){WriteLogFile(err+'\nfrom SetTwoColumns()','вчат');}
 });
 //====================================================================
 // ловим текст
