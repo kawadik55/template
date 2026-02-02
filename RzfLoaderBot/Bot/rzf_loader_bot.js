@@ -145,7 +145,7 @@ try{tokenLog = require(TokenDir+"/logs_bot.json").token;}catch(err){console.log(
 var logBot;
 if(!!tokenLog) logBot = new TelegramBot(tokenLog, {polling: false});//бот для вывода лог-сообщений
 // Создаем очередь
-const queue = new TelegramQueue(NewsBot, {
+const queue = new TelegramQueue(NewsBot, {	//'default' бот
     maxRetries: 5,
     retryDelay: 10000,
     messagesPerSecond: 10,
@@ -466,7 +466,7 @@ if(fs.existsSync(currentDir+'/queue.json'))
 	if(!!savedQueue.queue)
 	{	queue.queue = [...savedQueue.queue];
 		queue.queue.forEach(item => {
-			item.bot = item.bot==='NewsBot' ? null : (item.bot==='logBot' ? logBot : LoaderBot)
+			item.bot = item.bot==='NewsBot' ? 'default' : (item.bot==='logBot' ? logBot : LoaderBot)
 		});
 		WriteLogFile('Загружена очередь из файла, '+queue.queue.length+' постов. Запускаем передачу.');
 	}
@@ -2752,7 +2752,7 @@ catch(err){
 					options: item.options,
 					chatId: item.chatId,
 					attempts: item.attempts,
-					bot: (!item.bot || item.bot===NewsBot) ? 'NewsBot' : (item.bot===logBot ? 'logBot' : 'LoaderBot')
+					bot: (!item.bot || item.bot===NewsBot || item.bot==='default') ? 'NewsBot' : (item.bot===logBot ? 'logBot' : 'LoaderBot')
 				}))
 			};
 			await WriteFileJson(currentDir+'/queue.json', state);
@@ -3224,7 +3224,7 @@ try{
 			if(!!obj.parse_mode) opt.parse_mode = obj.parse_mode;
 			if(!!chatId)
 			{	while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
-				let res = await sendTextToBot(null, chatId, obj.text, opt);//посылаем пост
+				let res = await sendTextToBot('default', chatId, obj.text, opt);//посылаем пост
 				if(res===false) WriteLogFile('Не смог послать текст text "'+key+'"'+' в '+name[0]);
 				else count_chats++;//WriteLogFile('в '+key[0]+' = ОК');
 			}
@@ -3400,21 +3400,21 @@ try{//проверяем разрешение на публикацию неме
 			if(!!threadId) opt.message_thread_id = threadId;
 			while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 			if(Object.hasOwn(obj, 'type')) 
-			{	if(obj.type=='image') {await sendPhoto(null, chatId, obj.path, opt);}//если картинка
-				else if(obj.type=='video') {await sendVideo(null, chatId, obj.path, opt);}//если видео
-				else if(obj.type=='audio') {await sendAudio(null, chatId, obj.path, opt);}//если audio
-				else if(obj.type=='document') {await sendDocument(null, chatId, obj.path, opt);}//если document
+			{	if(obj.type=='image') {await sendPhoto('default', chatId, obj.path, opt);}//если картинка
+				else if(obj.type=='video') {await sendVideo('default', chatId, obj.path, opt);}//если видео
+				else if(obj.type=='audio') {await sendAudio('default', chatId, obj.path, opt);}//если audio
+				else if(obj.type=='document') {await sendDocument('default', chatId, obj.path, opt);}//если document
 				else if(obj.type=='album' && !!obj.media && obj.media.length>0) 
 				{	if(!!obj.media[0].caption_entities && typeof(obj.media[0].caption_entities) == 'string')
 					{	obj.media[0].caption_entities = JSON.parse(obj.media[0].caption_entities);
 					}
 					let tmp = [...obj.media];
 					if(!!threadId) tmp.message_thread_id = threadId;
-					await sendAlbum(null, chatId, tmp);
+					await sendAlbum('default', chatId, tmp);
 				}
-				else if(obj.type=='animation') {await sendAnimation(null, chatId, obj.path, opt);}
+				else if(obj.type=='animation') {await sendAnimation('default', chatId, obj.path, opt);}
 			}
-			else sendPhoto(null, chatId, obj.path, opt);//без типа - картинка
+			else sendPhoto('default', chatId, obj.path, opt);//без типа - картинка
 			count_chats++;//WriteLogFile('в '+key[0]+' = ОК');
 		  }
 		}catch(err){WriteLogFile(err+'\nfrom publicImage()=>for()','вчат');}
@@ -4034,7 +4034,7 @@ async function send_Eg()
 			if(!!threadId) opt.message_thread_id = threadId;
 			opt.parse_mode = "markdown"; opt.disable_web_page_preview = true;
 			while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
-			let res = await sendTextToBot(null,chatId,eg,opt);
+			let res = await sendTextToBot('default',chatId,eg,opt);
 			if(res===false) await WriteLogFile('Не смог послать Ежик в '+name[0]);
 			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 			{	
@@ -4102,7 +4102,7 @@ async function send_Raspis()
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
 			if(!!chat[i].message_thread_id) threadId = chat[i].message_thread_id;
 			if(!!threadId) opt.message_thread_id = threadId;
-			let res = await sendTextToBot(null,chatId,raspis,opt);
+			let res = await sendTextToBot('default',chatId,raspis,opt);
 			if(res===false) WriteLogFile('Не смог послать Расписание в '+name[0]);
 			else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 			{	
@@ -4240,18 +4240,18 @@ async function send_Images(now,offset)
 				//посылаем пост
 				let res;
 				if(!!ImagesList[key].type)
-				{if(ImagesList[key].type == 'image') res = await sendPhoto(null, chatId, ImagesList[key].path, opt);
-				 else if(ImagesList[key].type == 'video') res = await sendVideo(null, chatId, ImagesList[key].path, opt);
-				 else if(ImagesList[key].type == 'audio') {res = await sendAudio(null, chatId, ImagesList[key].path, opt);}
-				 else if(ImagesList[key].type == 'document') {res = await sendDocument(null, chatId, ImagesList[key].path, opt);}
+				{if(ImagesList[key].type == 'image') res = await sendPhoto('default', chatId, ImagesList[key].path, opt);
+				 else if(ImagesList[key].type == 'video') res = await sendVideo('default', chatId, ImagesList[key].path, opt);
+				 else if(ImagesList[key].type == 'audio') {res = await sendAudio('default', chatId, ImagesList[key].path, opt);}
+				 else if(ImagesList[key].type == 'document') {res = await sendDocument('default', chatId, ImagesList[key].path, opt);}
 				 else if(ImagesList[key].type == 'album') 
 				 {	let tmp = [...ImagesList[key].media];
 					if(!!threadId) tmp.message_thread_id = threadId;
-					res = await sendAlbum(null, chatId, tmp);
+					res = await sendAlbum('default', chatId, tmp);
 				 }
-				 else if(ImagesList[key].type == 'animation') {res = await sendAnimation(null, chatId, ImagesList[key].path, opt);}
+				 else if(ImagesList[key].type == 'animation') {res = await sendAnimation('default', chatId, ImagesList[key].path, opt);}
 				}
-				else res = await sendPhoto(null, chatId, ImagesList[key].path, opt);
+				else res = await sendPhoto('default', chatId, ImagesList[key].path, opt);
 				if(res===false) WriteLogFile('Не смог послать файл image "'+key+'"'+' в '+name[0]); 
 				else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 				{	
@@ -4401,7 +4401,7 @@ async function send_Text(now,offset)
 				if(!!TextList[key].parse_mode) opt.parse_mode = TextList[key].parse_mode;
 				if(!!all_chats[i].message_thread_id) opt.message_thread_id = all_chats[i].message_thread_id;
 				//посылаем пост
-				let res = await sendTextToBot(null, chatId, TextList[key].text, opt);
+				let res = await sendTextToBot('default', chatId, TextList[key].text, opt);
 				if(res===false) WriteLogFile('Не смог послать текст text "'+key+'"'+' в '+name[0]);
 				else if(Object.hasOwn(res, 'code'))//в ответе есть ошибка
 				{	
