@@ -1058,6 +1058,7 @@ LoaderBot.on('message', async (msg) =>
 {	
 try{	
 	const chatId = msg.chat.id;
+	//const chatId = msg.from.id;
 	const name = ' '+msg.chat.first_name;
 	const user = '@'+msg.chat.username;
 	let ban = banUser(chatId);
@@ -1445,6 +1446,7 @@ LoaderBot.on('callback_query', async (msg) =>
 {	
 try{
 	const chatId = msg.message.chat.id;
+	//const chatId = msg.from.id;
 	const messId = msg.message.message_id;
     const messText = msg.message.text;
     const messEnt = msg.message.entities;
