@@ -341,11 +341,11 @@ function groupedKlava(arr,len)
 // обработка ответов от кнопок
 Bot.on('callback_query', async (msg) => 
 {	
-	const userId = msg.from.id;
-	if(activeUsers[userId]) {return;} // защита от дубльклика
-	activeUsers[userId] = true;//блокируем юзера до конца выполнения
 try
-{	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
+{	const userId = msg.from.id;
+	if(activeUsers[userId]) {return;} // защита от дубльклика
+	activeUsers[userId] = setTimeout(() => {delete activeUsers[userId];}, 500);//блокируем юзера на время
+	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.message.chat.id.toString();
 	if(!isValidChatId(chatId)) return;//левые chatId не пускаем
 	const messId = msg.message.message_id;
@@ -618,7 +618,7 @@ try
 	}
 	
 } catch(err) {WriteLogFile(err+'\nfrom callback_query()','вчат');}
-finally {delete activeUsers[userId];}//ВСЕГДА разблокируем пользователя
+//finally {delete activeUsers[userId];}//ВСЕГДА разблокируем пользователя
 });
 //====================================================================
 Bot.on('polling_error', async (error) => 
