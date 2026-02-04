@@ -91,7 +91,7 @@ let SignOff = 0;
 let utcOffset = moment().utcOffset();//пока системное смещение
 let localTimeZona = '';
 const RUSSIAN_TIMEZONES = ['Europe/Kaliningrad','Europe/Moscow','Europe/Samara','Asia/Yekaterinburg','Asia/Omsk','Asia/Novosibirsk','Asia/Irkutsk','Asia/Chita','Asia/Vladivostok'];
-let activeUsers = new Set();//для фиксации активного юзера в данный момент
+let activeUsers = {};//для фиксации активного юзера в данный момент
 
 //проверим наличие файла дерева кнопок, если файл отсутствует, то создадим его 
 try {Tree = JSON.parse(fs.readFileSync(FileTree));} 
@@ -342,8 +342,8 @@ function groupedKlava(arr,len)
 Bot.on('callback_query', async (msg) => 
 {	
 	const userId = msg.from.id;
-	if(activeUsers.has(userId)) {return;} // защита от дубльклика
-	activeUsers.add(userId);//блокируем юзера до конца выполнения
+	if(activeUsers[userId]) {return;} // защита от дубльклика
+	activeUsers[userId] = true;//блокируем юзера до конца выполнения
 try
 {	if(msg.from && msg.from.is_bot) return;//ботов не пускаем
 	const chatId = msg.message.chat.id.toString();
@@ -618,7 +618,7 @@ try
 	}
 	
 } catch(err) {WriteLogFile(err+'\nfrom callback_query()','вчат');}
-finally {activeUsers.delete(userId);}//ВСЕГДА разблокируем пользователя
+finally {delete activeUsers[userId];}//ВСЕГДА разблокируем пользователя
 });
 //====================================================================
 Bot.on('polling_error', async (error) => 
