@@ -169,7 +169,7 @@ let numOfDelete=new Object();
 let timeCron='';//время для крона
 let MediaList=new Object();//массив группы медиа файлов
 let Buttons = {};//кнопки
-let activeUsers = new Set();//для фиксации активного юзера в данный момент
+let activeUsers = {};//для фиксации активного юзера в данный момент
 
 //файл кнопок
 try 
@@ -1451,10 +1451,10 @@ try{
 // обработка ответов от кнопок
 LoaderBot.on('callback_query', async (msg) => 
 {	
-	const userId = msg.from.id;
-	if (activeUsers.has(userId)) {return;} // защита от дубльклика
-	activeUsers.add(userId);//блокируем юзера до конца выполнения
 try{
+	const userId = msg.from.id;
+	if(activeUsers[userId]) {return;} // защита от дубльклика
+	activeUsers[userId] = setTimeout(() => {delete activeUsers[userId];}, 500);//блокируем юзера на время
 	const chatId = msg.message.chat.id;
 	const messId = msg.message.message_id;
     const messText = msg.message.text;
@@ -1463,7 +1463,6 @@ try{
 	const user = '@'+msg.message.chat.username;
 	let ban = banUser(userId);
 	let valid = validUser(userId);
-	
 	
 	//проверим юзера
 	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
@@ -1942,7 +1941,6 @@ try{
 		}
 	}
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(callback_query)\n'+JSON.stringify(msg,null,2),'вчат');}
-finally {activeUsers.delete(userId);}//ВСЕГДА разблокируем пользователя
 });
 //====================================================================
 // Показать список команд
