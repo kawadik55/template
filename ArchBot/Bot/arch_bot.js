@@ -65,6 +65,7 @@ let masYear=[];//кнопки выбора года, можно менять
 const masMonth=['01','02','03','04','05','06','07','08','09','10','11','12',];
 const masMonthStr=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const smilik = '¯\\_(ツ)_/¯';
+let activeUsers = {};//для фиксации активного юзера в данный момент
 //====================================================================
 //====================================================================
 //сначала читаем сохраненные списки
@@ -282,6 +283,9 @@ try{
 Bot.on('callback_query', async (msg) => 
 {	
 try{	
+	const userId = msg.from.id;
+	if(activeUsers[userId]) {return;} // защита от дубльклика
+	activeUsers[userId] = setTimeout(() => {delete activeUsers[userId];}, 500);//блокируем юзера на время
 	const chatId = msg.message.chat.id;
 	const messId = msg.message.message_id;
 	const name = msg.message.chat.first_name;
