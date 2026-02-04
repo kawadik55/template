@@ -169,6 +169,7 @@ let numOfDelete=new Object();
 let timeCron='';//время для крона
 let MediaList=new Object();//массив группы медиа файлов
 let Buttons = {};//кнопки
+let activeUsers = new Set();//для фиксации активного юзера в данный момент
 
 //файл кнопок
 try 
@@ -487,10 +488,11 @@ LoaderBot.onText(/^\/start/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
+	const userId = msg.from.id;
 	const name = ' '+msg.chat.first_name; 
 	const user = '@'+msg.chat.username;
-	let ban = banUser(chatId);
-	let valid = validUser(chatId);
+	let ban = banUser(userId);
+	let valid = validUser(userId);
 	
 	let str='Привет, '+name+'! Это чат-бот '+area+'! ';
 	str+='С моей помощью Вы сможете опубликовать в NAших Телеграм-каналах свои файлы и текстовые объявления. ';
@@ -543,10 +545,11 @@ LoaderBot.on('photo', async (msg) =>
 {	
 try{
 	const chatId = msg.chat.id;
+	const userId = msg.from.id;
 	const name = ' '+msg.chat.first_name;
 	const user = '@'+msg.chat.username;
-	let ban = banUser(chatId);
-	let valid = validUser(chatId);
+	let ban = banUser(userId);
+	let valid = validUser(userId);
 	let media_group_id = msg.media_group_id;
 	
 	//проверим юзера
@@ -698,10 +701,11 @@ LoaderBot.on('video', async (msg) =>
 {	
 try{
 	const chatId = msg.chat.id;
+	const userId = msg.from.id;
 	const name = ' '+msg.chat.first_name;
 	const user = '@'+msg.chat.username;
-	let ban = banUser(chatId);
-	let valid = validUser(chatId);
+	let ban = banUser(userId);
+	let valid = validUser(userId);
 	let media_group_id = msg.media_group_id;
 	
 	//проверим юзера
@@ -814,10 +818,11 @@ LoaderBot.on('audio', async (msg) =>
 {	
 try{
 	const chatId = msg.chat.id;
+	const userId = msg.from.id;
 	const name = ' '+msg.chat.first_name;
 	const user = '@'+msg.chat.username;
-	let ban = banUser(chatId);
-	let valid = validUser(chatId);
+	let ban = banUser(userId);
+	let valid = validUser(userId);
 	let media_group_id = msg.media_group_id;
 	
 	//проверим юзера
@@ -894,10 +899,11 @@ LoaderBot.on('document', async (msg) =>
 {	
 try{
 	const chatId = msg.chat.id;
+	const userId = msg.from.id;
 	const name = ' '+msg.chat.first_name;
 	const user = '@'+msg.chat.username;
-	let ban = banUser(chatId);
-	let valid = validUser(chatId);
+	let ban = banUser(userId);
+	let valid = validUser(userId);
 	let media_group_id = msg.media_group_id;
 	
 	//проверим юзера
@@ -976,10 +982,11 @@ LoaderBot.on('animation', async (msg) =>
 {	
 try{
 	const chatId = msg.chat.id;
+	const userId = msg.from.id;
 	const name = ' '+msg.chat.first_name;
 	const user = '@'+msg.chat.username;
-	let ban = banUser(chatId);
-	let valid = validUser(chatId);
+	let ban = banUser(userId);
+	let valid = validUser(userId);
 	let media_group_id = msg.media_group_id;
 	
 	//проверим юзера
@@ -1058,11 +1065,11 @@ LoaderBot.on('message', async (msg) =>
 {	
 try{	
 	const chatId = msg.chat.id;
-	//const chatId = msg.from.id;
+	const userId = msg.from.id;
 	const name = ' '+msg.chat.first_name;
 	const user = '@'+msg.chat.username;
-	let ban = banUser(chatId);
-	let valid = validUser(chatId);
+	let ban = banUser(userId);
+	let valid = validUser(userId);
 	let media_group_id = msg.media_group_id;
 	
 	//if(!msg.text) {return;}//если текста нет
@@ -1444,16 +1451,19 @@ try{
 // обработка ответов от кнопок
 LoaderBot.on('callback_query', async (msg) => 
 {	
+	const userId = msg.from.id;
+	if (activeUsers.has(userId)) {return;} // защита от дубльклика
+	activeUsers.add(userId);//блокируем юзера до конца выполнения
 try{
 	const chatId = msg.message.chat.id;
-	//const chatId = msg.from.id;
 	const messId = msg.message.message_id;
     const messText = msg.message.text;
     const messEnt = msg.message.entities;
 	const name = ' '+msg.message.chat.first_name;
 	const user = '@'+msg.message.chat.username;
-	let ban = banUser(chatId);
-	let valid = validUser(chatId);
+	let ban = banUser(userId);
+	let valid = validUser(userId);
+	
 	
 	//проверим юзера
 	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
@@ -1932,6 +1942,7 @@ try{
 		}
 	}
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(callback_query)\n'+JSON.stringify(msg,null,2),'вчат');}
+finally {activeUsers.delete(userId);}//ВСЕГДА разблокируем пользователя
 });
 //====================================================================
 // Показать список команд
@@ -1939,7 +1950,8 @@ LoaderBot.onText(/^\/help/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid) 
 	{	let str = 'Команды бота:\n';
 		str += '` /help` - список команд бота\n';
@@ -1965,7 +1977,8 @@ LoaderBot.onText(/^\/UserList/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid) 
 	{	try {UserList = JSON.parse(fs.readFileSync(FileUserList));} catch(err){console.log(err);}
 		let str = 'Список авторизованных пользователей:\n';
@@ -1986,7 +1999,8 @@ LoaderBot.onText(/^\/BlackList/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid) 
 	{	let str = 'Список забаненных пользователей:\n';
 		let keys = Object.keys(BlackList);
@@ -2002,7 +2016,8 @@ LoaderBot.onText(/^\/AdminList/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid)
     {   let str = '';
         str += 'Координатор *WhatsApp:* '+AdminList.coordinatorWhatsApp+' : '+AdminList.coordinatorName+'\n';
@@ -2021,8 +2036,8 @@ LoaderBot.onText(/^\/AddAdmin/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
-	//let valid = validAdmin(chatId);//только для СуперАдминов
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid)
     {   let match = msg.text.match(/\/AddAdmin (.+$)/);
 		if(match===null) return;
@@ -2056,7 +2071,8 @@ LoaderBot.onText(/^\/AddWhatsApp/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid)
     {   
 		let match = msg.text.match(/\/AddWhatsApp (.+$)/);
@@ -2092,7 +2108,8 @@ LoaderBot.onText(/^\/AddUser/, async (msg) =>
 try{
 	const chatId = msg.chat.id;
 	const username = '@'+msg.chat.username;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid)
     {   
 		let match = msg.text.match(/\/AddUser (.+$)/);
@@ -2132,7 +2149,8 @@ LoaderBot.onText(/^\/AddBan/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid)
     {   
 		let match = msg.text.match(/\/AddBan (.+$)/);
@@ -2165,7 +2183,8 @@ LoaderBot.onText(/^\/ImagesList/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	await readImagesList();//читаем список из файла
     if(valid) sendMessage(chatId, 'Список файлов:\r\n'+JSON.stringify(ImagesList,null,2));
 	else sendMessage(chatId, smilik);
@@ -2177,7 +2196,8 @@ LoaderBot.onText(/^\/ShowLifeTime/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
     if(valid) {sendMessage(chatId, 'Текущий срок действия регистрации юзеров:\n'+lifeTime+' дн.');}
 	else sendMessage(chatId, smilik);
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/ShowLifeTime/)','вчат');}	
@@ -2188,7 +2208,8 @@ LoaderBot.onText(/^\/TextList/, async (msg) =>
 {
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	await readTextList();//читаем файл текстов в TextList
 	if(valid) sendMessage(chatId, 'Список текстов:\r\n'+JSON.stringify(TextList,null,2));
 	else sendMessage(chatId, smilik);
@@ -2201,7 +2222,8 @@ LoaderBot.onText(/^\/DelAdmin/, async (msg) =>
 try{
 	const chatId = msg.chat.id;
 	//let valid = validAdmin(chatId);//только для СуперАдминов
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid)
 	{	let match = msg.text.match(/\/DelAdmin (.+$)/);
 		if(match.length<2) return;
@@ -2228,7 +2250,8 @@ LoaderBot.onText(/^\/DelWhatsApp/, async (msg) =>
 {	
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid)
 	{	let str='';
 		try {AdminList = JSON.parse(fs.readFileSync(FileAdminList));} catch (err) {console.log(err);}//читаем файл
@@ -2248,7 +2271,8 @@ LoaderBot.onText(/^\/DelUser/, async (msg) =>
 {	
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid)
 	{	let match = msg.text.match(/\/DelUser (.+$)/);
 		if(match.length<2) return;
@@ -2274,7 +2298,8 @@ LoaderBot.onText(/^\/DelBan/, async (msg) =>
 {	
 try{
 	const chatId = msg.chat.id;
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	if(valid)
 	{	let match = msg.text.match(/\/DelBan (.+$)/);
 		if(match.length<2) return;
@@ -2300,10 +2325,11 @@ try{
 {
 try{
 	const chatId = msg.chat.id;
+	const userId = msg.from.id;
 	const name = ' '+msg.chat.first_name;
 	const user = '@'+msg.chat.username;
-	let ban = banUser(chatId);
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	let ban = banUser(userId);
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	
 	//проверяем только незарегистрированного юзера
 	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
@@ -2340,7 +2366,8 @@ try{
 	const chatId = msg.chat.id;
 	const name = ' '+msg.chat.first_name;
 	let ban = banUser(chatId);
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	
 	//проверяем только незарегистрированного юзера
 	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
@@ -2369,7 +2396,8 @@ try{
 	const chatId = msg.chat.id;
 	const name = ' '+msg.chat.first_name;
 	let ban = banUser(chatId);
-	let valid = validAdmin(chatId) | validAdminBot(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
 	
 	//проверяем только незарегистрированного юзера
 	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
