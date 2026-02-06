@@ -1448,6 +1448,13 @@ try{
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(message)','вчат');}
 });
 //====================================================================
+async function sendWarning(chatId, name, user)
+{	await sendMessage(chatId, 'Извините, ' + name + ', но Вам необходимо сначала пройти авторизацию!');
+	await send_instruction(chatId,user,'');
+	clearTempWait(chatId);
+	return;
+}
+//====================================================================
 // обработка ответов от кнопок
 LoaderBot.on('callback_query', async (msg) => 
 {	
@@ -1465,13 +1472,14 @@ try{
 	let valid = validUser(userId);
 	
 	//проверим юзера
-	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
-	else if(!valid)
-	{	sendMessage(chatId, 'Извините, ' + name + ', но Вам необходимо сначала пройти авторизацию!');
-		send_instruction(chatId,user,'');
-	}
-	else //все в порядке
-	{	let answer = msg.data.split('_');
+	if(ban) {sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.'); return;}
+	/*if(!valid)
+	{	await sendMessage(chatId, 'Извините, ' + name + ', но Вам необходимо сначала пройти авторизацию!');
+		await send_instruction(chatId,user,'');
+		return;
+	}*/
+		//все в порядке
+		let answer = msg.data.split('_');
 		let state = answer[0];//номер набора кнопок
 		let button = answer[1];//содержание
 		//Админские кнопки доступны только Админам
@@ -1489,7 +1497,9 @@ try{
 			}
 			// кнопка Удалить ПОСТ
 			if(button=='Удалить Пост')
-			{	if(Object.keys(TextList).length > 0 || Object.keys(ImagesList).length > 0)
+			{	//только авторизованным
+				if(!valid) {sendWarning(chatId, name, user); return;}
+				if(Object.keys(TextList).length > 0 || Object.keys(ImagesList).length > 0)
 				{
 					await showPostList(chatId, 1);
 					str = 'Теперь пришлите мне *номер* Поста, который нужно удалить.\n';
@@ -1502,7 +1512,9 @@ try{
 			}
 			// кнопка Хостинг картинок
 			if(button=='Хостинг картинок')
-			{	if(!!PathToHostImg && fs.existsSync(PathToHostImg) && !!hostname)
+			{	//только авторизованным
+				if(!valid) {sendWarning(chatId, name, user); return;}
+				if(!!PathToHostImg && fs.existsSync(PathToHostImg) && !!hostname)
 				{ 	str += 'Пришлите мне картинку и я верну прямую ссылку на нее.';
 					WaitFlag[chatId]=31;//взводим флаг ожидания картинки от юзера
 					await sendMessage(chatId, str, klava(keyboard['3']));//В Начало
@@ -1514,7 +1526,9 @@ try{
 			}
 			// кнопка Админ Бота
 			if(button=='Админ Бота')
-			{	valid = validAdmin(chatId) | validAdminBot(chatId);
+			{	//только авторизованным
+				if(!valid) {sendWarning(chatId, name, user); return;}
+				valid = validAdmin(chatId) | validAdminBot(chatId);
 				if(!valid) return;
 				str += 'Здесь Админ Бота может провести модерацию присланных заявок.';
                 await sendMessage(chatId, str, klava(get_keyb100()));
@@ -1638,7 +1652,8 @@ try{
 		}
 		//------------ набор 'Да + Нет' при удалении поста--------
 		else if(state==7 && numOfDelete[chatId]!='')
-		{
+		{	//только авторизованным
+			if(!valid) {sendWarning(chatId, name, user); return;}
 			if(button=='Да')//удаляем текст
 			{	let List = await readPostList();//читаем файлы постов
 				let date = List[numOfDelete[chatId]].date;//временно сохраняем дату для Админов
@@ -1710,7 +1725,8 @@ try{
 		}
 		//------------ набор 'Да + Нет' при удалении файла--------
 		else if(state==8 && numOfDelete[chatId]!='')
-		{
+		{	//только авторизованным
+			if(!valid) {sendWarning(chatId, name, user); return;}
 			if(button=='Да')//удаляем файл
 			{	await readImagesList();//читаем файл ImagesList
 				try//удаляем сам файл или альбом
@@ -1939,7 +1955,6 @@ try{
 			{	await sendMessage(chatId, 'Вот и хорошо, торопиться не будем!', klava(get_keyb100()));
 			}
 		}
-	}
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(callback_query)\n'+JSON.stringify(msg,null,2),'вчат');}
 });
 //====================================================================
