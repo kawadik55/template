@@ -3,7 +3,7 @@ const moment = require('moment-timezone');
 
 class SlaveBot {
     constructor(token, onConfigUpdate, mainChatNewsRef, mainArea) {
-        this.bot = new TelegramBot(token, { polling: true });
+        this.bot = new TelegramBot(token, { polling: {timeout: 5} });//long-polling
         this.onConfigUpdate = onConfigUpdate; // Колбэк для обновления конфига.
         this.pendingConfigs = new Map(); // chatId -> временные данные конфигурации
         this.pendingChannelSetup = null; // Для настройки каналов через приватный чат
