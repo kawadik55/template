@@ -1869,7 +1869,7 @@ try{
 				let keys = Object.keys(ModerTextList);
 				for(let key of keys)
 				{	await setToTextList(ModerTextList[key]);//сохраняем в списке текстов
-					//публикуем текст прямо сейчас, если дата или день недели совпадает
+					//публикуем текст прямо сейчас, если по условиям совпадает
 					let offset = Object.keys(chat_news)>0 ? Object.keys(chat_news) :[];
 					for(let i=0;i<offset.length;i++) await publicText(ModerTextList[key], offset[i]);
 					//сообщаем отправителю
@@ -1923,14 +1923,15 @@ try{
 						let newpath = PathToImages+'/'+fileName;//новый путь файла для модерации
 						//переносим файл и записываем в список файлов
 						let len = await setToImagesList(newpath, ModerImagesList[key]);//получаем последний индекс
-						//публикуем файл сразу первый раз, если по Дате, или день недели совпадает
+						//публикуем файл сразу первый раз, если по условиям совпадает
 						let offset = Object.keys(chat_news)>0 ? Object.keys(chat_news) :[];
+						await WriteLogFile('из кнопки len = '+len+'  offset = '+offset.length);
 						for(let i=0;i<offset.length;i++) await publicImage(ImagesList[len], offset[i]);
 					}
 					if(!!ModerImagesList[key].media)//альбом
 					{	//переносим альбом и записываем в список файлов
 						let len = await setToImagesList(null, ModerImagesList[key]);//получаем последний индекс
-						//публикуем альбом сразу первый раз, если по Дате, или день недели совпадает
+						//публикуем альбом сразу первый раз, если по условиям совпадает
 						let offset = Object.keys(chat_news)>0 ? Object.keys(chat_news) :[];
 						for(let i=0;i<offset.length;i++) await publicImage(ImagesList[len], offset[i]);
 					}
@@ -3416,7 +3417,7 @@ try{//проверяем разрешение на публикацию неме
 	{	sec = now.diff(timeobj, 'seconds');//разница в секундах
 		if(sec >= 0 && sec < 120) sec = 1;//в 2х-минутном интервале от времени "Ч"
 		else sec = -1;
-	} 
+	}
 	await WriteLogFile('offset = '+offset+'\n'+
 						'flag = '+flag+'\n'+
 						'sec = '+sec+'\n'+
