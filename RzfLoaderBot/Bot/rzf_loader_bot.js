@@ -3417,6 +3417,13 @@ try{//проверяем разрешение на публикацию неме
 		if(sec >= 0 && sec < 120) sec = 1;//в 2х-минутном интервале от времени "Ч"
 		else sec = -1;
 	} 
+	await WriteLogFile('offset = '+offset+'\n'+
+						'flag = '+flag+'\n'+
+						'sec = '+sec+'\n'+
+						JSON.stringify(obj,null,2)
+	);
+	return;
+	
 	//публикуем в каналах из массива, если условия совпадают
 	if(flag && sec>0)//если после времени утренней публикации 
     {	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
