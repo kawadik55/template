@@ -1924,7 +1924,7 @@ try{
 						//переносим файл и записываем в список файлов
 						let len = await setToImagesList(newpath, ModerImagesList[key]);//получаем последний индекс
 						//публикуем файл сразу первый раз, если по условиям совпадает
-						let offset = Object.keys(chat_news).length>0 ? Object.keys(chat_news) :[];
+						let offset = Object.keys(chat_news) || [];
 						await WriteLogFile('из кнопки len = '+len+'  offset = '+offset.length);
 						for(let i=0;i<offset.length;i++) await publicImage(ImagesList[len], offset[i]);
 					}
@@ -1932,7 +1932,7 @@ try{
 					{	//переносим альбом и записываем в список файлов
 						let len = await setToImagesList(null, ModerImagesList[key]);//получаем последний индекс
 						//публикуем альбом сразу первый раз, если по условиям совпадает
-						let offset = Object.keys(chat_news).length>0 ? Object.keys(chat_news) :[];
+						let offset = Object.keys(chat_news) || [];
 						for(let i=0;i<offset.length;i++) await publicImage(ImagesList[len], offset[i]);
 					}
 					delete ModerImagesList[key];//теперь удалим эту запись из списка
