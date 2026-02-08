@@ -285,7 +285,7 @@ var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
             while(cronIsRunning && (Date.now() - startWait) < maxWaitTime) await sleep(100); // ждем 100мс
 		}
 		now = now.subtract(10, 'seconds');//приводим к 0 сек
-		let offset = Object.keys(chat_news).length>0 ? Object.keys(chat_news) :[];
+		let offset = chat_news ? Object.keys(chat_news) : [];
 		//публикуем тексты
 		for(let i=0;i<offset.length;i++) {await send_Text(now, offset[i]);}
 		//публикуем фото и пр
@@ -1870,7 +1870,7 @@ try{
 				for(let key of keys)
 				{	await setToTextList(ModerTextList[key]);//сохраняем в списке текстов
 					//публикуем текст прямо сейчас, если по условиям совпадает
-					let offset = Object.keys(chat_news)>0 ? Object.keys(chat_news) :[];
+					let offset = chat_news ? Object.keys(chat_news) : [];
 					for(let i=0;i<offset.length;i++) await publicText(ModerTextList[key], offset[i]);
 					//сообщаем отправителю
 					if(Object.hasOwn(ModerTextList[key], 'chatId'))
@@ -1924,15 +1924,14 @@ try{
 						//переносим файл и записываем в список файлов
 						let len = await setToImagesList(newpath, ModerImagesList[key]);//получаем последний индекс
 						//публикуем файл сразу первый раз, если по условиям совпадает
-						let offset = Object.keys(chat_news) || [];
-						await WriteLogFile('из кнопки len = '+len+'  offset = '+offset.length);
+						let offset = chat_news ? Object.keys(chat_news) : [];
 						for(let i=0;i<offset.length;i++) await publicImage(ImagesList[len], offset[i]);
 					}
 					if(!!ModerImagesList[key].media)//альбом
 					{	//переносим альбом и записываем в список файлов
 						let len = await setToImagesList(null, ModerImagesList[key]);//получаем последний индекс
 						//публикуем альбом сразу первый раз, если по условиям совпадает
-						let offset = Object.keys(chat_news) || [];
+						let offset = chat_news ? Object.keys(chat_news) : [];
 						for(let i=0;i<offset.length;i++) await publicImage(ImagesList[len], offset[i]);
 					}
 					delete ModerImagesList[key];//теперь удалим эту запись из списка
@@ -3418,12 +3417,6 @@ try{//проверяем разрешение на публикацию неме
 		if(sec >= 0 && sec < 120) sec = 1;//в 2х-минутном интервале от времени "Ч"
 		else sec = -1;
 	}
-	await WriteLogFile('offset = '+offset+'\n'+
-						'flag = '+flag+'\n'+
-						'sec = '+sec+'\n'+
-						JSON.stringify(obj,null,2)
-	);
-	return;
 	
 	//публикуем в каналах из массива, если условия совпадают
 	if(flag && sec>0)//если после времени утренней публикации 
