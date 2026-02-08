@@ -3,13 +3,14 @@ const moment = require('moment-timezone');
 
 class SlaveBot {
     constructor(token, onConfigUpdate, mainChatNewsRef, mainArea) {
-        this.bot = new TelegramBot(token, { polling: {timeout: 5} });//long-polling
+        this.bot = new TelegramBot(token, { polling: true });
         this.onConfigUpdate = onConfigUpdate; // Колбэк для обновления конфига.
         this.pendingConfigs = new Map(); // chatId -> временные данные конфигурации
         this.pendingChannelSetup = null; // Для настройки каналов через приватный чат
         this.cleanupTimer = null; // Для очистки таймера при остановке
 		this.botName = null;//имя бота
 		this.botUsername = null;//имя бота
+		this.last502ErrorTime = 0;
         
         // Используем ссылку на объект из основного кода
         this.chat_news = mainChatNewsRef || {};
@@ -675,7 +676,12 @@ class SlaveBot {
 
         // Обработка ошибок бота
         this.bot.on('polling_error', (error) => {
-            this.sendErrorMessage('Polling error in SlaveBot: ' + error.message);
+            if (error.message.includes('502') || error.message.includes('Bad Gateway'))
+			{	const now = Date.now();
+                if (now - this.last502ErrorTime < 15000) return;
+				this.last502ErrorTime = now;
+			}
+			this.sendErrorMessage('Polling error in SlaveBot: ' + error.message);
         });
 
         this.bot.on('webhook_error', (error) => {
