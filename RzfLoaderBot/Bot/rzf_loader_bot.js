@@ -1885,7 +1885,7 @@ try{
 					}
 					delete ModerTextList[key];//теперь удалим эту запись из списка
 				}
-				WriteFileJson(FileModerTextList,ModerTextList);//сохраняем вычищенный список
+				if(keys.length>0) WriteFileJson(FileModerTextList,ModerTextList);//сохраняем вычищенный список
 				//if(Object.keys(ModerTextList).length===0) await sendMessage(chatId, 'Сделано, шеф!', klava(get_keyb100()));
 				//else await sendMessage(chatId, 'Не всё получилось, шеф :(\nЕсть ошибки...', klava(get_keyb100()));
 				
@@ -1944,7 +1944,7 @@ try{
 					WriteLogFile(e+'\nfrom state=104'+'\n'+str,'вчат');
 				  }
 				}
-				WriteFileJson(FileModerImagesList,ModerImagesList);//сохраняем оставшийся список
+				if(keys.length>0) WriteFileJson(FileModerImagesList,ModerImagesList);//сохраняем оставшийся список
 				
 				if(Object.keys(ModerImagesList).length===0 && Object.keys(ModerTextList).length===0) 
 				{await sendMessage(chatId, 'Сделано, шеф!', klava(get_keyb100()));
@@ -3226,7 +3226,7 @@ try{
 	let flag = check_permissions(obj,offset);
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
-	if(Object.hasOwn(obj, 'time') && !!obj.time && moment(obj.time,'HH:mm').isValid())
+	if(Object.hasOwn(obj, 'time') && moment(obj.time,'HH:mm').isValid())
 	{	timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
 	}
 	// до или после глобальной публикации
@@ -3403,7 +3403,7 @@ try{//проверяем разрешение на публикацию неме
 	let flag = check_permissions(obj,offset);
 	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
-	if(Object.hasOwn(obj, 'time') && !!obj.time && moment(obj.time,'HH:mm').isValid())
+	if(Object.hasOwn(obj, 'time') && moment(obj.time,'HH:mm').isValid())
 	{	timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
 	}
 	// до или после утренней публикации
