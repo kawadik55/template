@@ -2678,8 +2678,11 @@ try{
 	if(!fs.existsSync(path)) return false;
 	//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-	await queue.addToQueue({type:'sendPhoto', chatId:chatId, data:path, options:opt, bot:Bot});
+	if(Bot==='default')
+	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
+		await queue.addToQueue({type:'sendPhoto', chatId:chatId, data:path, options:opt, bot:Bot});
+	}
+	else await LoaderBot.sendPhoto(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendPhoto()','вчат');return Promise.reject(false);}
 }
@@ -2699,8 +2702,11 @@ try{
 	{	mas[0].caption_entities = JSON.parse(mas[0].caption_entities);
 	}
 	if(!!mas[0].caption && mas[0].caption.length > 1024) {mas[0].caption = mas[0].caption.substr(0,1023);}//обрезаем подпись
-	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-	await queue.addToQueue({type:'sendMediaGroup', chatId:chatId, data:mas, bot:Bot});
+	if(Bot==='default')
+	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
+		await queue.addToQueue({type:'sendMediaGroup', chatId:chatId, data:mas, bot:Bot});
+	}
+	else await LoaderBot.sendMediaGroup(chatId, mas, {});
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAlbum()','вчат');return Promise.reject(false);}
 }
@@ -2713,8 +2719,11 @@ try{
 	if(!fs.existsSync(path)) return false;
 	//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-	await queue.addToQueue({type:'sendVideo', chatId:chatId, data:path, options:opt, bot:Bot});
+	if(Bot==='default')
+	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
+		await queue.addToQueue({type:'sendVideo', chatId:chatId, data:path, options:opt, bot:Bot});
+	}
+	else await LoaderBot.sendVideo(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendVideo()','вчат');return Promise.reject(false);}
 }
@@ -2727,8 +2736,11 @@ try{
 	if(!fs.existsSync(path)) return false;
 	//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-	await queue.addToQueue({type:'sendAudio', chatId:chatId, data:path, options:opt, bot:Bot});
+	if(Bot==='default')
+	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
+		await queue.addToQueue({type:'sendAudio', chatId:chatId, data:path, options:opt, bot:Bot});
+	}
+	else await LoaderBot.sendAudio(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAudio()','вчат');return Promise.reject(false);}
 }
@@ -2741,8 +2753,11 @@ try{
 	if(!fs.existsSync(path)) return false;
 	//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-	await queue.addToQueue({type:'sendDocument', chatId:chatId, data:path, options:opt, bot:Bot});
+	if(Bot==='default')
+	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
+		await queue.addToQueue({type:'sendDocument', chatId:chatId, data:path, options:opt, bot:Bot});
+	}
+	else await LoaderBot.sendDocument(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendDocument()','вчат');return Promise.reject(false);}
 }
@@ -2755,8 +2770,11 @@ try{
 	if(!fs.existsSync(path)) return false;
 	//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
 	if(!!opt && !!opt.caption && opt.caption.length > 1024) {opt.caption = opt.caption.substr(0,1023);}//обрезаем подпись
-	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-	await queue.addToQueue({type:'sendAnimation', chatId:chatId, data:path, options:opt, bot:Bot});
+	if(Bot==='default')
+	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
+		await queue.addToQueue({type:'sendAnimation', chatId:chatId, data:path, options:opt, bot:Bot});
+	}
+	else await LoaderBot.sendAnimation(chatId, path, opt);
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAnimation()','вчат');return Promise.reject(false);}
 }
@@ -4019,9 +4037,11 @@ async function sendTextToBot(Bot, chat, text, opt)
   try{
 		if(!isValidChatId(chat)) return false;//если не число, то не пускаем
 		if(text=='') return false;
-		//while(!getMessageCount()) await sleep(50);//получаем разрешение по лимиту сообщ/сек
-		while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-		res = queue.addToQueue({type:'sendMessage', chatId:chat, data:text, options:opt, bot:Bot});
+		if(Bot==='default')
+		{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
+			res = queue.addToQueue({type:'sendMessage', chatId:chat, data:text, options:opt, bot:Bot});
+		}
+		else res = await LoaderBot.sendMessage(chat, text, opt);
   }catch(err)
   {	console.error(getTimeStr()+err);
     console.error('Не смог послать текст в '+chat);
