@@ -4135,13 +4135,13 @@ async function send_Raspis()
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		await WriteLogFile('Рассылка Расписания в каналы '+groffset+' через очередь:');
 		let count_chats = 0;
-		let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 		for(let i=0;i<chat.length;i++) 
 		{  try{
 			let chatId = '', threadId = '';
 			let name = (chat[i] && typeof chat[i] === 'object') ? Object.keys(chat[i]) : [];
 			if(name.length==0) continue;
 			if(!chat[i].Raspis) continue;//не выбрано расписание в доставке
+			let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 			if(!!chat[i][name[0]]) chatId = chat[i][name[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
 			if(!!chat[i].message_thread_id) threadId = chat[i].message_thread_id;
