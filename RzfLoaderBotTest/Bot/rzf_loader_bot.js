@@ -4339,6 +4339,7 @@ async function send_Images(now,offset)
 function public_byDate(date,now,offset)
 {	
 try{
+	offset = Number(offset);
 	let flag = false;
 	let nowzone = getUserDateTime(now, offset);
 	let dayzone = nowzone.clone().startOf('day');//текущий день в зоне
