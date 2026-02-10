@@ -1,0 +1,18 @@
+{
+    "+180": [
+      {
+        "ИмяКанала": "chatID канала",
+        "message_thread_id": "",
+		"Eg": true,
+		"News": true,
+		"Raspis": true
+      },
+      {
+        "СколькоХочешь": "может быть каналов",
+        "message_thread_id": "",
+		"Eg": true,
+		"News": true,
+		"Raspis": true
+      }
+    ]
+}

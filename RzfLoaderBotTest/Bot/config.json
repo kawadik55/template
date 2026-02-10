@@ -1,0 +1,22 @@
+{
+  "area": "АН местности Поволжье",
+  "timePablic": "06:00:00",
+  "forDate": [
+    3,
+    0
+  ],
+  "lifeTime": 365,
+  "rassilka": true,
+  "hostingImg": false,
+  "pathHostingImg": "/../www/img",
+  "hostname":"https://vps.na-serv.ru",
+  "Supervisor":"123456",
+  "queuelimit":200,
+  "slavebot": false,
+  "News": true,
+  "Eg": false,
+  "Raspis": false,
+  "FileEg": "/../Rassilka/eg.txt",
+  "FileRaspis": "/../Rassilka/raspis.txt",
+  "UrlSupport": "https://t.me/ссылкаДляВопросов"
+}
