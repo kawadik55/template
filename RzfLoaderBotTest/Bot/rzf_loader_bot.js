@@ -4197,7 +4197,9 @@ try{
 //используется в рассылке
 async function send_Images(now,offset)
 { try
-  {	if(!now || now.isValid()==false) now = moment();//проверяем
+  {	WriteLogFile('Начинаем проверку');
+	WriteLogFile(now.format('DD-MM-YYYY HH:mm:ss'));
+	if(!now || now.isValid()==false) now = moment();//проверяем
 	let nowzone = getUserDateTime(now, offset);
 	let dayzone = nowzone.clone().startOf('day');//текущий день в зоне
 	let timepublic = addTimeForZone(timePablic, dayzone);//время "Ч" в зоне в текущий день
