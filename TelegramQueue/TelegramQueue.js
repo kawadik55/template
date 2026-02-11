@@ -12,7 +12,7 @@ class TelegramQueue extends EventEmitter {
         // Настройки
         this.maxRetries = options.maxRetries || 3;
         this.retryDelay = options.retryDelay || 5000;
-        this.messagesPerSecond = options.messagesPerSecond || 8;
+        this.messagesPerSecond = options.messagesPerSecond || 10;
         this.maxConsecutiveErrors = options.maxConsecutiveErrors || 5;
         
         // Улучшенные счетчики
@@ -341,12 +341,12 @@ class TelegramQueue extends EventEmitter {
 		{	attempts++;
             const isRateLimit = error.response?.body?.error_code === 429 || 
 				(error.response?.body?.description || error.message || '').toLowerCase().includes('too many requests');
-			//if (error.response?.body?.error_code === 429 && attempts < maxAttempts)
+			this.emit('error_response', error.message);
 			if (isRateLimit && attempts < maxAttempts)
 			{
                 const retryAfter = error.response.body.parameters?.retry_after || 5;
                 console.log(`429. Ждем ${retryAfter}с (${attempts}/${maxAttempts})`);
-                await this._delay(retryAfter * 1000);
+				await this._delay(retryAfter * 1000);
                 continue;
             }
 			
