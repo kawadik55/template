@@ -3195,7 +3195,7 @@ try{
 	
 	//если по Дате
 	if(day=='Дата') 
-	{	let time = getDateTimeForZone(obj.date, offset);//дата окончания по местному времени
+	{	let time = getDateForZone(obj.date, offset);//дата окончания по местному времени
 		let days = time.diff(now, 'days')+1;//плюс 1
 		if(days>0 && days%7==0) {flag++;}//кратно неделе
 		else if(days<14)//менее 2х недель
@@ -3206,7 +3206,7 @@ try{
 	//если по Дням недели
 	else if(masDay.indexOf(day)+1)
 	{ 	//если дата окончания не наступила
-		let time = getDateTimeForZone(obj.date, offset);//дата окончания по местному времени
+		let time = getDateForZone(obj.date, offset);//дата окончания по местному времени
 		if(time.diff(now, 'days') >= 0);//разница в днях, 0 = сегодня
 		{	if(obj.dayOfWeek==masDay[8]) flag++;//ежедневно, публикуем однозначно
 			else
@@ -3232,10 +3232,10 @@ async function publicText(obj,offset)//тут текст на публикаци
 try{
 	//проверяем разрешение на публикацию немедленно
 	let flag = check_permissions(obj,offset);//совпадение дат/дней недели
-	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне
+	let timepublic = getTimeForZone(timePablic, offset);//время "Ч" в зоне
 	let timeobj;
 	if(Object.hasOwn(obj, 'time') && moment(obj.time,'HH:mm').isValid())
-	{	timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
+	{	timeobj = getTimeForZone(obj.time, offset);//приводим к местному времени
 	}
 	// до или после глобальной публикации
 	let now = getUserDateTime(moment(), offset);//текущее время в зоне
@@ -3409,10 +3409,10 @@ async function publicImage(obj,offset)
 {
 try{//проверяем разрешение на публикацию немедленно
 	let flag = check_permissions(obj,offset);
-	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
+	let timepublic = getTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
 	if(Object.hasOwn(obj, 'time') && moment(obj.time,'HH:mm').isValid())
-	{	timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
+	{	timeobj = getTimeForZone(obj.time, offset);//приводим к местному времени
 	}
 	// до или после утренней публикации
 	let now = getUserDateTime(moment(), offset);//текущее время в зоне
@@ -4200,7 +4200,7 @@ async function send_Images(now,offset)
   {	if(!now || now.isValid()==false) now = moment();//проверяем
 	let nowzone = getUserDateTime(now, offset);
 	let dayzone = nowzone.clone().startOf('day');//текущий день в зоне
-	let timepublic = addTimeForZone(timePablic, dayzone);//время "Ч" в зоне в текущий день
+	let timepublic = getTimeForZone(timePablic, offset);//время "Ч" в зоне в текущий день
 	//читаем список
 	for(let key in ImagesList)
 	{	try{  
@@ -4208,7 +4208,7 @@ async function send_Images(now,offset)
           let day = ImagesList[key].dayOfWeek;//запись дня
 		  let timeobj;
 		  if(Object.hasOwn(ImagesList[key], 'time') && moment(ImagesList[key].time, 'HH:mm').isValid())
-		  {	timeobj = addTimeForZone(ImagesList[key].time, dayzone);//прибавляем к началу дня
+		  {	timeobj = getTimeForZone(ImagesList[key].time, offset);//время из файла в зоне
 		  }
           let flag = 0;
           
@@ -4216,7 +4216,7 @@ async function send_Images(now,offset)
           if(masDay.indexOf(day)+1)
           { //если дата окончания не наступила
 			if(moment(date,'DD.MM.YYYY').isValid())//проверяем правильная ли дата
-			{	let time = getDateTimeForZone(date, offset);//дата окончания по местному времени
+			{	let time = getDateForZone(date, offset);//дата окончания по местному времени
 				if(time.diff(dayzone, 'days') >= 0)//разница в днях, 0 = сегодня
 				{	if(day==masDay[8])//ежедневно 
 					{	let sec;
@@ -4341,7 +4341,7 @@ try{
 	let flag = false;
 	let nowzone = getUserDateTime(now, offset);
 	let dayzone = nowzone.clone().startOf('day');//текущий день в зоне
-	let datezone = getDateTimeForZone(date, offset);//дата конца в зоне
+	let datezone = getDateForZone(date, offset);//дата конца в зоне
 	let days = datezone.diff(dayzone, 'days')+1;
     if(days>0 && days%7==0) flag=true;
     else if(days<14)//менее 2х недель
@@ -4360,7 +4360,7 @@ async function send_Text(now,offset)
 	if(!now || now.isValid()==false) now = moment();//проверяем
 	let nowzone = getUserDateTime(now, offset);
 	let dayzone = nowzone.clone().startOf('day');//текущий день в зоне
-	let timepublic = addTimeForZone(timePablic, dayzone);//время "Ч" в зоне в текущий день
+	let timepublic = getTimeForZone(timePablic, offset);//время "Ч" в зоне в текущий день
 	//читаем список
 	for(let key in TextList)
 	{   try{  
@@ -4368,7 +4368,7 @@ async function send_Text(now,offset)
 		  let day = TextList[key].dayOfWeek;//запись дня
 		  let timeobj;
 		  if(Object.hasOwn(TextList[key], 'time') && !!TextList[key].time && moment(TextList[key].time, 'HH:mm').isValid())
-		  {	timeobj = addTimeForZone(TextList[key].time, dayzone);//прибавляем к началу дня
+		  {	timeobj = getTimeForZone(TextList[key].time, offset);//время из файла в зоне
 		  }
           let flag = 0;
           
@@ -4376,7 +4376,7 @@ async function send_Text(now,offset)
           if(masDay.indexOf(day)+1)
           { //если дата окончания не наступила
 			if(moment(date,'DD.MM.YYYY').isValid())//проверяем правильная ли дата
-			{	let time = getDateTimeForZone(date, offset);//дата окончания по местному времени
+			{	let time = getDateForZone(date, offset);//дата окончания по местному времени
 				if(time.diff(dayzone, 'days') >= 0)//разница в днях, 0 = сегодня
 				{	if(day==masDay[8])//ежедневно 
 					{	let sec;
@@ -4591,10 +4591,9 @@ function getUserDateTime(now, offset)
 	return moment.unix(userTime);//дата/время юзера
 }
 //====================================================================
-function getDateTimeForZone(inputStr, offset)
+function getDateForZone(inputStr, offset)
 {
     const offsetNum = Number(offset);
-	const now = moment();
 	// Проверяем формат
     if (inputStr.includes('.'))
 	{	// Это дата DD.MM.YYYY - возвращаем начало этого дня в зоне
@@ -4602,22 +4601,22 @@ function getDateTimeForZone(inputStr, offset)
             .utcOffset(offsetNum, true)
             .startOf('day');
     }
-	else if (inputStr.includes(':'))
-	{	// Это время HH:mm:ss - возвращаем это время сегодня в зоне
-        const nowzone = getUserDateTime(now, offsetNum);
-		const dayzone = nowzone.clone().startOf('day');//текущий день в зоне
-		return addTimeForZone(inputStr, dayzone);//время inputStr в зоне в текущий день	
-    }
 	else throw new Error('Неизвестный формат: ' + inputStr);
 }
 //====================================================================
-function addTimeForZone(inputStr, dayzone)
+function getTimeForZone(inputStr, offset, now = null)
 {
-    if (inputStr.includes(':'))
-	{
-        const [hours, minutes, sec = 0] = inputStr.split(':').map(Number);
+    const offsetNum = Number(offset);
+	// Проверяем формат
+	if (inputStr.includes(':'))
+	{	// Это время HH:mm:ss - возвращаем это время сегодня в зоне
+        let nowzone;
+		if(!now) {now = moment(); nowzone = getUserDateTime(now, offsetNum);}//делаем опору, если нет
+		else nowzone = now.clone();
+		const dayzone = nowzone.clone().startOf('day');//текущий день в зоне
+		const [hours, minutes, sec = 0] = inputStr.split(':').map(Number);
 		return dayzone.clone().add({ hours: hours, minutes: minutes, seconds: sec});//прибавляем время к началу дня
-    } 
+    }
 	else throw new Error('Неизвестный формат: ' + inputStr);
 }
 //====================================================================
