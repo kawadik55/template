@@ -230,13 +230,13 @@ class TelegramQueue extends EventEmitter {
 		
 		const botKey = bot.token || bot.options?.token || 'error_bot';//токен будет ключом
 		if (!this.fileIdList[botKey]) this.fileIdList[botKey] = {};//инит для нового бота
-		//проверка и очистка, если прилетел другой файл
+		//проверка
 		if (Object.keys(this.fileIdList[botKey]).length > 0)
 		{	const isMediaGroup = Array.isArray(data);
 			const hasCurrentFile = isMediaGroup 
 					? data.some(mediaItem => this.fileIdList[botKey][mediaItem.media])//альбом
 					: this.fileIdList[botKey][data];//одиночный файл
-			if (!hasCurrentFile) this.fileIdList[botKey] = {};
+			//if (!hasCurrentFile) this.fileIdList[botKey] = {};//очистка, если прилетел другой файл
 		}
 		const FileId = this.fileIdList[botKey]?.[data];
 		
