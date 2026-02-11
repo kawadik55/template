@@ -23,6 +23,9 @@ class TelegramQueue extends EventEmitter {
         // Настройка обработчиков ошибок для polling бота
         this._setupErrorHandlers();
 		this.connectTimer = null;
+		
+		// список file_id
+		this.fileIdList = {};
     }
 	//====================================================================
     /**
@@ -225,32 +228,110 @@ class TelegramQueue extends EventEmitter {
 		let attempts = 0;
 		const maxAttempts = this.maxRetries || 3;
 		
+		const botKey = bot.token || bot.options?.token || 'error_bot';//токен будет ключом
+		if (!this.fileIdList[botKey]) this.fileIdList[botKey] = {};//инит для нового бота
+		//проверка и очистка, если прилетел другой файл
+		if (Object.keys(this.fileIdList[botKey]).length > 0)
+		{	const isMediaGroup = Array.isArray(data);
+			const hasCurrentFile = isMediaGroup 
+					? data.some(mediaItem => this.fileIdList[botKey][mediaItem.media])//альбом
+					: this.fileIdList[botKey][data];//одиночный файл
+			if (!hasCurrentFile) this.fileIdList[botKey] = {};
+		}
+		const FileId = this.fileIdList[botKey]?.[data];
+		
 	  while (attempts < maxAttempts)
 	  { try{
           switch (type) {
             case 'sendMessage':
-                return await bot.sendMessage(chatId, data, options); break;
+				return await bot.sendMessage(chatId, data, options); 
+				break;
             
             case 'sendPhoto':
-                return await bot.sendPhoto(chatId, data, options); break;
+                //если уже есть file_id
+				if(FileId) return await bot.sendPhoto(chatId, FileId, options); 
+				//если это первая отправка файла с диска
+				else
+				{	let file_id;
+					const res = await bot.sendPhoto(chatId, data, options);
+					if(res.photo && res.photo.length > 0) file_id = res.photo[res.photo.length - 1].file_id;
+					//сохраняем file_id
+					if(file_id)
+					{	//this.fileIdList[botKey] = {};
+						this.fileIdList[botKey][data] = file_id;
+					}
+					return res;
+				}
+				break;
             
             case 'sendVideo':
-                return await bot.sendVideo(chatId, data, options); break;
+                if(FileId)	return await bot.sendVideo(chatId, FileId, options);
+                else
+				{	const res = await bot.sendVideo(chatId, data, options);
+					if(res.video) this.fileIdList[botKey][data] = res.video.file_id;
+					return res;
+				}
+				break;
             
             case 'sendDocument':
-                return await bot.sendDocument(chatId, data, options); break;
+                if(FileId)	return await bot.sendDocument(chatId, FileId, options);
+                else
+				{	const res = await bot.sendDocument(chatId, data, options);
+					if(res.document) this.fileIdList[botKey][data] = res.document.file_id;
+					return res;
+				}
+				break;
             
             case 'sendAudio':
-                return await bot.sendAudio(chatId, data, options); break;
+                if(FileId)	return await bot.sendAudio(chatId, FileId, options);
+                else
+				{	const res = await bot.sendAudio(chatId, data, options);
+					if(res.audio) this.fileIdList[botKey][data] = res.audio.file_id;
+					return res;
+				}
+				break;
             
             case 'sendMediaGroup':
-                return await bot.sendMediaGroup(chatId, data, options); break;
+                // Для медиагруппы обрабатываем каждый элемент
+				const processedMedia = data.map(mediaItem => 
+				{	const mediaCopy = { ...mediaItem };
+					// Если для этого media есть сохраненный file_id
+					if(this.fileIdList[botKey][mediaCopy.media]) mediaCopy.media = this.fileIdList[botKey][mediaCopy.media];
+					return mediaCopy;
+				});
+				const resMediaGroup = await bot.sendMediaGroup(chatId, processedMedia, options);
+				// Пытаемся извлечь и сохранить file_id для каждого файла
+                if(Array.isArray(resMediaGroup))
+				{	resMediaGroup.forEach((msg, index) =>
+					{	if(index < data.length)
+						{	const originalMedia = data[index];
+                            let file_id;
+                            if(msg.photo && msg.photo.length > 0) file_id = msg.photo[msg.photo.length - 1].file_id; 
+							else if(msg.video) file_id = msg.video.file_id;
+                            else if(msg.document) file_id = msg.document.file_id;
+                            else if(msg.audio) file_id = msg.audio.file_id;
+							if (file_id && originalMedia.media)
+							{	// Сохраняем file_id для этого media
+								this.fileIdList[botKey][originalMedia.media] = file_id;
+							}
+                        }
+					});
+				}
+                return resMediaGroup; 
+				break;
             
             case 'sendSticker':
-                return await bot.sendSticker(chatId, data, options); break;
+                return await bot.sendSticker(chatId, data, options); 
+				break;
 			
 			case 'sendAnimation':
-                return await bot.sendAnimation(chatId, data, options); break;
+                if(FileId)	return await bot.sendAnimation(chatId, FileId, options);
+                else
+				{	const res = await bot.sendAnimation(chatId, data, options);
+					if(res.animation) this.fileIdList[botKey][data] = res.animation.file_id;
+					return res;
+				}
+				break;
 			
 			default:
                 throw new Error(`Unsupported message type: ${type}`);
