@@ -170,6 +170,7 @@ let timeCron='';//время для крона
 let MediaList=new Object();//массив группы медиа файлов
 let Buttons = {};//кнопки
 let activeUsers = {};//для фиксации активного юзера в данный момент
+let fileIdList = {};//список file_id для ускорения
 
 //файл кнопок
 try 
@@ -2682,7 +2683,14 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendPhoto', chatId:chatId, data:path, options:opt, bot:Bot});
 	}
-	else await LoaderBot.sendPhoto(chatId, path, opt);
+	else
+	{	let res, mypath, file_id;
+		if(fileIdList && fileIdList[path]) mypath = fileIdList[path];//заменим на file_id
+		else mypath = path;
+		res = await LoaderBot.sendPhoto(chatId, mypath, opt);
+		if(res.photo && res.photo.length > 0) file_id = res.photo[res.photo.length - 1].file_id;
+		if(file_id) fileIdList[path] = file_id;
+	}
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendPhoto()','вчат');return Promise.reject(false);}
 }
@@ -2706,7 +2714,29 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendMediaGroup', chatId:chatId, data:mas, bot:Bot});
 	}
-	else await LoaderBot.sendMediaGroup(chatId, mas, {});
+	else 
+	{	// Подмена на file_id из кэша
+		const prepared = mas.map(item => 
+		{	const copy = { ...item };
+            if (fileIdList?.[item.media]) copy.media = fileIdList[item.media];
+            return copy;
+        });
+        const res = await LoaderBot.sendMediaGroup(chatId, prepared, {});
+        // Сохраняем новые file_id
+        if (Array.isArray(res) && fileIdList) 
+		{	res.forEach((msg, i) => 
+			{	if (i < media.length) 
+				{	const orig = media[i];
+					let fid;
+					if (msg.photo?.length) fid = msg.photo[msg.photo.length - 1].file_id;
+					else if (msg.video) fid = msg.video.file_id;
+					else if (msg.document) fid = msg.document.file_id;
+					else if (msg.audio) fid = msg.audio.file_id;
+					if (fid && orig.media) fileIdList[orig.media] = fid;
+				}
+            });
+        }
+    }	
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAlbum()','вчат');return Promise.reject(false);}
 }
@@ -2723,7 +2753,13 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendVideo', chatId:chatId, data:path, options:opt, bot:Bot});
 	}
-	else await LoaderBot.sendVideo(chatId, path, opt);
+	else 
+	{	let res, mypath;
+		if(fileIdList && fileIdList[path]) mypath = fileIdList[path];//заменим на file_id
+		else mypath = path;
+		res = await LoaderBot.sendVideo(chatId, mypath, opt);
+		if(res.video) fileIdList[path] = res.video.file_id;
+	}	
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendVideo()','вчат');return Promise.reject(false);}
 }
@@ -2740,7 +2776,13 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendAudio', chatId:chatId, data:path, options:opt, bot:Bot});
 	}
-	else await LoaderBot.sendAudio(chatId, path, opt);
+	else 
+	{	let res, mypath;
+		if(fileIdList && fileIdList[path]) mypath = fileIdList[path];//заменим на file_id
+		else mypath = path;
+		res = await LoaderBot.sendAudio(chatId, mypath, opt);
+		if(res.audio) fileIdList[path] = res.audio.file_id;
+	}	
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAudio()','вчат');return Promise.reject(false);}
 }
@@ -2757,7 +2799,13 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendDocument', chatId:chatId, data:path, options:opt, bot:Bot});
 	}
-	else await LoaderBot.sendDocument(chatId, path, opt);
+	else 
+	{	let res, mypath;
+		if(fileIdList && fileIdList[path]) mypath = fileIdList[path];//заменим на file_id
+		else mypath = path;
+		res = await LoaderBot.sendDocument(chatId, mypath, opt);
+		if(res.document) fileIdList[path] = res.document.file_id;
+	}	
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendDocument()','вчат');return Promise.reject(false);}
 }
@@ -2774,7 +2822,13 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendAnimation', chatId:chatId, data:path, options:opt, bot:Bot});
 	}
-	else await LoaderBot.sendAnimation(chatId, path, opt);
+	else 
+	{	let res, mypath;
+		if(fileIdList && fileIdList[path]) mypath = fileIdList[path];//заменим на file_id
+		else mypath = path;
+		res = await LoaderBot.sendAnimation(chatId, mypath, opt);
+		if(res.animation) fileIdList[path] = res.animation.file_id;
+	}	
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAnimation()','вчат');return Promise.reject(false);}
 }
