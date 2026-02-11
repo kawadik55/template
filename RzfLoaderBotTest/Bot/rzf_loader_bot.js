@@ -148,7 +148,7 @@ if(!!tokenLog) logBot = new TelegramBot(tokenLog, {polling: false});//бот д�
 const queue = new TelegramQueue(NewsBot, {	//'default' бот
     maxRetries: 5,
     retryDelay: 10000,
-    messagesPerSecond: 10,
+    messagesPerSecond: 15,
 	maxConsecutiveErrors: 5
 });
 //---------------------------------------------------
@@ -4627,6 +4627,7 @@ queue.on('disconnected', (error) => {WriteLogFile(error+'; => bot disconnected')
 //queue.on('processing_started', (item) => {WriteLogFile('processing_started, queue length = '+item);});
 //queue.on('processing_finished', () => {WriteLogFile('processing_finished');});
 //queue.on('cleared', (item) => {WriteLogFile('cleared = '+item);});
+queue.on('error_response', (error) => {WriteLogFile('error_response from queue => '+error||'пусто');});
 //====================================================================
 //преобразуем массив объектов в объект с массивами
 function transform_chat2obj(arr)
