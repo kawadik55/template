@@ -4197,9 +4197,7 @@ try{
 //используется в рассылке
 async function send_Images(now,offset)
 { try
-  {	WriteLogFile('Начинаем проверку');
-	WriteLogFile(now.format('DD-MM-YYYY HH:mm:ss'));
-	if(!now || now.isValid()==false) now = moment();//проверяем
+  {	if(!now || now.isValid()==false) now = moment();//проверяем
 	let nowzone = getUserDateTime(now, offset);
 	let dayzone = nowzone.clone().startOf('day');//текущий день в зоне
 	let timepublic = addTimeForZone(timePablic, dayzone);//время "Ч" в зоне в текущий день
@@ -4595,8 +4593,8 @@ function getUserDateTime(now, offset)
 //====================================================================
 function getDateTimeForZone(inputStr, offset)
 {
-    let offsetNum = Number(offset);
-	if(!now) now = moment();
+    const offsetNum = Number(offset);
+	const now = moment();
 	// Проверяем формат
     if (inputStr.includes('.'))
 	{	// Это дата DD.MM.YYYY - возвращаем начало этого дня в зоне
@@ -4606,8 +4604,8 @@ function getDateTimeForZone(inputStr, offset)
     }
 	else if (inputStr.includes(':'))
 	{	// Это время HH:mm:ss - возвращаем это время сегодня в зоне
-        let nowzone = getUserDateTime(now, offset);
-		let dayzone = nowzone.clone().startOf('day');//текущий день в зоне
+        const nowzone = getUserDateTime(now, offsetNum);
+		const dayzone = nowzone.clone().startOf('day');//текущий день в зоне
 		return addTimeForZone(inputStr, dayzone);//время inputStr в зоне в текущий день	
     }
 	else throw new Error('Неизвестный формат: ' + inputStr);
