@@ -2039,7 +2039,7 @@ try{
         try {AdminBot = JSON.parse(fs.readFileSync(FileAdminBot));} catch (err) {console.log(err);}
 		let keys = Object.keys(AdminBot);
         for(let i in keys) str += keys[i]+': '+AdminBot[keys[i]]+'\n';
-        sendMessage(chatId, str, {parse_mode:"markdown"});
+		sendMessage(chatId, escapeMarkdown(str), {parse_mode:"markdown"});
     }
 	else sendMessage(chatId, smilik);
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AdminList/)','вчат');}
@@ -2074,7 +2074,7 @@ try{
         try {AdminBot = JSON.parse(fs.readFileSync(FileAdminBot));} catch (err) {console.log(err);}
 		let keys = Object.keys(AdminBot);
         for(let i in keys) str += keys[i]+' : '+AdminBot[keys[i]]+'\n';
-        sendMessage(chatId, str, {parse_mode:"markdown"});
+        sendMessage(chatId, escapeMarkdown(str), {parse_mode:"markdown"});
     }
 	else sendMessage(chatId, smilik);
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/AddAdmin/)','вчат');}
@@ -2109,7 +2109,7 @@ try{
 
 		str = 'Новый Координатор Вотсап:\n'
         str += id+' : '+name+'\n';
-        sendMessage(chatId, str, {parse_mode:"markdown"});
+        sendMessage(chatId, escapeMarkdown(str), {parse_mode:"markdown"});
 		chat_coordinatorWhatsApp = AdminList.coordinatorWhatsApp;
     }
 	else sendMessage(chatId, smilik);
@@ -2253,7 +2253,7 @@ try{
 			for(let i in keys) str += keys[i]+' : '+AdminBot[keys[i]]+'\n';
 		}
 		else str = 'Такого Админа в списке нет!';
-		sendMessage(chatId, str, {parse_mode:"markdown"});
+		sendMessage(chatId, escapeMarkdown(str), {parse_mode:"markdown"});
 	}
 	else sendMessage(chatId, smilik);
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DelAdmin/)','вчат');}	
@@ -2273,7 +2273,7 @@ try{
 		AdminList.coordinatorName = '';
 		WriteFileJson(FileAdminList,AdminList);//записываем файл
 		str='Координатор Вотсап удален!';
-		sendMessage(chatId, str, {parse_mode:"markdown"});
+		sendMessage(chatId, escapeMarkdown(str), {parse_mode:"markdown"});
 		chat_coordinatorWhatsApp = 0;
 	}
 	else sendMessage(chatId, smilik);
@@ -2301,7 +2301,7 @@ try{
 			sendMessage(chatId, str);
 		}
 		else str = 'Такого Юзера в списке нет!';
-		sendMessage(chatId, str, {parse_mode:"markdown"});
+		sendMessage(chatId, escapeMarkdown(str), {parse_mode:"markdown"});
 	}
 	else sendMessage(chatId, smilik);
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DelUser/)','вчат');}	
@@ -2328,7 +2328,7 @@ try{
 			sendMessage(chatId, str);
 		}
 		else str = 'Такого Бана в списке нет!';
-		sendMessage(chatId, str, {parse_mode:"markdown"});
+		sendMessage(chatId, escapeMarkdown(str), {parse_mode:"markdown"});
 	}
 	else sendMessage(chatId, smilik);
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/DelBan/)','вчат');}	
@@ -4717,6 +4717,12 @@ function sortObjectByKeys(obj)
             sorted[key] = obj[key];
             return sorted;
         }, {});
+}
+//====================================================================
+// Экранируем только то, что действительно ломает Markdown
+escapeMarkdown(text)
+{	if (typeof text !== 'string') return text;
+	return text.replace(/([_*\[\]()~`>#])/g, '\\$1');
 }
 //====================================================================
 
