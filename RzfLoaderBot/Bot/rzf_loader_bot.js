@@ -148,7 +148,7 @@ if(!!tokenLog) logBot = new TelegramBot(tokenLog, {polling: false});//бот д�
 const queue = new TelegramQueue(NewsBot, {	//'default' бот
     maxRetries: 5,
     retryDelay: 10000,
-    messagesPerSecond: 10,
+    messagesPerSecond: 15,
 	maxConsecutiveErrors: 5
 });
 //---------------------------------------------------
@@ -170,6 +170,7 @@ let timeCron='';//время для крона
 let MediaList=new Object();//массив группы медиа файлов
 let Buttons = {};//кнопки
 let activeUsers = {};//для фиксации активного юзера в данный момент
+let fileIdList = {};//список file_id для ускорения
 
 //файл кнопок
 try 
@@ -2682,7 +2683,14 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendPhoto', chatId:chatId, data:path, options:opt, bot:Bot});
 	}
-	else await LoaderBot.sendPhoto(chatId, path, opt);
+	else
+	{	let res, mypath, file_id;
+		if(fileIdList && fileIdList[path]) mypath = fileIdList[path];//заменим на file_id
+		else mypath = path;
+		res = await LoaderBot.sendPhoto(chatId, mypath, opt);
+		if(res.photo && res.photo.length > 0) file_id = res.photo[res.photo.length - 1].file_id;
+		if(file_id) fileIdList[path] = file_id;
+	}
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendPhoto()','вчат');return Promise.reject(false);}
 }
@@ -2706,7 +2714,29 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendMediaGroup', chatId:chatId, data:mas, bot:Bot});
 	}
-	else await LoaderBot.sendMediaGroup(chatId, mas, {});
+	else 
+	{	// Подмена на file_id из кэша
+		const prepared = mas.map(item => 
+		{	const copy = { ...item };
+            if (fileIdList?.[item.media]) copy.media = fileIdList[item.media];
+            return copy;
+        });
+        const res = await LoaderBot.sendMediaGroup(chatId, prepared, {});
+        // Сохраняем новые file_id
+        if (Array.isArray(res) && fileIdList) 
+		{	res.forEach((msg, i) => 
+			{	if (i < media.length) 
+				{	const orig = media[i];
+					let fid;
+					if (msg.photo?.length) fid = msg.photo[msg.photo.length - 1].file_id;
+					else if (msg.video) fid = msg.video.file_id;
+					else if (msg.document) fid = msg.document.file_id;
+					else if (msg.audio) fid = msg.audio.file_id;
+					if (fid && orig.media) fileIdList[orig.media] = fid;
+				}
+            });
+        }
+    }	
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAlbum()','вчат');return Promise.reject(false);}
 }
@@ -2723,7 +2753,13 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendVideo', chatId:chatId, data:path, options:opt, bot:Bot});
 	}
-	else await LoaderBot.sendVideo(chatId, path, opt);
+	else 
+	{	let res, mypath;
+		if(fileIdList && fileIdList[path]) mypath = fileIdList[path];//заменим на file_id
+		else mypath = path;
+		res = await LoaderBot.sendVideo(chatId, mypath, opt);
+		if(res.video) fileIdList[path] = res.video.file_id;
+	}	
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendVideo()','вчат');return Promise.reject(false);}
 }
@@ -2740,7 +2776,13 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendAudio', chatId:chatId, data:path, options:opt, bot:Bot});
 	}
-	else await LoaderBot.sendAudio(chatId, path, opt);
+	else 
+	{	let res, mypath;
+		if(fileIdList && fileIdList[path]) mypath = fileIdList[path];//заменим на file_id
+		else mypath = path;
+		res = await LoaderBot.sendAudio(chatId, mypath, opt);
+		if(res.audio) fileIdList[path] = res.audio.file_id;
+	}	
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAudio()','вчат');return Promise.reject(false);}
 }
@@ -2757,7 +2799,13 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendDocument', chatId:chatId, data:path, options:opt, bot:Bot});
 	}
-	else await LoaderBot.sendDocument(chatId, path, opt);
+	else 
+	{	let res, mypath;
+		if(fileIdList && fileIdList[path]) mypath = fileIdList[path];//заменим на file_id
+		else mypath = path;
+		res = await LoaderBot.sendDocument(chatId, mypath, opt);
+		if(res.document) fileIdList[path] = res.document.file_id;
+	}	
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendDocument()','вчат');return Promise.reject(false);}
 }
@@ -2774,7 +2822,13 @@ try{
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		await queue.addToQueue({type:'sendAnimation', chatId:chatId, data:path, options:opt, bot:Bot});
 	}
-	else await LoaderBot.sendAnimation(chatId, path, opt);
+	else 
+	{	let res, mypath;
+		if(fileIdList && fileIdList[path]) mypath = fileIdList[path];//заменим на file_id
+		else mypath = path;
+		res = await LoaderBot.sendAnimation(chatId, mypath, opt);
+		if(res.animation) fileIdList[path] = res.animation.file_id;
+	}	
 	return true;
 }catch(err){WriteLogFile(err+'\nfrom sendAnimation()','вчат');return Promise.reject(false);}
 }
@@ -3186,7 +3240,7 @@ function check_permissions(obj,offset)
 try{
 	//публикуем текст прямо сейчас, если дата или день недели и время совпадает
 	let flag = 0;
-	let now = moment().utcOffset(Number(offset),true).startOf('day');//текущий день в зоне
+	let now = getUserDateTime(moment(), offset);//текущий день в зоне
 	let day;
 	if(Object.hasOwn(obj, 'dayOfWeek')) day=obj.dayOfWeek;
 	if(!Object.hasOwn(obj, 'date') || !moment(obj.date,'DD.MM.YYYY').isValid()) return 0;
@@ -3195,41 +3249,31 @@ try{
 	
 	//если по Дате
 	if(day=='Дата') 
-	{	let time = getDateTimeForZone(obj.date, offset);//дата окончания по местному времени
+	{	let time = getDateForZone(obj.date, offset);//дата окончания по местному времени
 		let days = time.diff(now, 'days')+1;//плюс 1
 		if(days>0 && days%7==0) {flag++;}//кратно неделе
 		else if(days<14)//менее 2х недель
-		//else if(days<7)//менее 1 недели
-		{	/*switch(days)
-			{	//case 10: flag++; break;
-				//case 7: flag++; break;
-				case 4: flag++; break;
-				//case 3: flag++; break;
-				//case 2: flag++; break;
-				case 1: flag++; break;//сегодня
-			}*/
-			let tmp=days-1;
+		{	let tmp=days-1;
 			if(forDate.indexOf(tmp)+1) flag++;
 		}
 	}
 	//если по Дням недели
 	else if(masDay.indexOf(day)+1)
 	{ 	//если дата окончания не наступила
-			let timet = getDateTimeForZone(obj.date, offset);//дата окончания по местному времени
-			if(timet.diff(now, 'days') >= 0);//разница в днях, 0 = сегодня
-			{	if(obj.dayOfWeek==masDay[8]) flag++;//ежедневно, публикуем однозначно
-				else
-				{ 	
-					let dayWeek = now.day();//сегодняшний день недели в зоне: 0-воскресенье, 1-понедельник
-					if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
-					if(dayWeek==masDay.indexOf(day)) flag++;//совпали дни, публикуем
-				}
+		let time = getDateForZone(obj.date, offset);//дата окончания по местному времени
+		if(time.diff(now, 'days') >= 0);//разница в днях, 0 = сегодня
+		{	if(obj.dayOfWeek==masDay[8]) flag++;//ежедневно, публикуем однозначно
+			else
+			{ 	let dayWeek = now.day();//сегодняшний день недели в зоне: 0-воскресенье, 1-понедельник
+				if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
+				if(masDay[dayWeek]==day) flag++;//совпали дни, публикуем
 			}
+		}
 	}
 	//во всех остальных случаях
 	else
-	{	let timet = now.format('DD.MM.YYYY');
-		if(obj.date==timet) flag++;//прям сегодня
+	{	let time = now.format('DD.MM.YYYY');
+		if(obj.date==time) flag++;//прям сегодня
 	}
 	
 	return flag;
@@ -3241,14 +3285,14 @@ async function publicText(obj,offset)//тут текст на публикаци
 {
 try{
 	//проверяем разрешение на публикацию немедленно
-	let flag = check_permissions(obj,offset);
-	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
+	let flag = check_permissions(obj,offset);//совпадение дат/дней недели
+	let timepublic = getTimeForZone(timePablic, offset);//время "Ч" в зоне
 	let timeobj;
 	if(Object.hasOwn(obj, 'time') && moment(obj.time,'HH:mm').isValid())
-	{	timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
+	{	timeobj = getTimeForZone(obj.time, offset);//приводим к местному времени
 	}
 	// до или после глобальной публикации
-	let now = moment();//текущее время
+	let now = getUserDateTime(moment(), offset);//текущее время в зоне
 	let sec = -1;
 	//если времени в объекте нет, то используем глобальное время публикаций
 	if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
@@ -3419,13 +3463,13 @@ async function publicImage(obj,offset)
 {
 try{//проверяем разрешение на публикацию немедленно
 	let flag = check_permissions(obj,offset);
-	let timepublic = getDateTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
+	let timepublic = getTimeForZone(timePablic, offset);//время "Ч" в зоне в абсолютах
 	let timeobj;
 	if(Object.hasOwn(obj, 'time') && moment(obj.time,'HH:mm').isValid())
-	{	timeobj = getDateTimeForZone(obj.time, offset);//приводим к местному времени
+	{	timeobj = getTimeForZone(obj.time, offset);//приводим к местному времени
 	}
 	// до или после утренней публикации
-	let now = moment();//текущее время
+	let now = getUserDateTime(moment(), offset);//текущее время в зоне
 	let sec = -1;
 	//если времени в объекте нет, то используем глобальное время публикаций
 	if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
@@ -4207,20 +4251,18 @@ try{
 //используется в рассылке
 async function send_Images(now,offset)
 { try
-  {	//WriteLogFile('Рассылка картинок:');
-	//if(Object.keys(ImagesList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
-	if(!now || now.isValid()==false) now = moment();//проверяем
-	let made = 0;
-	let dayzone = now.clone().utcOffset(Number(offset),true).startOf('day');//текущий день в зоне
-	let timepublic = addTimeForZone(timePablic, dayzone);//время "Ч" в зоне в текущий день
+  {	if(!now || now.isValid()==false) now = moment();//проверяем
+	let nowzone = getUserDateTime(now, offset);
+	let dayzone = nowzone.clone().startOf('day');//текущий день в зоне
+	let timepublic = getTimeForZone(timePablic, offset);//время "Ч" в зоне в текущий день
 	//читаем список
 	for(let key in ImagesList)
 	{	try{  
 		  let date = ImagesList[key].date;//запись даты
           let day = ImagesList[key].dayOfWeek;//запись дня
 		  let timeobj;
-		  if(Object.hasOwn(ImagesList[key], 'time') && !!ImagesList[key].time && moment(ImagesList[key].time, 'HH:mm').isValid())
-		  {	timeobj = addTimeForZone(ImagesList[key].time, dayzone);//прибавляем к началу дня
+		  if(Object.hasOwn(ImagesList[key], 'time') && moment(ImagesList[key].time, 'HH:mm').isValid())
+		  {	timeobj = getTimeForZone(ImagesList[key].time, offset);//время из файла в зоне
 		  }
           let flag = 0;
           
@@ -4228,26 +4270,26 @@ async function send_Images(now,offset)
           if(masDay.indexOf(day)+1)
           { //если дата окончания не наступила
 			if(moment(date,'DD.MM.YYYY').isValid())//проверяем правильная ли дата
-			{	let time = getDateTimeForZone(date, offset);//дата окончания по местному времени
+			{	let time = getDateForZone(date, offset);//дата окончания по местному времени
 				if(time.diff(dayzone, 'days') >= 0)//разница в днях, 0 = сегодня
 				{	if(day==masDay[8])//ежедневно 
 					{	let sec;
 						//без timeobj, публикуем во время timepublic
-						if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
+						if(!timeobj) sec = nowzone.diff(timepublic, 'seconds');//разница в секундах
 						//иначе публикуем во время timeobj
-						else sec = now.diff(timeobj, 'seconds');//разница в секундах
+						else sec = nowzone.diff(timeobj, 'seconds');//разница в секундах
 						if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 					}
 					else
 					{ 	//сегодняшний день недели в зоне: 0-воскресенье, 1-понедельник
-						let dayWeek = now.utcOffset(Number(offset),true).day();
+						let dayWeek = nowzone.day();
 						if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
-						if(dayWeek==masDay.indexOf(day))//совпали дни, публикуем 
+						if(masDay[dayWeek]==day)//совпали дни, публикуем 
 						{	let sec;
 							//без timeobj, публикуем во время timepublic
-							if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
+							if(!timeobj) sec = nowzone.diff(timepublic, 'seconds');//разница в секундах
 							//иначе публикуем во время timeobj
-							else sec = now.diff(timeobj, 'seconds');//разница в секундах
+							else sec = nowzone.diff(timeobj, 'seconds');//разница в секундах
 							if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 						}
 					}
@@ -4260,9 +4302,9 @@ async function send_Images(now,offset)
             if(public_byDate(date,now,offset))//совпадение по дате в цикле 'по Дате' 
 			{	let sec;
 				//без timeobj, публикуем во время timepublic
-				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
+				if(!timeobj) sec = nowzone.diff(timepublic, 'seconds');//разница в секундах
 				//иначе публикуем во время timeobj
-				else sec = now.diff(timeobj, 'seconds');//разница в секундах
+				else sec = nowzone.diff(timeobj, 'seconds');//разница в секундах
 				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 			}
           }
@@ -4273,18 +4315,18 @@ async function send_Images(now,offset)
 			if(date==time)//прям сегодня 
 			{	let sec;
 				//без timeobj, публикуем во время timepublic
-				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
+				if(!timeobj) sec = nowzone.diff(timepublic, 'seconds');//разница в секундах
 				//иначе публикуем во время timeobj
-				else sec = now.diff(timeobj, 'seconds');//разница в секундах
+				else sec = nowzone.diff(timeobj, 'seconds');//разница в секундах
 				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 			}
           }
-		  let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
-		  if(flag>0) {WriteLogFile('image "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);made++;}
-          
-          //публикуем файлы
+		  
+          //публикуем пост
           if(flag) 
-          { //выделим массив по смещению
+          { let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
+			WriteLogFile('image "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);
+			//выделим массив по смещению
 			//let all_chats = getAllChats();
 			let all_chats = chat_news[offset] ? chat_news[offset] : [];
 			let count_chats = 0;
@@ -4332,14 +4374,13 @@ async function send_Images(now,offset)
 				}
 				else 
 				{	//если без ошибок
-					count_chats++;//WriteLogFile('в '+name[0]+' = ОК');
+					count_chats++;
 				}
 			}
 			await WriteLogFile('Всего чатов = '+count_chats+' = ОК');
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Images()=>for()','вчат');}
 	}
-	//if(made==0) WriteLogFile('К сожалению на сегодня ничего нет :(');
   } catch (err) 
   {console.error(getTimeStr()+err); 
    WriteLogFile(err+'\nfrom send_Images()','вчат');
@@ -4350,9 +4391,11 @@ async function send_Images(now,offset)
 function public_byDate(date,now,offset)
 {	
 try{
+	offset = Number(offset);
 	let flag = false;
-	let dayzone = now.clone().utcOffset(Number(offset),true).startOf('day');//начало текущего дня в зоне
-	let datezone = getDateTimeForZone(date, Number(offset));//дата конца в зоне
+	let nowzone = getUserDateTime(now, offset);
+	let dayzone = nowzone.clone().startOf('day');//текущий день в зоне
+	let datezone = getDateForZone(date, offset);//дата конца в зоне
 	let days = datezone.diff(dayzone, 'days')+1;
     if(days>0 && days%7==0) flag=true;
     else if(days<14)//менее 2х недель
@@ -4368,12 +4411,10 @@ try{
 async function send_Text(now,offset)
 { try
   {	
-	//WriteLogFile('Рассылка текстов:');
-	//if(Object.keys(TextList).length == 0) {WriteLogFile('К сожалению на сегодня ничего нет :('); return;}
 	if(!now || now.isValid()==false) now = moment();//проверяем
-	let made = 0;
-	let dayzone = now.clone().utcOffset(Number(offset),true).startOf('day');//текущий день в зоне
-	let timepublic = addTimeForZone(timePablic, dayzone);//время "Ч" в зоне в текущий день
+	let nowzone = getUserDateTime(now, offset);
+	let dayzone = nowzone.clone().startOf('day');//текущий день в зоне
+	let timepublic = getTimeForZone(timePablic, offset);//время "Ч" в зоне в текущий день
 	//читаем список
 	for(let key in TextList)
 	{   try{  
@@ -4381,7 +4422,7 @@ async function send_Text(now,offset)
 		  let day = TextList[key].dayOfWeek;//запись дня
 		  let timeobj;
 		  if(Object.hasOwn(TextList[key], 'time') && !!TextList[key].time && moment(TextList[key].time, 'HH:mm').isValid())
-		  {	timeobj = addTimeForZone(TextList[key].time, dayzone);//прибавляем к началу дня
+		  {	timeobj = getTimeForZone(TextList[key].time, offset);//время из файла в зоне
 		  }
           let flag = 0;
           
@@ -4389,26 +4430,26 @@ async function send_Text(now,offset)
           if(masDay.indexOf(day)+1)
           { //если дата окончания не наступила
 			if(moment(date,'DD.MM.YYYY').isValid())//проверяем правильная ли дата
-			{	let time = getDateTimeForZone(date, offset);//дата окончания по местному времени
+			{	let time = getDateForZone(date, offset);//дата окончания по местному времени
 				if(time.diff(dayzone, 'days') >= 0)//разница в днях, 0 = сегодня
 				{	if(day==masDay[8])//ежедневно 
 					{	let sec;
 						//без timeobj, публикуем во время timepublic
-						if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
+						if(!timeobj) sec = nowzone.diff(timepublic, 'seconds');//разница в секундах
 						//иначе публикуем во время timeobj
-						else sec = now.diff(timeobj, 'seconds');//разница в секундах
+						else sec = nowzone.diff(timeobj, 'seconds');//разница в секундах
 						if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 					}
 					else //по дням недели
 					{ 	//сегодняшний день недели в зоне: 0-воскресенье, 1-понедельник
-						let dayWeek = now.clone().utcOffset(Number(offset),true).day();
+						let dayWeek = nowzone.day();
 						if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
-						if(dayWeek==masDay.indexOf(day))//совпали дни, публикуем 
+						if(masDay[dayWeek]==day)//совпали дни, публикуем
 						{	let sec;
 							//без timeobj, публикуем во время timepublic
-							if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
+							if(!timeobj) sec = nowzone.diff(timepublic, 'seconds');//разница в секундах
 							//иначе публикуем во время timeobj
-							else sec = now.diff(timeobj, 'seconds');//разница в секундах
+							else sec = nowzone.diff(timeobj, 'seconds');//разница в секундах
 							if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 						}
 					}
@@ -4421,9 +4462,9 @@ async function send_Text(now,offset)
             if(public_byDate(date,now,offset))//совпадение по дате в цикле 'по Дате' 
 			{	let sec;
 				//без timeobj, публикуем во время timepublic
-				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
+				if(!timeobj) sec = nowzone.diff(timepublic, 'seconds');//разница в секундах
 				//иначе публикуем во время timeobj
-				else sec = now.diff(timeobj, 'seconds');//разница в секундах
+				else sec = nowzone.diff(timeobj, 'seconds');//разница в секундах
 				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 			}
           }
@@ -4434,18 +4475,18 @@ async function send_Text(now,offset)
 			if(date==time)//прям сегодня 
 			{	let sec;
 				//без timeobj, публикуем во время timepublic
-				if(!timeobj) sec = now.diff(timepublic, 'seconds');//разница в секундах
+				if(!timeobj) sec = nowzone.diff(timepublic, 'seconds');//разница в секундах
 				//иначе публикуем во время timeobj
-				else sec = now.diff(timeobj, 'seconds');//разница в секундах
+				else sec = nowzone.diff(timeobj, 'seconds');//разница в секундах
 				if(sec >= 0 && sec < 120) flag++;//в 2х-минутном интервале
 			}
           }
-		  let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
-		  if(flag>0) {WriteLogFile('text "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);made++;}
-          
+		  
           //публикуем текст
 		  if(flag)
-          { //соберем все чаты в новый массив
+          { let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
+			WriteLogFile('text "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);
+			//соберем все чаты в новый массив
 			//let all_chats = getAllChats();
 			let all_chats = chat_news[offset] ? chat_news[offset] : [];
 			let count_chats = 0;
@@ -4482,14 +4523,13 @@ async function send_Text(now,offset)
 				}
 				else 
 				{	//если без ошибок
-					count_chats++;//WriteLogFile('в '+name[0]+' = ОК');
+					count_chats++;
 				}
 			}
 			await WriteLogFile('Всего чатов = '+count_chats+' = ОК');
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Text()=>for()','вчат');}
 	}
-	//if(made==0) WriteLogFile('К сожалению на сегодня ничего нет :(');
   } catch (err) 
   {console.error(getTimeStr()+err); 
    WriteLogFile(err+'\nfrom send_Text()','вчат');
@@ -4587,6 +4627,7 @@ queue.on('disconnected', (error) => {WriteLogFile(error+'; => bot disconnected')
 //queue.on('processing_started', (item) => {WriteLogFile('processing_started, queue length = '+item);});
 //queue.on('processing_finished', () => {WriteLogFile('processing_finished');});
 //queue.on('cleared', (item) => {WriteLogFile('cleared = '+item);});
+queue.on('error_response', (error) => {WriteLogFile('error_response from queue => '+error||'пусто');});
 //====================================================================
 //преобразуем массив объектов в объект с массивами
 function transform_chat2obj(arr)
@@ -4605,9 +4646,9 @@ function getUserDateTime(now, offset)
 	return moment.unix(userTime);//дата/время юзера
 }
 //====================================================================
-function getDateTimeForZone(inputStr, offset)
+function getDateForZone(inputStr, offset)
 {
-    let offsetNum = Number(offset);
+    const offsetNum = Number(offset);
 	// Проверяем формат
     if (inputStr.includes('.'))
 	{	// Это дата DD.MM.YYYY - возвращаем начало этого дня в зоне
@@ -4615,27 +4656,22 @@ function getDateTimeForZone(inputStr, offset)
             .utcOffset(offsetNum, true)
             .startOf('day');
     }
-	else if (inputStr.includes(':'))
-	{
-        // Это время HH:mm:ss - возвращаем это время сегодня в зоне
-        let [hours, minutes, seconds] = inputStr.split(':').map(Number);
-        return moment().utc()
-            .utcOffset(offsetNum, true)
-            .startOf('day')
-            .hours(hours)
-            .minutes(minutes)
-            .seconds(seconds || 0);
-    }
 	else throw new Error('Неизвестный формат: ' + inputStr);
 }
 //====================================================================
-function addTimeForZone(inputStr, dayzone)
+function getTimeForZone(inputStr, offset, now = null)
 {
-    if (inputStr.includes(':'))
-	{
-        const [hours, minutes, sec = 0] = inputStr.split(':').map(Number);
+    const offsetNum = Number(offset);
+	// Проверяем формат
+	if (inputStr.includes(':'))
+	{	// Это время HH:mm:ss - возвращаем это время сегодня в зоне
+        let nowzone;
+		if(!now) {now = moment(); nowzone = getUserDateTime(now, offsetNum);}//делаем опору, если нет
+		else nowzone = now.clone();
+		const dayzone = nowzone.clone().startOf('day');//текущий день в зоне
+		const [hours, minutes, sec = 0] = inputStr.split(':').map(Number);
 		return dayzone.clone().add({ hours: hours, minutes: minutes, seconds: sec});//прибавляем время к началу дня
-    } 
+    }
 	else throw new Error('Неизвестный формат: ' + inputStr);
 }
 //====================================================================

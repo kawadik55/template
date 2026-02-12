@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "moment-timezone": "^0.6.0",
-	"node-cron": "^3.0.3",
-    "node-telegram-bot-api": "latest"
-  }
-}
