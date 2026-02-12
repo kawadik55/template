@@ -4720,10 +4720,9 @@ function sortObjectByKeys(obj)
 }
 //====================================================================
 // Экранируем только то, что действительно ломает Markdown
-escapeMarkdown(text)
-{	//if (typeof text !== 'string') return text;
-	//return text.replace(/([_*\[\]()~`>#])/g, '\\$1');
-	return text;
+function escapeMarkdown(text)
+{	if (typeof text !== 'string') return text;
+	return text.replace(/([_*\[\]()~`>#])/g, '\\$1');
 }
 //====================================================================
 
