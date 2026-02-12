@@ -376,53 +376,53 @@ async function raspis_from_file()
 // Собираем список Админов всех ботов, и кладем в файл
 async function getAdminList()
 {try{
-	//let str = '<strong>Список Админов всех ботов</strong>\n\n';
-	let str = 'Список Админов всех ботов\n\n';
+	let str = '<strong>Список Админов всех ботов</strong><br><br>';
+	//let str = 'Список Админов всех ботов\n\n';
 	let obj = '';
 	
 	//читаем файлы бота ArchBot
 	obj = '';
-	str += '@na_kzn_arch_bot\n';
+	str += '<strong>@na_kzn_arch_bo</strong>t<br>';
 	try {obj = JSON.parse(fs.readFileSync(currentDir+"/../ArchBot/AdminBot.txt"));}catch(err){console.log('Ошибка в getAdminList(): '+err);}
 	if(!obj) str += 'пусто\n\n';
 	else
 	{ 	let keys = Object.keys(obj);
-		for(let i in keys) str += obj[keys[i]]+'\n';
-		str += '\n';
+		for(let i in keys) str += obj[keys[i]]+'<br>';
+		str += '<br>';
 	}
 	//читаем файлы бота ArchGroupsBot
 	obj = '';
-	str += '@na_kzn_arch_groups_bot\n';
+	str += '<strong>@na_kzn_arch_groups_bot</strong><br>';
 	try {obj = JSON.parse(fs.readFileSync(currentDir+"/../ArchGroupsBot/AdminBot.txt"));}catch(err){console.log('Ошибка в getAdminList(): '+err);}
 	if(!obj) str += 'пусто\n\n';
 	else
 	{ 	let keys = Object.keys(obj);
-		for(let i in keys) str += obj[keys[i]]+'\n';
-		str += '\n';
+		for(let i in keys) str += obj[keys[i]]+'<br>';
+		str += '<br>';
 	}
 	//читаем файлы бота InfoBot
 	obj = '';
-	str += '@na_kzn_bot\n';
+	str += '<strong>@na_kzn_bot</strong><br>';
 	try {obj = JSON.parse(fs.readFileSync(currentDir+"/../InfoBot/AdminList.txt"));}catch(err){console.log('Ошибка в getAdminList(): '+err);}
 	if(!obj) str += 'пусто\n\n';
 	else
 	{ 	let keys = Object.keys(obj);
-		for(let i in keys) str += obj[keys[i]]+'\n';
-		str += '\n';
+		for(let i in keys) str += obj[keys[i]]+'<br>';
+		str += '<br>';
 	}
 	//читаем файлы бота LoaderBot
 	obj = '';
-	str += '@na_kzn_loader_bot\n';
+	str += '<strong>@na_kzn_loader_bot</strong><br>';
 	try {obj = JSON.parse(fs.readFileSync(currentDir+"/../LoaderBot/AdminBot.txt"));}catch(err){console.log('Ошибка в getAdminList(): '+err);}
 	if(!obj) str += 'пусто\n\n';
 	else
 	{ 	let keys = Object.keys(obj);
-		for(let i in keys) str += obj[keys[i]]+'\n';
-		str += '\n';
+		for(let i in keys) str += obj[keys[i]]+'<br>';
+		str += '<br>';
 	}
 	//читаем файлы бота NoteBot
 	/*obj = '';
-	str += '@na_ufa_note_bot\n';
+	str += '<strong>@na_ufa_note_bot</strong>\n';
 	try {obj = JSON.parse(fs.readFileSync(currentDir+"/../NoteBot/AdminList.txt"));}catch(err){console.log('Ошибка в getAdminList(): '+err);}
 	if(!obj) str += 'пусто\n\n';
 	else
@@ -432,13 +432,13 @@ async function getAdminList()
 	}*/
 	//читаем файлы бота XlsBot
 	obj = '';
-	str += '@na_kzn_xls_bot\n';
+	str += '<strong>@na_kzn_xls_bot</strong><br>';
 	try {obj = JSON.parse(fs.readFileSync(currentDir+"/../XlsBot/AdminList.txt"));}catch(err){console.log('Ошибка в getAdminList(): '+err);}
-	if(!obj) str += 'пусто\n\n';
+	if(!obj) str += 'пусто<br><br>';
 	else
 	{ 	let keys = Object.keys(obj);
-		for(let i in keys) str += obj[keys[i]]+'\n';
-		str += '\n';
+		for(let i in keys) str += obj[keys[i]]+'<br>';
+		str += '<br>';
 	}
 	
 	//записываем список в файл
@@ -447,8 +447,12 @@ async function getAdminList()
 	obj.text = str;
 	obj.mode = 'HTML';*/
 	//let err = fs.writeFileSync(currentDir+"/AdminsList.txt", JSON.stringify(/*"\ufeff" +*/ obj,null,2));
-    let err = fs.writeFileSync(currentDir+"/AdminsList.txt", /*"\ufeff" +*/ str);
-	if(err) {/*bot.sendMessage(ServiceChat,err);*/ console.log(err);}
+    //let err = fs.writeFileSync(currentDir+"/AdminsList.txt", /*"\ufeff" +*/ str);
+	let err = fs.writeFileSync(currentDir+"/AdminsList.html", /*"\ufeff" +*/ str);
+	if(err) {console.log(err);}
+	err = null;
+	err = fs.writeFileSync(wwwDir+"/utils/AdminsList.html", "\ufeff" + str);
+	if(err) {console.log(err);}
 }catch(err){console.log('Ошибка в getAdminList(): '+err);}
 }
 //====================================================================
