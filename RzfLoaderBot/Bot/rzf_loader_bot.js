@@ -4112,21 +4112,22 @@ async function send_Eg()
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		//вычислим нужный файл Ежика по локальному времени группы чатов
+		let refdate = '<today>';
 		let refpath = FileEg;//путь по-умолчанию
 		const userTime = getUserDateTime(parnow, Number(groffset)).startOf('day');//дата группы чатов
 		const todayDate = getEgDateTime(refpath).startOf('day'); //дата Ежика на сегодня
 		const diffDays = todayDate.diff(userTime, 'days');//разница в днях
 		if(diffDays > 0)
 		{	const yesterdayPath = path.join(path.dirname(refpath), 'yesterday_' + path.basename(refpath));//с префиксом вчера
-			if(fs.existsSync(yesterdayPath)) refpath = yesterdayPath;
+			if(fs.existsSync(yesterdayPath)) {refpath = yesterdayPath; refdate = '<yesterday>';}
 		}
 		else if(diffDays < 0)
 		{	const tomorrowPath = path.join(path.dirname(refpath), 'tomorrow_' + path.basename(refpath));//с префиксом завтра
-			if(fs.existsSync(tomorrowPath)) refpath = tomorrowPath;
+			if(fs.existsSync(tomorrowPath)) {refpath = tomorrowPath; refdate = '<tomorrow>';}
 		}		
 		let eg = (await fs.promises.readFile(refpath)).toString();//получаем "сегодняшний" для юзера Ежик
 		
-		WriteLogFile('Рассылка Ежика подписчикам '+groffset+':');
+		WriteLogFile('Рассылка Ежика '+refdate+' подписчикам '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
