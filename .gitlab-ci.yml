@@ -390,5 +390,10 @@ build_RzfLoaderBot:
       changes:
         - ${DIR}/Bot/*.js
         - ${DIR}/Dockerfile
+  retry:
+    max: 3
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
 
         
