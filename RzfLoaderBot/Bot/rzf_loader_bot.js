@@ -4171,7 +4171,13 @@ async function send_Raspis()
 { try
   {		let raspis = '';
 		if(fs.existsSync(FileRaspis)) raspis = fs.readFileSync(FileRaspis).toString();
-		if(!raspis) {WriteLogFile('файл с расписанием отсутствует'); return;}
+		if(!raspis)
+		{	//WriteLogFile('файл с расписанием отсутствует'); return;
+			let obj = {};
+			obj.mode = 'HTML';
+			obj.text = '<strong>Расписание собраний</strong>\nв своем городе Вы легко надете <a  href="https://na-russia.org" >на сайте РЗФ.</a>\n';
+			raspis = JSON.stringify(obj);
+		}
 		let mode = 'HTML';//по-умолчанию
 		let obj = {};
 		let flag = 1;
