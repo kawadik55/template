@@ -7,7 +7,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const SlaveBot = require('./Slave_bot');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const PathToImages = currentDir+'/images';//путь к файлам на выполнение
+const PathToImages = currentDir+'/images';//путь к файлам на выполнение.
 const PathToImagesModer = currentDir+'/moder';//путь к файлам на выполнение
 const FileUserList = currentDir+"/UserList.txt";//имя файла белого листа
 const FileBlackList = currentDir+"/BlackList.txt";//имя файла черного листа
@@ -4171,7 +4171,13 @@ async function send_Raspis()
 { try
   {		let raspis = '';
 		if(fs.existsSync(FileRaspis)) raspis = fs.readFileSync(FileRaspis).toString();
-		if(!raspis) {WriteLogFile('файл с расписанием отсутствует'); return;}
+		if(!raspis)
+		{	//WriteLogFile('файл с расписанием отсутствует'); return;
+			let obj = {};
+			obj.mode = 'HTML';
+			obj.text = '<strong>Расписание собраний</strong>\nв своем городе Вы легко надете <a  href="https://na-russia.org" >на сайте РЗФ.</a>\n';
+			raspis = JSON.stringify(obj);
+		}
 		let mode = 'HTML';//по-умолчанию
 		let obj = {};
 		let flag = 1;

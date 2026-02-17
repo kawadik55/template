@@ -22,19 +22,24 @@ build_ArchBot:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - docker images
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   #when: manual
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
         - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
   
 build_ArchGroupsBot:
   stage: build
@@ -51,18 +56,23 @@ build_ArchGroupsBot:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - docker images
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
         - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
 
 build_Creator:
   stage: build
@@ -81,13 +91,13 @@ build_Creator:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - docker images
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   after_script:
     # Эта команда выполнится ВСЕГДА, даже если сборка упала
     - rm -f ${CI_PROJECT_DIR}/${DIR}/Bot/TelegramQueue.js
@@ -96,6 +106,11 @@ build_Creator:
       changes:
         - ${DIR}/Bot/*.{js}
         - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
 
 build_GitLabBot:
   stage: build
@@ -112,18 +127,23 @@ build_GitLabBot:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - docker images
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/*.{js}
         - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
 
 build_FullLoaderBot:
   stage: build
@@ -141,14 +161,14 @@ build_FullLoaderBot:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   after_script:
     # Эта команда выполнится ВСЕГДА, даже если сборка упала
     - rm -f ${CI_PROJECT_DIR}/${DIR}/Bot/TelegramQueue.js
@@ -157,6 +177,11 @@ build_FullLoaderBot:
       changes:
         - ${DIR}/Bot/*.{js}
         - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
 
 build_ParserEg:
   stage: build
@@ -172,19 +197,24 @@ build_ParserEg:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
         - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
 
 build_ParserXls_Ufa:
   stage: build
@@ -200,19 +230,24 @@ build_ParserXls_Ufa:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
         - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
 
 build_ParserXls_Kazan:
   stage: build
@@ -228,19 +263,24 @@ build_ParserXls_Kazan:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
         - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
         
 build_Parser_Kazan:
   stage: build
@@ -256,19 +296,24 @@ build_Parser_Kazan:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
         - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
         
 build_Parser_Kama:
   stage: build
@@ -284,19 +329,24 @@ build_Parser_Kama:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
         - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
 
 build_Parser_Naninov:
   stage: build
@@ -312,19 +362,25 @@ build_Parser_Naninov:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
         - ${DIR}/Bot/*.{js}
-        - ${DIR}/Dockerfile        
+        - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
+      
 build_CreatorTest:
   stage: build
   variables:
@@ -342,13 +398,13 @@ build_CreatorTest:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - docker images
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   after_script:
     # Эта команда выполнится ВСЕГДА, даже если сборка упала
     - rm -f ${CI_PROJECT_DIR}/${DIR}/Bot/TelegramQueue.js
@@ -357,6 +413,11 @@ build_CreatorTest:
       changes:
         - ${DIR}/Bot/*.{js}
         - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
         
 build_RzfLoaderBot:
   stage: build
@@ -374,14 +435,14 @@ build_RzfLoaderBot:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT=`docker images`
+    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
   after_script:
     # Эта команда выполнится ВСЕГДА, даже если сборка упала
     - rm -f ${CI_PROJECT_DIR}/${DIR}/Bot/TelegramQueue.js
