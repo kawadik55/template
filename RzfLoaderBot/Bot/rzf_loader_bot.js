@@ -4175,7 +4175,7 @@ async function send_Raspis()
 		{	//WriteLogFile('файл с расписанием отсутствует'); return;
 			let obj = {};
 			obj.mode = 'HTML';
-			obj.text = '<strong>Расписание собраний</strong>\nв своем городе Вы легко надете <a  href="https://na-russia.org" >на сайте РЗФ.</a>\n';
+			obj.text = '<strong>Расписание собраний</strong>\nв своем городе Вы легко надете\n<a  href="https://na-russia.org" >на сайте АН РЗФ.</a>\n';
 			raspis = JSON.stringify(obj);
 		}
 		let mode = 'HTML';//по-умолчанию
