@@ -22,7 +22,7 @@ build_ArchBot:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - docker images
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
@@ -56,7 +56,7 @@ build_ArchGroupsBot:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - docker images
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
@@ -91,7 +91,7 @@ build_Creator:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - docker images
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
@@ -127,7 +127,7 @@ build_GitLabBot:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - docker images
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
@@ -161,7 +161,7 @@ build_FullLoaderBot:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
@@ -197,7 +197,7 @@ build_ParserEg:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
@@ -230,7 +230,7 @@ build_ParserXls_Ufa:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
@@ -263,7 +263,7 @@ build_ParserXls_Kazan:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
@@ -296,7 +296,7 @@ build_Parser_Kazan:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
@@ -329,7 +329,7 @@ build_Parser_Kama:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
@@ -362,7 +362,7 @@ build_Parser_Naninov:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
@@ -398,7 +398,7 @@ build_CreatorTest:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - docker images
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
@@ -435,7 +435,7 @@ build_RzfLoaderBot:
     # переименовываем slim образ в latest
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
-    - TEXT="Хост: $CI_SERVER_HOST\n$(docker images)"
+    - TEXT=`docker images`
     - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
     - docker images
     #- docker login -u ${LOGIN} --password ${PASSW}
