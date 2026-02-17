@@ -302,7 +302,7 @@ class SlaveBot {
                                 );
                             } else if (chatType === 'private') {
                                 // Для приватных чатов (личных сообщений)
-                                await this.showPrivateChatHelp(chatId);
+								//await this.showPrivateChatHelp(chatId);//help уже послан из кнопки Start
                             } else {
                                 if(!this.botName) await this.initbotname();
 								// Для групп и супергрупп
