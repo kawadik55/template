@@ -7,7 +7,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const SlaveBot = require('./Slave_bot');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const PathToImages = currentDir+'/images';//путь к файлам на выполнение
+const PathToImages = currentDir+'/images';//путь к файлам на выполнение.
 const PathToImagesModer = currentDir+'/moder';//путь к файлам на выполнение
 const FileUserList = currentDir+"/UserList.txt";//имя файла белого листа
 const FileBlackList = currentDir+"/BlackList.txt";//имя файла черного листа
@@ -4382,7 +4382,7 @@ async function send_Images(now,offset)
 					count_chats++;
 				}
 			}
-			await WriteLogFile('Всего чатов = '+count_chats+' = ОК');
+			await WriteLogFile('Всего чатов = '+count_chats);
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Images()=>for()','вчат');}
 	}
@@ -4531,7 +4531,7 @@ async function send_Text(now,offset)
 					count_chats++;
 				}
 			}
-			await WriteLogFile('Всего чатов = '+count_chats+' = ОК');
+			await WriteLogFile('Всего чатов = '+count_chats);
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Text()=>for()','вчат');}
 	}
