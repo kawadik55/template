@@ -4127,7 +4127,7 @@ async function send_Eg()
 		}		
 		let eg = (await fs.promises.readFile(refpath)).toString();//получаем "сегодняшний" для юзера Ежик
 		
-		WriteLogFile('Рассылка Ежика '+refdate+' подписчикам '+groffset+':');
+		WriteLogFile('Рассылка *Ежика* '+refdate+' подписчикам '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
@@ -4202,7 +4202,7 @@ async function send_Raspis()
 	async function go2public(chat,groffset)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
-		await WriteLogFile('Рассылка Расписания в каналы '+groffset+' через очередь:');
+		await WriteLogFile('Рассылка *Расписания* подписчикам '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{
