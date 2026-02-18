@@ -7,7 +7,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
 const SlaveBot = require('./Slave_bot');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const PathToImages = currentDir+'/images';//путь к файлам на выполнение.
+const PathToImages = currentDir+'/images';//путь к файлам на выполнение
 const PathToImagesModer = currentDir+'/moder';//путь к файлам на выполнение
 const FileUserList = currentDir+"/UserList.txt";//имя файла белого листа
 const FileBlackList = currentDir+"/BlackList.txt";//имя файла черного листа
@@ -477,11 +477,12 @@ if(fs.existsSync(currentDir+'/queue.json'))
 
 if(queue.queue.length>0) queue.forceProcess();//запускаем не пустую очередь на выполнение
 
+/*const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(NewsBot))
+    .filter(name => typeof NewsBot[name] === 'function' && name !== 'constructor');
+WriteLogFile('Методы TelegramBot: ' + methods.join(',\n'));*/
+
 /*(async () => {   
 	let time = moment(timePablic,'HH:mm:ss');//время "Ч"
-	let now = moment('00:00:00','HH:mm:ss');//текущее время
-	let sec = now.diff(time, 'seconds');//разница в секундах
-	console.log('sec='+sec);
 })();*/
 //====================================================================
 // СТАРТ
@@ -1812,27 +1813,63 @@ try{
 				let obj = {};
 				let offset = Object.keys(chat_news);
 				if(offset.length > 0)
-				{	str += 'Статистика на сегодня:\n';
-					let len = 0, allgroups = 0, allusers = 0;
+				{	const botInfo = await LoaderBot.getMe();
+					if (botInfo && botInfo.first_name) str += '🔷*'+botInfo.first_name+'*🔷\n\n';
+					str += 'Статистика на сегодня:\n';
+					let allgroups = 0, allMembers = 0, allchannels = 0, allusers = 0;
+					let allchannelsMembers = 0, allgroupsMembers = 0, unknownchats = 0;
 					for(let i=0;i<offset.length;i++)
 					{	let chats = chat_news[offset[i]];
 						obj[offset[i]] = {}; obj[offset[i]].groups = 0; obj[offset[i]].users = 0;
-						len += chats.length;
+						obj[offset[i]].groupMembers = 0; obj[offset[i]].channels = 0; obj[offset[i]].channelMembers = 0;
 						for(let j=0;j<chats.length;j++)
 						{	let chatId = Object.values(chats[j])[0].toString();
-							if(chatId.startsWith('-')) {allgroups++; obj[offset[i]].groups++;}
-							else {allusers++; obj[offset[i]].users++;}
+							if(chatId.startsWith('-'))
+							{	
+								let chatInfo;
+								let membersCount;
+								try{while(!getMessageCount()) await sleep(10);//получаем разрешение.
+									chatInfo = await NewsBot.getChat(chatId);
+								}catch(err){console.log(err);}
+								try{while(!getMessageCount()) await sleep(10);//получаем разрешение
+									membersCount = await NewsBot.getChatMemberCount(chatId);
+								}catch(err){console.log(err);}
+								if(chatInfo && chatInfo.type==='channel')
+								{	obj[offset[i]].channels++;
+									allchannels++;
+									if(membersCount>0)
+									{	obj[offset[i]].channelMembers += membersCount;
+										allMembers += membersCount;
+										allchannelsMembers += membersCount;
+									}
+								}
+								else if(chatInfo && (chatInfo.type==='group' || chatInfo.type==='supergroup'))
+								{	allgroups++;
+									obj[offset[i]].groups++;
+									if(membersCount>0)
+									{	obj[offset[i]].groupMembers += membersCount;
+										allMembers += membersCount;
+										allgroupsMembers += membersCount;
+									}
+								}
+								else unknownchats++;
+								
+							}
+							else {allMembers++; allusers++; obj[offset[i]].users++;}//это приватные чаты
 						}
 					}
 					obj = sortObjectByKeys(obj);//сортируем по смещениям
-					str += '*Кол-во подписчиков* = '+len+'\n';
-					if(allgroups>0) str += '*Каналы/Группы* = '+allgroups+'\n';
-					if(allusers>0) str += '*Приватные чаты* = '+allusers+'\n\n';
+					str += '*Кол-во подписчиков* = '+allMembers+'\n';
+					if(allchannels>0) str += '*Каналы*  = '+allchannels+' ('+allchannelsMembers+')\n';
+					if(allgroups>0)   str += '*Группы*  = '+allgroups+' ('+allgroupsMembers+')\n';
+					if(allusers>0)   str +=  '*Приватные чаты* = '+allusers+'\n\n';
+					if(unknownchats>0) str +=  '*unknown* = '+unknownchats+'\n\n';
 					for(const key in obj)
-					{	const zoneName = 'Зона '+(zones[key] || `UTC+${key/60}`);
+					{	const zoneName = 'Зона '+(zones[key] || `UTC+${parseInt(key)/60}`);
 						str += '*'+zoneName+':*\n';
-						if(obj[key].groups>0) str += '• Каналы/Группы = *'+obj[key].groups+'*\n';
-						if(obj[key].users>0) str += '• Приватные чаты = *'+obj[key].users+'*\n';
+						if(obj[key].channels>0) str += '• Каналы = *'+obj[key].channels+' ('+obj[key].channelMembers+')*\n';
+						if(obj[key].groups>0)   str += '• Группы = *'+obj[key].groups+' ('+obj[key].groupMembers+')*\n';
+						if(obj[key].users>0)    str += '• Приватные чаты = *'+obj[key].users+'*\n';
 					}
 				}
                 else str += '*Упс... На сегодня ничего нет!*\n';
