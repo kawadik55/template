@@ -2,6 +2,20 @@ default:
   image: docker:24.0.5
   services:
     - docker:24.0.5-dind
+  before_script:
+    - apk update && apk add --no-cache curl
+    - curl --version    # Проверяем, что curl установился
+    - |                 # многострочный блок
+      send_telegram() {
+        local message="$1"
+        echo "=== Отправляем в Telegram:"
+        echo "$message"
+        curl -s -X POST "https://api.telegram.org/bot${TOKEN_BOT}/sendMessage" \
+          -d chat_id="${CHAT_ID}" \
+          -d text="${message}" \
+          -d parse_mode="HTML" > /dev/null
+        echo "==============================================="  
+      }
 
 variables:
   DOCKER_HOST: tcp://docker:2375
@@ -23,12 +37,13 @@ build_ArchBot:
     - docker rmi ${NAME}:slim
     - docker images
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
-    #- docker login -u ${LOGIN} --password ${PASSW}
+    # - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "${TEXT}"
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    # - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   #when: manual
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
@@ -58,12 +73,11 @@ build_ArchGroupsBot:
     - docker rmi ${NAME}:slim
     - docker images
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
-    #- docker login -u ${LOGIN} --password ${PASSW}
+    - send_telegram "${TEXT}"
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
@@ -94,12 +108,11 @@ build_Creator:
     - docker rmi ${NAME}:slim
     - docker images
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
-    #- docker login -u ${LOGIN} --password ${PASSW}
+    - send_telegram "${TEXT}"
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   after_script:
     # Эта команда выполнится ВСЕГДА, даже если сборка упала
     - rm -f ${CI_PROJECT_DIR}/${DIR}/Bot/TelegramQueue.js
@@ -131,12 +144,11 @@ build_GitLabBot:
     - docker rmi ${NAME}:slim
     - docker images
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
-    #- docker login -u ${LOGIN} --password ${PASSW}
+    - send_telegram "${TEXT}"
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
@@ -166,13 +178,12 @@ build_FullLoaderBot:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "${TEXT}"
     - docker images
-    #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   after_script:
     # Эта команда выполнится ВСЕГДА, даже если сборка упала
     - rm -f ${CI_PROJECT_DIR}/${DIR}/Bot/TelegramQueue.js
@@ -203,13 +214,12 @@ build_ParserEg:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "${TEXT}"
     - docker images
-    #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
@@ -237,13 +247,12 @@ build_ParserXls_Ufa:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "${TEXT}"
     - docker images
-    #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
@@ -271,13 +280,12 @@ build_ParserXls_Kazan:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "${TEXT}"
     - docker images
-    #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
@@ -305,13 +313,12 @@ build_Parser_Kazan:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "${TEXT}"
     - docker images
-    #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
@@ -339,13 +346,12 @@ build_Parser_Kama:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "${TEXT}"
     - docker images
-    #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
@@ -373,13 +379,12 @@ build_Parser_Naninov:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "${TEXT}"
     - docker images
-    #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
       changes:
@@ -410,12 +415,11 @@ build_CreatorTest:
     - docker rmi ${NAME}:slim
     - docker images
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
-    #- docker login -u ${LOGIN} --password ${PASSW}
+    - send_telegram "${TEXT}"
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   after_script:
     # Эта команда выполнится ВСЕГДА, даже если сборка упала
     - rm -f ${CI_PROJECT_DIR}/${DIR}/Bot/TelegramQueue.js
@@ -448,13 +452,12 @@ build_RzfLoaderBot:
     - docker tag ${NAME}:slim ${NAME}:latest
     - docker rmi ${NAME}:slim
     - TEXT=`docker images`
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="${TEXT}" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "${TEXT}"
     - docker images
-    #- docker login -u ${LOGIN} --password ${PASSW}
     - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
     - docker push ${NAME}:latest
     - docker logout
-    - docker run --rm --name gitlabbot -t -e TOKEN_BOT=${TOKEN_BOT} -e CHAT_ID=${CHAT_ID} -e MESSAGE="Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!" kawadiyk/gitlabbot:latest ./gitlab_bot
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
   after_script:
     # Эта команда выполнится ВСЕГДА, даже если сборка упала
     - rm -f ${CI_PROJECT_DIR}/${DIR}/Bot/TelegramQueue.js
