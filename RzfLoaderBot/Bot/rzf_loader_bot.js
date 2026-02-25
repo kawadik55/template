@@ -351,6 +351,7 @@ try
   {console.log('Неверный chatId в UserList='+keys[i]); 
    delete UserList[keys[i]]; 
    flag=1;
+   continue;
   }
   if(typeof(UserList[keys[i]]) !== 'object')//если не массив
   {let tmp = UserList[keys[i]];//сохраняем старое значение
@@ -2619,7 +2620,7 @@ function validUser(chatId)
 	if(!!UserList[chatId])//есть в юзерах
 	{	let time;
 		if(!!UserList[chatId][1]) time = moment(UserList[chatId][1],'DD.MM.YYYY');
-		if(!time) return false;
+		if(!time.isValid()) {delete UserList[chatId]; WriteFileJson(FileUserList,UserList); return false;}
 		let days = now.diff(time, 'days');
 		if(days > lifeTime) 
 		{	let tmp = UserList[chatId];
