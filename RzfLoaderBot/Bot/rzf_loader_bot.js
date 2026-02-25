@@ -223,6 +223,13 @@ const onConfigUpdate = (update) => {
 		case 'error_message':
                 WriteLogFile(`from SlaveBot: ${update.data.message}`);
 				break;
+		/*case 'slave_command':
+                const { requestId, data } = update.data;
+				//... чота делаем по команде
+				let result;
+				result = 'OK';
+				slaveBot.onMasterResponse({requestId, result});
+				break;*/
 	}
 };
 
@@ -2039,7 +2046,12 @@ try{
 		 if(!!keys[i][2]) str += UserList[keys[i]][2];
 		 str += '\n';
 		}
-		sendMessage(chatId, str);
+		if(str.length > (4000-1))
+		{	let sub = [];
+			for(let i=0; i<str.length; i+=(4000-1)) {sub.push(str.substring(i, i+(4000-1)));}
+			for(let i=0; i<sub.length; i++) await sendMessage(chatId, sub[i]);
+		}
+		else await sendMessage(chatId, str);
 	}
 	else sendMessage(chatId, smilik);
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/UserList/)','вчат');}
@@ -2679,7 +2691,7 @@ try{
 	//сохраняем для посл.удаления
 	let chat_id='', mess_id='';
 	if(LastMessId[chatId]) {chat_id=chatId; mess_id=LastMessId[chatId].messId;}
-	if(str.length > 4097) {str = str.substr(0,4090);str+='\n...обрезка';}//обрезаем строку
+	if(str.length > 4000) {str = str.substr(0,4000);str+='\n...обрезка';}//обрезаем строку
 	
 	let res = new Object();
     if(option)
