@@ -473,4 +473,37 @@ build_RzfLoaderBot:
       - stuck_or_timeout_failure   # зависло
     exit_codes: [125]
 
+build_ParserES:
+  stage: build
+  variables:
+    DIR: 'ParserES'
+    NAME: 'kawadiyk/parseres'
+  script:
+    # строим новый образ
+    - docker build -t ${NAME}:latest -f ${CI_PROJECT_DIR}/${DIR}/Dockerfile ${CI_PROJECT_DIR}/${DIR}
+    - docker run -e DOCKER_HOST=tcp://$(grep docker /etc/hosts | cut -f1):2375 dslim/slim build --include-path=/home/pi/context --target ${NAME}:latest --tag ${NAME}:slim --http-probe=false --continue-after=1
+    # удаляем latest образ
+    - docker rmi ${NAME}:latest
+    # переименовываем slim образ в latest
+    - docker tag ${NAME}:slim ${NAME}:latest
+    - docker rmi ${NAME}:slim
+    - TEXT=`docker images`
+    - send_telegram "${TEXT}"
+    - docker images
+    - echo "${PASSW}" | docker login --username ${LOGIN} --password-stdin
+    - docker push ${NAME}:latest
+    - docker logout
+    - send_telegram "Билдинг образа $NAME:latest на $CI_SERVER_HOST - успешно!"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+      changes:
+        - ${DIR}/Bot/*.{js}
+        - ${DIR}/Dockerfile
+  retry:
+    max: 2
+    when:
+      - runner_system_failure      # нет места, сбой раннера
+      - stuck_or_timeout_failure   # зависло
+    exit_codes: [125]    
+
         

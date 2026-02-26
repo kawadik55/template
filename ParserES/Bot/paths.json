@@ -1,0 +1,12 @@
+{
+  "DirRaspis": [
+    "/../Rassilka/BaseES"
+  ],
+  "FileRaspisHtml": "raspisES.html",
+  "Links": [
+    {
+      "text":"Гораздо больше информации вы найдете на сайте АН РЗФ!",
+      "link":"https://na-russia.org/"
+    }
+  ]
+}
