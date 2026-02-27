@@ -260,7 +260,7 @@ function parseRaspisToHtml(day, arr, slug, town)
 	{	//время
 		let time = arr[i].time ? arr[i].time.split(':').slice(0, 2).join(':') : 'unknown'; //без секунд
 		//группа
-		let name = escapeHtml(arr[i].group.name);
+		let name = '«' + escapeHtml(arr[i].group.name) + '»';
 		//адрес
 		let address = escapeHtml(arr[i].group.location.address);
 		//как пройти
