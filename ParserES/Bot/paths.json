@@ -8,5 +8,9 @@
       "text":"Гораздо больше информации вы найдете на сайте АН РЗФ!",
       "link":"https://na-russia.org/"
     }
+  ],
+  "StopListTowns": [
+    "test",
+    "Test"
   ]
 }

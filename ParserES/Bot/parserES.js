@@ -5,17 +5,21 @@ const needle = require('needle');
 const {htmlToText} = require('html-to-text');//преобразователь html в текст
 
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const FilePaths = currentDir+'/paths.json';//файл со списком выходных файлов
+const FilePaths = currentDir+'/paths.json';//файл со списком выходных файлов.
 let PathsList={};//список выходных файлов
 //файл списка выходных путей и файлов
 try 
 { PathsList = JSON.parse(fs.readFileSync(FilePaths));
+	if(!PathsList.StopListTowns || !Array.isArray(PathsList.StopListTowns)) 
+	{	PathsList.StopListTowns = ['test', 'Test'];
+		fs.writeFileSync(FilePaths, JSON.stringify(PathsList,null,2));
+	}
 } catch (err) 
 {console.log('Ошибка парсинга PathsList\n'+err);
  PathsList.DirRaspis = [];
  PathsList.Links = [];
  PathsList.FileRaspisHtml = 'raspisES.html';
- PathsList.TimeZoneMinutes = '';
+ PathsList.StopListTowns = ['test', 'Test'];
  fs.writeFileSync(FilePaths, JSON.stringify(PathsList,null,2));
 }
 
@@ -82,8 +86,13 @@ try
 	}
 	writeFile('listTownsRes.json', JSON.stringify(res.results,null,2));//сохраним респонс
 	if(Array.isArray(res.results.towns))
-	{	listTowns = Object.fromEntries(		//преобразуем в объект {'Адлер':{'id','slug' и т.д.}}
-			res.results.towns.map(town => [
+	{	// Фильтруем города, исключая те, что в StopListTowns
+		const filteredTowns = res.results.towns.filter(town => 
+					!PathsList.StopListTowns || !Array.isArray(PathsList.StopListTowns) || 
+					!PathsList.StopListTowns.includes(town.name)
+		);
+		listTowns = Object.fromEntries(		//преобразуем в объект {'Адлер':{'id','slug' и т.д.}}
+			filteredTowns.map(town => [
 				town.name, 
 				{	id: town.id,
 					slug: town.slug,
@@ -265,8 +274,9 @@ function parseRaspisToHtml(day, arr, slug, town)
 		if(meetingTypes.length>0) types = meetingTypes.map(id => typesMeetings[id]).filter(Boolean).join(', ');
 		if(!!types) tema = 'Тема: <i>'+types+'</i>\n';//курсивом
 		//карта
-		let map_frame = arr[i]?.group?.location?.map_frame ? escapeHtml(arr[i].group.location.map_frame) : '';
-		if(!!map_frame) map_frame = '<a href="'+map_frame+'" >Маршрут</a>';
+		let map_frame = arr[i]?.group?.location?.map_frame ? (escapeHtml(arr[i].group.location.map_frame)).trim() : '';
+		let match = map_frame.match(/^[^\s]+/);
+		map_frame = (match && match[0].startsWith('https://')) ? match[0] : '';
 		//фото
 		let photo = '';
 		let url = arr[i]?.group?.location?.images ? arr[i].group.location.images : '';
