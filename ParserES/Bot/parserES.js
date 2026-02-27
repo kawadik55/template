@@ -277,6 +277,7 @@ function parseRaspisToHtml(day, arr, slug, town)
 		let map_frame = arr[i]?.group?.location?.map_frame ? (escapeHtml(arr[i].group.location.map_frame)).trim() : '';
 		let match = map_frame.match(/^[^\s]+/);
 		map_frame = (match && match[0].startsWith('https://')) ? match[0] : '';
+		if(!!map_frame) map_frame = '<a href="'+map_frame+'" >Маршрут</a>';
 		//фото
 		let photo = '';
 		let url = arr[i]?.group?.location?.images ? arr[i].group.location.images : '';
