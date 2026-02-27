@@ -40,7 +40,8 @@ const mas = ['','Января','Февраля','Марта','Апреля','М�
 const gURL = 'https://na-russia.org/';
 let getListTowns = 'api/towns/with-regions/';//без аргументов
 let getTypesMeetings = 'api/scheduled-meetings/types/';//без аргументов
-let getMeetingsInTown = 'api/scheduled-meetings/merged/?limit=200';//город и дата добавляется отдельно
+//город и дата добавляется отдельно
+let getMeetingsInTown = 'api/scheduled-meetings/merged/?limit=200&&include_child_towns=false&&include_general_town=false';
 let typesMeetings = {};
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 //====================================================================
@@ -244,7 +245,7 @@ function parseRaspisToHtml(day, arr, slug, town)
 {	//if(arr.length==0) return '';
 	let str = '🔷<strong>Расписание собраний</strong>🔷\n\n';//заголовок
 	str += '<strong>'+day+'</strong>\n\n';//день недели в заголовке
-	if(!!town) str += '<strong>г.'+town+'</strong>\n\n';//город
+	if(!!town) str += '<strong>'+town+'</strong>\n\n';//город
 	if(arr.length==0) str += 'Сожалею, но сегодня собраний нет... 😥\n\n';
 	for(let i=0;i<arr.length;i++)
 	{	//время
