@@ -211,7 +211,7 @@ try
 	//удаляем папки/города, которых больше нет в списке
 	deleteDir(Object.keys(listTowns));
 	
-	console.log(moment().format('DD-MM-YY HH:mm:ss:ms')+' - Парсер Расписаний - OK!');
+	console.log(moment().format('DD-MM-YY HH:mm:ss:ms')+' - Парсинг Расписаний закончен!');
 	console.log();
 	return 'OK';
 	
