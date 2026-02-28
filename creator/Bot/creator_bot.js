@@ -31,6 +31,8 @@ const FileWeekCount = currentDir+"/json/WeekCount.json";//имя файла сч
 const FileGrandCount = currentDir+"/json/GrandCount.json";//имя файла счетчика посещений общий
 var FileEg = currentDir+'/../Rassilka/eg.txt';//файл с ежиком по-умолчанию
 var FileRaspis = currentDir+'/../Rassilka/raspis.txt';//файл с расписанием по-умолчанию
+var DirBaseES = currentDir+'/../Rassilka/BaseES';//папка с расписанием от РЗФ
+var FileNameRaspisES = 'raspisES.html';//имя файла с расписанием от РЗФ
 const FileTen = currentDir+"/tenstep.txt";//файл вопросов к 10-му шагу
 const FileBarrels = currentDir+"/barrels.txt";//файл вопросов Бочонки
 const FileSticker = PathToSticker+"/sticker.json";//файл id стикеров
@@ -47,6 +49,10 @@ setContextFiles();
 const chat_Supervisor = require(TokenDir+"/chatId.json").Supervisor;//пользователь 'Supervisor'
 FileEg = currentDir+require(currentDir+"/filename_bot.json").FileEg;//путь к файлу с Ежиком после контекста
 FileRaspis = currentDir+require(currentDir+"/filename_bot.json").FileRaspis;//путь к файлу с Расписанием после контекста
+DirBaseES = currentDir+require(currentDir+"/filename_bot.json").DirBaseES;//путь к базовой папке с Расписанием ЕС после контекста
+if(DirBaseES.endsWith('/')) DirBaseES = DirBaseES.slice(0, -1);
+FileNameRaspisES = require(currentDir+"/filename_bot.json").FileNameRaspisES;//имя файла в Расписаниях ЕС
+if (FileNameRaspisES.startsWith('/')) FileNameRaspisES = FileNameRaspisES.substring(1);
 const filenamebot = '/' + require(currentDir+"/filename_bot.json").filename;//имя файла с токеном бота
 const tokenBot = require(TokenDir+filenamebot).token;//рабочий бот
 var nameBot = 'my_bot'; try{nameBot = require(TokenDir+filenamebot).comment} catch (err) {}//имя бота
@@ -219,11 +225,18 @@ getDayCount();//загрузим счетчики текущего дня
 sendMessage.count = 0;//обнулим счетчик сообщений в сек
 
 /*(async () => {
-	for(let i=0;i<20;i++)
-	{
-		let res = await sendMessage(chat_Supervisor, i);
-		//await sendMessage(chat_Supervisor, JSON.stringify(res,null,2));
-		//await sendMessage(chat_Supervisor, i).then(async (res)=>{await sendMessage(chat_Supervisor, JSON.stringify(res,null,2));});
+	const basePath = currentDir + '/../Rassilka/BaseES';
+	const items = fs.readdirSync(basePath);//города
+	for(let item of items)
+	{const itemPath = basePath + '/' + item; //if(item !== 'Новодвинск') continue;
+	 if(fs.statSync(itemPath).isDirectory()) 
+	 {	let obj;
+		try{obj = JSON.parse(fs.readFileSync(itemPath+'/raspisES.html'))}catch(err){console.log('Ошибка JSON'); continue;}
+		let str = obj.text;
+		let mode = obj.mode;
+		await sendMessage(chat_Supervisor, str, {parse_mode:mode, disable_web_page_preview:true});
+		await sleep(500);
+	 }
 	}
 })();*/
 //====================================================================
@@ -591,19 +604,26 @@ try
 	else if(type=='ESclosed'||type=='ESopened')
 	{	let slug;
 		let str = '';
+		let opt = {'backbutton':LastKey[chatId]};
 		if(!!LastMessId[chatId].location && !!LastMessId[chatId].location.slug) slug = LastMessId[chatId].location.slug;
 		if(!!slug)
-		{	if(type=='ESclosed') str = 'Вот ссылка на расписание в Вашем городе:\n'+'https://na-russia.org/'+slug+'/meetings-today';
-			if(type=='ESopened') str = 'Вот ссылка на расписание в Вашем городе:\n'+'https://na-russia.org/'+slug+'/schedule-pro';
+		{	if(type=='ESclosed') 
+			{	str = getRaspisBaseES(slug, chatId);
+				if(!str) str = 'Извиняюсь, но я не нашел базу расписаний на своем сервере. Пройдите, пожалуйста, по ссылке на Единый сайт АН РЗФ:\n'+'https://na-russia.org/'+slug+'/meetings-today';
+				else {opt.disable_web_page_preview = true; opt.parse_mode = 'HTML';}
+			}
+			else if(type=='ESopened') 
+			{	str = 'Вот ссылка на расписание в Вашем городе:\n'+'https://na-russia.org/'+slug+'/schedule-pro';
+			}
 		}
 		else
-		{	str = 'Прошу прощения, но я не могу прислать Вам ссылку на расписание собраний в Вашем городе. ';
+		{	str = 'Прошу прощения, но я не могу прислать Вам расписание собраний в Вашем городе. ';
 			str += 'Если не трудно, пришлите мне еще раз свою Локацию!\n';
 			str += 'А пока я дам Вам общую ссылку на сайт РЗФ:\n'+'https://na-russia.org \n';
-			str += 'где Вы сможете в ручном режиме подыскать для себя ближайщие собрания!';
+			str += 'где Вы сможете в ручном режиме подыскать для себя ближайшие собрания!';
 		}
 		if(!LastKey[chatId]) LastKey[chatId] = '0';
-		await sendMessage(chatId, str, klava('Назад', {'backbutton':LastKey[chatId]}, chatId));
+		await sendMessage(chatId, str, klava('Назад', opt, chatId));
 	}
 	
 	//при нажатии на ЛЮБУЮ другую кнопку - обнуляем счетчик 10го шага
@@ -5111,6 +5131,8 @@ function setContextFiles()
 			obj.filename = name;
 			obj.FileEg = '/../Rassilka/eg.txt';
 			obj.FileRaspis = '/../Rassilka/raspis.txt';
+			obj.DirBaseES = '/../Rassilka/BaseES';
+			obj.FileNameRaspisES = 'raspisES.html';
 			WriteFileJson(currentDir+'/filename_bot.json',obj);
 		}
 		if(fs.existsSync(currentDir+'/filename_bot.json'))//если файл уже имеется
@@ -5122,12 +5144,17 @@ function setContextFiles()
 			 obj.filename = name;
 			 obj.FileEg = '/../Rassilka/eg.txt';
 			 obj.FileRaspis = '/../Rassilka/raspis.txt';
+			 obj.DirBaseES = '/../Rassilka/BaseES';
+			 obj.FileNameRaspisES = 'raspisES.html';
 			 WriteFileJson(currentDir+'/filename_bot.json',obj);
 			}
 			if(!obj.FileEg){obj.FileEg = '/../Rassilka/eg.txt'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
 			if(!obj.FileRaspis){obj.FileRaspis = '/../Rassilka/raspis.txt'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
+			if(!obj.DirBaseES){obj.DirBaseES = '/../Rassilka/BaseES'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
+			if(!obj.FileNameRaspisES){obj.FileNameRaspisES = 'raspisES.html'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
 			if(!!PATHEG) {obj.FileEg = PATHEG; WriteFileJson(currentDir+'/filename_bot.json',obj);}
 			if(!!PATHRASPIS) {obj.FileRaspis = PATHRASPIS; WriteFileJson(currentDir+'/filename_bot.json',obj);}
+FileNameRaspisES = currentDir+require(currentDir+"/filename_bot.json").FileNameRaspisES;//имя файла в Расписаниях ЕС
 		}
 		if(!fs.existsSync(currentDir+'/privat.json') && fs.existsSync(cBot+'/privat.json'))
 		{fs.copyFileSync(cBot+'/privat.json',currentDir+'/privat.json');}
@@ -5345,11 +5372,12 @@ function setTimezoneByOffset(offsetMinutes)
 }
 //====================================================================
 //возвращает таймстамп юзера в формате moment()
-function getUserDateTime(chatId)
-{	let now = moment();
+function getUserDateTime(chatId, reftime)
+{	let now = reftime ? moment(reftime) : moment();
+	const ms = now.millisecond();
 	if(!!LastMessId[chatId].location&&!!LastMessId[chatId].location.utcOffset)//таймзона юзера
-	{	let userTime = moment().unix() + ((Number(LastMessId[chatId].location.utcOffset) - utcOffset) * 60);//в сек
-		now = moment.unix(userTime);//дата/время юзера
+	{	let userTime = (now.unix() + ((Number(LastMessId[chatId].location.utcOffset) - utcOffset) * 60)) * 1000 + ms;//в мсек
+		now = moment(userTime);//дата/время юзера
 	}
 	return now;
 }
@@ -5361,7 +5389,8 @@ function getEgDateTime(refpath)
 	const timestampPath = path.join(path.dirname(refpath), 'timestamp.json');//к файлу с unixtimestamp
 	if(fs.existsSync(timestampPath))
 	{	try {const obj = JSON.parse(fs.readFileSync(timestampPath));
-			if(!!obj.UnixTime) now = moment.unix(obj.UnixTime);//дата/время создания файла Ежика
+			if (obj.momentTime) now = moment(obj.momentTime);//дата/время создания файла Ежика
+			else if(!!obj.UnixTime) now = moment.unix(obj.UnixTime);//дата/время создания файла Ежика
 		} 
 		catch (err) {console.log(err);}
 	}
@@ -5386,4 +5415,64 @@ async function getObjFromES(URL)
 	} catch(err) {console.log('Ошибка в parser_eg()\n'+err.message);}//
 }
 //====================================================================
+function getRaspisBaseES(slug, chatId)
+{	
+try{
+	//ищем файл со списком городов listTowns.json
+	listTowns = {};
+	if(!fs.existsSync(DirBaseES+'/listTowns.json')) return null;//'Сожалею, но я не могу найти необходимые файлы... 😥';
+	try{listTowns = JSON.parse(fs.readFileSync(DirBaseES+'/listTowns.json'));}catch(err){console.log(err);}
+	if(!listTowns || (typeof(listTowns) !== 'object') || Object.keys(listTowns).length===0)
+	{	WriteLogFile('Ошибка в списке городов\n getRaspisBaseES('+slug+')','вчат');
+		return null;//'Сожалею, но я не могу найти список городов... 😥';
+	}
+	//ищем в списке город по slug
+	let town = Object.keys(listTowns).find(key => listTowns[key].slug === slug);
+	if(!town) 
+	{	WriteLogFile('Отсутствует slug='+slug+' в списке городов\n getRaspisBaseES('+slug+')','вчат');
+		return null;//'Сожалею, но Ваш город отсутствует в моем списке... 😥';
+	}
+	//ищем основной файл с расписанием на сегодня, там время создания
+	if(!fs.existsSync(DirBaseES+'/'+town+'/'+FileNameRaspisES)) 
+	{	WriteLogFile('Отсутствует файл расписания '+FileNameRaspisES+'\n getRaspisBaseES('+slug+')','вчат');
+		return null;//'Сожалею, но я не могу найти файлы c расписанием... 😥';
+	}
+	let raspis = {};
+	
+	//теперь выберем нужный файл для зоны пользователя
+	let refpath = DirBaseES+'/'+town+'/'+FileNameRaspisES;//путь по-умолчанию к файлу Сегодня
+	//читаем файл на Сегодня, там есть UnixTime создания
+	try{raspis = JSON.parse(fs.readFileSync(refpath));}catch(err){console.log(err);}
+	if(!raspis || (typeof(raspis) !== 'object') || Object.keys(raspis).length===0)
+	{	WriteLogFile('Ошибка в основном файле расписания\n getRaspisBaseES('+slug+')','вчат');
+		return null;//'Сожалею, но я не могу прочитать расписание в файле... 😥';
+	}
+	//дата у юзера
+	const userDate = getUserDateTime(chatId).startOf('day');
+	//дата Расписания на сегодня из UnixTime
+	const todayDate = raspis.momentTime ? moment(raspis.momentTime).startOf('day') : moment().startOf('day');
+	//разница в днях
+	const diffDays = todayDate.diff(userDate, 'days');//разница в днях
+	if(diffDays !== 0)
+	{	if(diffDays > 0)
+		{	const yesterdayPath = DirBaseES+'/'+town+'/'+'yesterday_'+FileNameRaspisES;//с префиксом вчера
+			if(fs.existsSync(yesterdayPath)) refpath = yesterdayPath;
+		}
+		else if(diffDays < 0)
+		{	const tomorrowPath = DirBaseES+'/'+town+'/'+'tomorrow_'+FileNameRaspisES;//с префиксом завтра
+			if(fs.existsSync(tomorrowPath)) refpath = tomorrowPath;
+		}
+		//читаем выбранный файл
+		try{raspis = JSON.parse(fs.readFileSync(refpath));}catch(err){console.log(err);}
+		if(!raspis || (typeof(raspis) !== 'object') || Object.keys(raspis).length===0)
+		{	WriteLogFile('Ошибка в сдвинутом файле расписания\n getRaspisBaseES('+slug+')','вчат');
+			return null;//'Сожалею, но я не могу прочитать расписание в файле... 😥';
+		}
+	}
+	if(raspis.text&&raspis.mode&&raspis.mode==='HTML') return raspis.text;
+	else return '😥';
+}catch(err){WriteLogFile(err+'\nfrom getRaspisBaseES(slug)','вчат'); return '😥';}
+}
+//====================================================================
+		
 
