@@ -127,6 +127,7 @@ try
 				HtmlRaspis[key] = parseRaspisToHtml(dayOfWeekToday, res.results, listTowns[key].slug || null, key);
 				//console.log('Запросили город '+key+' ('+res.results.length+')');
 				HtmlRaspis[key].UnixTime = moment().unix();//добавим время создания
+				HtmlRaspis[key].momentTime = moment().format();//добавим время создания
 				//для каждого города пишем в свою директорию
 				let filename = key + '/' + PathsList.FileRaspisHtml;
 				writeFile(filename, JSON.stringify(HtmlRaspis[key],null,2));
