@@ -86,7 +86,7 @@ try
 	writeFile('yesterday_'+filenameText, parseEgToText(res));
 	writeFile('yesterday_'+filenameHtml, parseEgToHtml(res));
 	//пишем файл с таймстампом
-	let obj = {"UnixTime":timeServer.unix(), "Event":"Момент создания файлов Ежедневника"};
+	let obj = {"UnixTime":timeServer.unix(), "Event":"Момент создания файлов Ежедневника", "momentTime":timeServer.format()};
 	writeFile('timestamp.json', JSON.stringify(obj,null,2));
 
 		console.log(moment().format('DD-MM-YY HH:mm:ss:ms')+' - Парсер Ежедневника - OK!');
