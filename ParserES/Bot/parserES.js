@@ -84,7 +84,7 @@ try
 	if(typeof(res) != 'object' || !res.results || !res.results.towns)
 	{	throw new Error('Ошибка объекта от getObjectFromES');
 	}
-	writeFile('listTownsRes.json', JSON.stringify(res.results,null,2));//сохраним респонс
+	//writeFile('listTownsRes.json', JSON.stringify(res.results,null,2));//сохраним респонс
 	if(Array.isArray(res.results.towns))
 	{	// Фильтруем города, исключая те, что в StopListTowns
 		const filteredTowns = res.results.towns.filter(town => 
