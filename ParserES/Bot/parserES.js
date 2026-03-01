@@ -132,7 +132,7 @@ try
 				HtmlRaspis[key].momentTime = moment().format();//добавим время создания
 				//собираем сообщение для ботов Открытые собрания на Сегодня
 				const opened = res.results.filter(item => item.types.some(typeId => id_open.includes(typeId)));//отфильтруем только Открытые
-				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key);//объект сообщения
+				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key, 'open');//объект сообщения
 				open_meets.UnixTime = moment().unix();//добавим время создания
 				open_meets.momentTime = moment().format();//добавим время создания
 				//для каждого города пишем в свою директорию
@@ -175,7 +175,7 @@ try
 				HtmlRaspis[key].momentTime = moment().format();//добавим время создания
 				//собираем сообщение для ботов Открытые собрания на Завтра
 				const opened = res.results.filter(item => item.types.some(typeId => id_open.includes(typeId)));//отфильтруем только Открытые
-				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key);//объект сообщения
+				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key, 'open');//объект сообщения
 				open_meets.UnixTime = moment().unix();//добавим время создания
 				open_meets.momentTime = moment().format();//добавим время создания
 				//для каждого города пишем в свою директорию
@@ -218,7 +218,7 @@ try
 				HtmlRaspis[key].momentTime = moment().format();//добавим время создания
 				//собираем сообщение для ботов Открытые собрания на Вчера
 				const opened = res.results.filter(item => item.types.some(typeId => id_open.includes(typeId)));//отфильтруем только Открытые
-				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key);//объект сообщения
+				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key, 'open');//объект сообщения
 				open_meets.UnixTime = moment().unix();//добавим время создания
 				open_meets.momentTime = moment().format();//добавим время создания
 				//для каждого города пишем в свою директорию
@@ -280,7 +280,9 @@ function replaceHtml(str)
 //====================================================================
 function parseRaspisToHtml(day, arr, slug, town, format)
 {	//if(arr.length==0) return '';
-	let str = '🔷<strong>Расписание собраний</strong>🔷\n\n';//заголовок
+	let str;
+	if(format && format==='open') str = '🔷<strong>Расписание открытых собраний</strong>🔷\n\n';//заголовок
+	else str = '🔷<strong>Расписание собраний</strong>🔷\n\n';//заголовок
 	str += '<strong>'+day+'</strong>\n\n';//день недели в заголовке
 	if(!!town) str += '<strong>'+town+'</strong>\n\n';//город
 	if(arr.length==0) str += 'Сожалею, но сегодня собраний нет... 😥\n\n';
