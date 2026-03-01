@@ -77,6 +77,7 @@ try
 	typesMeetings = Object.fromEntries(res.map(item => [item.id, item.name]));//переделаем объект в {'id':'name'}
 	writeFile('typesMeetings.json', JSON.stringify(typesMeetings,null,2));
 	console.log(moment().format('DD-MM-YY HH:mm:ss:ms')+' - Создали файл typesMeetings.json');
+	const id_open = Object.keys(typesMeetings).filter(k => typesMeetings[k].includes('Открытое')).map(Number);//массив id, где есть Открытое
 	
 	//теперь получим список городов, всех
 	res = await getObjectFromES(gURL+getListTowns);
@@ -84,7 +85,7 @@ try
 	if(typeof(res) != 'object' || !res.results || !res.results.towns)
 	{	throw new Error('Ошибка объекта от getObjectFromES');
 	}
-	writeFile('listTownsRes.json', JSON.stringify(res.results,null,2));//сохраним респонс
+	//writeFile('listTownsRes.json', JSON.stringify(res.results,null,2));//сохраним респонс
 	if(Array.isArray(res.results.towns))
 	{	// Фильтруем города, исключая те, что в StopListTowns
 		const filteredTowns = res.results.towns.filter(town => 
@@ -122,15 +123,23 @@ try
 				attempts++;
 				await sleep(1000); // пауза перед повтором
 			}
-			else if(Array.isArray(res.results))//массив объектов
+			else if(Array.isArray(res.results))//массив объектов, все собрания
 			{	
+				//собираем сообщение для ботов Все собрания на Сегодня
 				HtmlRaspis[key] = parseRaspisToHtml(dayOfWeekToday, res.results, listTowns[key].slug || null, key);
 				//console.log('Запросили город '+key+' ('+res.results.length+')');
 				HtmlRaspis[key].UnixTime = moment().unix();//добавим время создания
 				HtmlRaspis[key].momentTime = moment().format();//добавим время создания
+				//собираем сообщение для ботов Открытые собрания на Сегодня
+				const opened = res.results.filter(item => item.types.some(typeId => id_open.includes(typeId)));//отфильтруем только Открытые
+				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key);//объект сообщения
+				open_meets.UnixTime = moment().unix();//добавим время создания
+				open_meets.momentTime = moment().format();//добавим время создания
 				//для каждого города пишем в свою директорию
 				let filename = key + '/' + PathsList.FileRaspisHtml;
 				writeFile(filename, JSON.stringify(HtmlRaspis[key],null,2));
+				filename = key + '/open_' + PathsList.FileRaspisHtml;
+				writeFile(filename, JSON.stringify(open_meets,null,2));
 				count++;
 				break;
 			}
@@ -157,14 +166,23 @@ try
 				attempts++;
 				await sleep(1000); // пауза перед повтором
 			}
-			else if(Array.isArray(res.results))//массив объектов
+			else if(Array.isArray(res.results))//массив объектов, все собрания
 			{	
+				//собираем сообщение для ботов Все собрания на Завтра
 				HtmlRaspis[key] = parseRaspisToHtml(dayOfWeekTomorrow, res.results, listTowns[key].slug || null, key);
 				//console.log('Запросили город '+key+' ('+res.results.length+')');
 				HtmlRaspis[key].UnixTime = moment().unix();//добавим время создания
+				HtmlRaspis[key].momentTime = moment().format();//добавим время создания
+				//собираем сообщение для ботов Открытые собрания на Завтра
+				const opened = res.results.filter(item => item.types.some(typeId => id_open.includes(typeId)));//отфильтруем только Открытые
+				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key);//объект сообщения
+				open_meets.UnixTime = moment().unix();//добавим время создания
+				open_meets.momentTime = moment().format();//добавим время создания
 				//для каждого города пишем в свою директорию
 				let filename = key + '/tomorrow_' + PathsList.FileRaspisHtml;
 				writeFile(filename, JSON.stringify(HtmlRaspis[key],null,2));
+				filename = key + '/open_tomorrow_' + PathsList.FileRaspisHtml;
+				writeFile(filename, JSON.stringify(open_meets,null,2));
 				count++;
 				break;
 			}
@@ -191,14 +209,23 @@ try
 				attempts++;
 				await sleep(5000); // пауза перед повтором
 			}
-			else if(Array.isArray(res.results))//массив объектов
+			else if(Array.isArray(res.results))//массив объектов, все собрания
 			{	
+				//собираем сообщение для ботов Все собрания на Вчера
 				HtmlRaspis[key] = parseRaspisToHtml(dayOfWeekYesterday, res.results, listTowns[key].slug || null, key);
 				//console.log('Запросили город '+key+' ('+res.results.length+')');
 				HtmlRaspis[key].UnixTime = moment().unix();//добавим время создания
+				HtmlRaspis[key].momentTime = moment().format();//добавим время создания
+				//собираем сообщение для ботов Открытые собрания на Вчера
+				const opened = res.results.filter(item => item.types.some(typeId => id_open.includes(typeId)));//отфильтруем только Открытые
+				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key);//объект сообщения
+				open_meets.UnixTime = moment().unix();//добавим время создания
+				open_meets.momentTime = moment().format();//добавим время создания
 				//для каждого города пишем в свою директорию
 				let filename = key + '/yesterday_' + PathsList.FileRaspisHtml;
 				writeFile(filename, JSON.stringify(HtmlRaspis[key],null,2));
+				filename = key + '/open_yesterday_' + PathsList.FileRaspisHtml;
+				writeFile(filename, JSON.stringify(open_meets,null,2));
 				count++;
 				break;
 			}
@@ -251,7 +278,7 @@ function replaceHtml(str)
 	return str;
 }
 //====================================================================
-function parseRaspisToHtml(day, arr, slug, town)
+function parseRaspisToHtml(day, arr, slug, town, format)
 {	//if(arr.length==0) return '';
 	let str = '🔷<strong>Расписание собраний</strong>🔷\n\n';//заголовок
 	str += '<strong>'+day+'</strong>\n\n';//день недели в заголовке
@@ -307,7 +334,10 @@ function parseRaspisToHtml(day, arr, slug, town)
 		{	if (typeof PathsList.Links[i] === 'object' && PathsList.Links[i] !== null) 
 			{	let link = PathsList.Links[i]?.link ? PathsList.Links[i].link : 'https://na-russia.org/';
 				if (!link.endsWith('/')) {link += '/';}
-				if(slug) link += slug + '/meetings-today';
+				if(slug) 
+				{	if(format && format==='open') link += slug + '/schedule-pro';
+					else link += slug + '/meetings-today';
+				}
 				let text = PathsList.Links[i]?.text ? PathsList.Links[i].text : 'Гораздо больше информации вы найдете на сайте АН РЗФ!';
 				let tempstr = '<a href="'+link+'" target="_blank">'+text+'</a>\n\n';
 				if((str+tempstr).length>4000) {break;}//добавлять не будем
