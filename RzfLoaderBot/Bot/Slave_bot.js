@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const moment = require('moment-timezone');
 
 class SlaveBot {
-    constructor(token, onConfigUpdate, mainChatNewsRef, mainArea) {
+    constructor(token, onConfigUpdate, mainChatNewsRef, mainArea, needTown) {
         this.bot = new TelegramBot(token, { polling: true });
         this.onConfigUpdate = onConfigUpdate; // Колбэк для обновления конфига.
         this.pendingConfigs = new Map(); // chatId -> временные данные конфигурации
@@ -18,13 +18,57 @@ class SlaveBot {
 		// Название местности для приветствия
 		this.area = mainArea || '';
 		
+		// Использовать ли настройку города
+		this.needTown = needTown || false;
+		
 		this.initbotname();
         
         this.setupHandlers();
         this.setupCleanupTimer();
         this.setupPrivateChatHandlers(); // Добавляем обработчики для приватного чата
+		
+		this.requests = new Map();  // { requestId: { resolve, reject } }
+        this.requestId = 0;
         
         console.log('SlaveBot запущен');
+    }
+	
+	// Отправляем команду и ждем ответ
+    async sendCommand(command, data = {}) {
+        const id = ++this.requestId;
+        
+        return new Promise((resolve, reject) => {
+            this.requests.set(id, { resolve, reject });
+            
+            // Отправляем через saveConfig
+            this.saveConfig(command, {
+                requestId: id,
+                data: data
+            });
+            
+            // Таймаут
+            setTimeout(() => {
+                if (this.requests.has(id)) {
+                    this.requests.delete(id);
+                    reject(new Error('Таймаут: мастер не ответил'));
+                }
+            }, 5000);
+        });
+    }
+	
+	// Мастер вызывает этот метод с ответом
+    onMasterResponse(response) {
+        const { requestId, result, error } = response;
+        const request = this.requests.get(requestId);
+        
+        if (request) {
+            this.requests.delete(requestId);
+            if (error) {
+                request.reject(new Error(error));
+            } else {
+                request.resolve(result);
+            }
+        }
     }
 
     async initbotname() {
@@ -400,7 +444,11 @@ class SlaveBot {
                 } else if (data === 'cancel_config') {
                     const pending = this.pendingConfigs.get(chatId);
                     
-                    // Удаляем текущее активное сообщение
+                    if (pending) {
+						if (pending.waitingForTownInput) pending.waitingForTownInput = 0;
+						if (pending.waitingForManualInput) pending.waitingForManualInput = false;
+					}
+					// Удаляем текущее активное сообщение
                     if (pending && pending.lastMessageId) {
                         try {
                             await this.bot.deleteMessage(chatId, pending.lastMessageId);
@@ -448,8 +496,11 @@ class SlaveBot {
                         }
                     }
                     
-                    // Сохранение конфигурации
-                    await this.finishConfig(chatId);
+                    // Проверяем, нужно ли спрашивать город
+					if (this.needTown && pending && pending.contentSettings && pending.contentSettings.Raspis) {
+						await this.getTownSlug(chatId);// Запускаем процесс запроса города
+					}
+					else await this.finishConfig(chatId);// Сохраняем конфигурацию без города
                     await this.bot.answerCallbackQuery(msg.id);
                     
                 } else if (data === 'channel_by_id') {
@@ -618,7 +669,7 @@ class SlaveBot {
 
         // Ответ на ручной ввод часового пояса и данных канала
         this.bot.on('message', async (msg) => {
-            try {
+            //try {
                 const text = msg.text;
                 if (!text || text.startsWith('/')) return;
                 
@@ -627,16 +678,13 @@ class SlaveBot {
                 
                 // Обработка обычных настроек (для чатов)
                 const pending = this.pendingConfigs.get(chatId);
-                if (pending && pending.waitingForManualInput) {
+                if (pending && pending.waitingForManualInput) 
+				{
                     const timezone = this.parseTimezoneInput(text);
                     if (timezone) {
                         // Удаляем текущее активное сообщение
                         if (pending.lastMessageId) {
-                            try {
-                                await this.bot.deleteMessage(chatId, pending.lastMessageId);
-                            } catch (e) {
-                                // Игнорируем ошибки удаления
-                            }
+                            try {await this.bot.deleteMessage(chatId, pending.lastMessageId);} catch (e) {}
                         }
                         
                         await this.handleTimezoneSelection(chatId, timezone, pending.message_thread_id || "");
@@ -658,40 +706,152 @@ class SlaveBot {
                         this.pendingConfigs.set(chatId, pending);
                     }
                 }
-                
-                // Обработка настройки канала через приватный чат
-                if (chatId > 0) {
-                    const pendingChannel = this.pendingChannelSetup;
-                    if (pendingChannel && pendingChannel.userId === userId) {
-                        if (pendingChannel.waitingForChannelId) {
-                            await this.processChannelInput(userId, text, 'id');
-                        }
-                        this.pendingChannelSetup = null;
-                    }
-                }
-            } catch (err) {
-                this.sendErrorMessage('Ошибка в message handler: ' + err);
-            }
-        });
+				
+				// Обработка ввода города
+				else if (pending && pending.waitingForTownInput===1) 
+				{
+					const townName = text.trim();
+					// Удаляем текущее сообщение с приглашением
+					if (pending.lastMessageId) {
+						try {await this.bot.deleteMessage(chatId, pending.lastMessageId);} catch (e) {}
+					}
+					if (townName.length < 3) {
+						const sentMessage = await this.bot.sendMessage(chatId,
+							`⚠️ <b>Слишком короткое название.</b>\n\n` +
+							`Введите минимум 3 символа.\n` +
+							`(вы ввели: "${townName}")`,
+							{
+								parse_mode: 'HTML',
+								reply_markup: {
+									inline_keyboard: [[
+										{ text: '❌ Отмена', callback_data: 'cancel_config' }
+									]]
+								},
+								message_thread_id: pending.message_thread_id || undefined
+							}
+						);
+						pending.lastMessageId = sentMessage.message_id;
+						this.pendingConfigs.set(chatId, pending);
+						return;
+					}
+					
+					if (!townName) {
+						const sentMessage = await this.bot.sendMessage(chatId,
+							'❌ <b>Название города не может быть пустым.</b>\n\n' +
+							'Пожалуйста, введите название города:',
+							{
+								parse_mode: 'HTML',
+								reply_markup: {
+									inline_keyboard: [[
+										{ text: '❌ Отмена', callback_data: 'cancel_config' }
+									]]
+								},
+								message_thread_id: pending.message_thread_id || undefined
+							}
+						);
+						
+						pending.lastMessageId = sentMessage.message_id;
+						this.pendingConfigs.set(chatId, pending);
+						return;
+					}
+					// Отправляем запрос Мастеру и ждем ответ
+					try {
+						
+						const result = await this.sendCommand('find_town', { name: townName });
+						
+						if (!result || result.length === 0) {throw new Error('Город не найден');}
+						if (result.length > 5) {
+							const sentMessage = await this.bot.sendMessage(chatId,
+								`⚠️ <b>Слишком много городов (${result.length}).</b>\n\n` +
+								`Уточните название (минимум 3 символа).`,
+								{
+									parse_mode: 'HTML',
+									reply_markup: {
+										inline_keyboard: [[
+											{ text: '❌ Отмена', callback_data: 'cancel_config' }
+										]]
+									}
+								}
+							);
+							pending.lastMessageId = sentMessage.message_id;
+							this.pendingConfigs.set(chatId, pending);
+							return;
+						}
+						
+						if (result.length === 1) {
+							// Сохраняем город в сессию
+							pending.townData = {
+								name: result[0].town,
+								slug: result[0].slug
+							};
+							pending.waitingForTownInput = 0; // очищаем флаг
+								
+							// Завершаем конфигурацию
+							await this.finishConfig(chatId);
+							this.pendingConfigs.set(chatId, pending);
+							return;
+						}
+						//если городов несколько
+						const citiesList = result.map(item => `<code>${item.town}</code>`).join('\n');
+						// Отправляем список для выбора
+						const listMessage = await this.bot.sendMessage(chatId,
+							`🔍 <b>Найдено несколько городов:</b>\n\n` +
+							`${citiesList}\n\n` +
+							`📋 <b>Скопируйте один нужный город и пришлите его сюда.</b>\n` +
+							`(просто тапните по названию и вставьте)`,
+							{
+								parse_mode: 'HTML',
+								reply_markup: {
+									inline_keyboard: [[
+										{ text: '❌ Отмена', callback_data: 'cancel_config' }
+									]]
+								}
+							}
+						);
+					    pending.lastMessageId = listMessage.message_id;
+						this.pendingConfigs.set(chatId, pending);
+						
+					} catch (error) {
+						// Ошибка от Мастера или таймаут
+						const errorMessage = await this.bot.sendMessage(chatId,
+							`❌ <b>Не удалось найти город.</b>\n\n` +
+							`${townName}\n\n` +
+							`Попробуйте ввести название иначе или нажмите "Отмена".`,
+							{
+								parse_mode: 'HTML',
+								reply_markup: {
+									inline_keyboard: [[
+										{ text: '❌ Отмена', callback_data: 'cancel_config' }
+									]]
+								}
+							}
+						);
+						// Обновляем lastMessageId для возможности последующего удаления
+						pending.lastMessageId = errorMessage.message_id;
+						this.pendingConfigs.set(chatId, pending);
+						// Флаг НЕ очищаем - оставляем waitingForTownInput = 1
+					}
+				}
 
-        // Обработка ошибок бота
-        this.bot.on('polling_error', (error) => {
-            if (error.message.includes('502') || error.message.includes('Bad Gateway'))
-			{	const now = Date.now();
-                if (now - this.last502ErrorTime < 15000) return;
-				this.last502ErrorTime = now;
-			}
-			this.sendErrorMessage('Polling error in SlaveBot: ' + error.message);
-        });
+			// Обработка ошибок бота
+			this.bot.on('polling_error', (error) => {
+				if (error.message.includes('502') || error.message.includes('Bad Gateway'))
+				{	const now = Date.now();
+					if (now - this.last502ErrorTime < 15000) return;
+					this.last502ErrorTime = now;
+				}
+				this.sendErrorMessage('Polling error in SlaveBot: ' + error.message);
+			});
 
-        this.bot.on('webhook_error', (error) => {
-            this.sendErrorMessage('Webhook error in SlaveBot: ' + error.message);
-        });
+			this.bot.on('webhook_error', (error) => {
+				this.sendErrorMessage('Webhook error in SlaveBot: ' + error.message);
+			});
 
-        this.bot.on('error', (error) => {
-            this.sendErrorMessage('General error in SlaveBot: ' + error.message);
-        });
-    }
+			this.bot.on('error', (error) => {
+				this.sendErrorMessage('General error in SlaveBot: ' + error.message);
+			});
+		});
+	}
 
     setupPrivateChatHandlers() {
         // Команда /config_channel - настройка канала через приватный чат
@@ -1280,6 +1440,12 @@ class SlaveBot {
             chatEntry.Eg = Boolean(contentSettings.Eg);
             chatEntry.News = Boolean(contentSettings.News);
 			chatEntry.Raspis = Boolean(contentSettings.Raspis);
+			
+			//добавляем настройки на город
+			if (pending.townData) {
+				chatEntry.town = pending.townData.name;
+				chatEntry.slug = pending.townData.slug;
+			}
             
             // Проверяем, нет ли дубликата в текущей таймзоне
             if (Array.isArray(this.chat_news[offsetKey])) {
@@ -1332,6 +1498,11 @@ class SlaveBot {
                 if (contentSettings.News) contentTypes.push('🌐 Новости');
 				if (contentSettings.Raspis) contentTypes.push('📅 Расписание');
                 const contentInfo = contentTypes.length > 0 ? contentTypes.join('\n') : '❌ Не выбрано';
+				
+				let townInfo = '';
+				if (pending.townData) {
+					townInfo = `🏙️ <b>Город:</b> ${this.escapeHtml(pending.townData.name)}\n`;
+				}
                 
                 const completionMessage = pending.isEdit ? 
                     `✅ <b>Настройки обновлены!</b>` : 
@@ -1344,6 +1515,7 @@ class SlaveBot {
                     `${completionMessage}\n\n` +
                     `📝 <b>Чат:</b> "${this.escapeHtml(chatTitle)}"\n` +
 					threadInfo +
+					townInfo + 
                     `🌍 <b>Часовой пояс:</b> UTC${sign}${hours} ч.\n` +
                     `<b>Получаем:</b>\n${contentInfo}`,
                     { 
@@ -1392,7 +1564,10 @@ class SlaveBot {
             return;
         }
         
-        await this.finishConfig(userId);
+        if (this.needTown && pending.contentSettings && pending.contentSettings.Raspis) {
+			await this.getTownSlug(userId);
+		}
+		else await this.finishConfig(userId);
     }
 
     findChatInConfig(chatId) {
@@ -1417,7 +1592,9 @@ class SlaveBot {
                             Eg: chat.Eg !== undefined ? chat.Eg : false,
                             News: chat.News !== undefined ? chat.News : false,
 							Raspis: chat.Raspis !== undefined ? chat.Raspis : false,
-                            threadId: chat.message_thread_id || ""
+                            threadId: chat.message_thread_id || "",
+							town: chat.town || null,
+							slug: chat.slug || null 
                         };
                     }
                 }
@@ -1451,10 +1628,15 @@ class SlaveBot {
         if (existing.threadId) {
 			threadInfo = `📌 <b>Тема форума:</b> ID ${existing.threadId}\n`;
         }
+		let townInfo = '';
+		if (existing.town) {
+			townInfo = `🏙️ <b>Город:</b> ${this.escapeHtml(existing.town)}\n`;
+		}		
         
         return `⚙️ <b>Настройки бота:</b>\n\n` +
                `📝 <b>Чат:</b> "${this.escapeHtml(existing.title)}"\n` +
 			   threadInfo +
+			   townInfo +
                `🌍 <b>Часовой пояс:</b> UTC${sign}${hours} ч.\n\n` +
                `<b>Получает:</b>\n${contentText}\n\n` +
                `ℹ️ <b>Команды:</b>\n` +
@@ -2279,12 +2461,18 @@ class SlaveBot {
             if (contentSettings.News) contentTypes.push('🌐 Новости');
 			if (contentSettings.Raspis) contentTypes.push('📅 Расписание');
             const contentInfo = contentTypes.length > 0 ? contentTypes.join('\n') : '❌ Не выбрано';
+			
+			let townInfo = '';
+			if (existing.town) {
+				townInfo = `🏙️ <b>Город:</b> ${this.escapeHtml(existing.town)}\n`;
+			}
             
             const keyboard = this.createTimezoneKeyboard();
             
             const sentMessage = await this.bot.sendMessage(userId,
                 `✏️ <b>Редактирование настроек канала</b>\n\n` +
                 `📢 <b>Канал:</b> "${this.escapeHtml(channelTitle)}"\n` +
+				townInfo +
                 `🌍 <b>Текущий часовой пояс:</b> UTC${sign}${hours} ч.\n` +
                 `<b>Текущие настройки контента:</b>\n${contentInfo}\n\n` +
                 `<b>Шаг 1/2: Выберите новый часовой пояс</b>\n` +
@@ -2356,7 +2544,7 @@ class SlaveBot {
             // Спрашиваем подтверждение
             const sentMessage = await this.bot.sendMessage(userId,
                 `⚠️ <b>Вы уверены, что хотите удалить канал из рассылки?</b>\n\n` +
-                `📢 <b>Канал:</b> "${this.escapeHtml(existing.title)}"\n` +
+                `📢 <b>Канал:</b> "${this.escapeHtml(existing.title)}"\n` + 
                 `<b>Это действие нельзя отменить.</b>`,
                 {
                     parse_mode: 'HTML',
@@ -2418,6 +2606,53 @@ class SlaveBot {
 	sendErrorMessage(message) {
 		console.error(message);
 		this.saveConfig('error_message', {message: message, timestamp: Date.now()});
+	}
+	
+	async getTownSlug(chatId) {
+      try {
+        const pending = this.pendingConfigs.get(chatId);
+        if (!pending) {
+            await this.bot.sendMessage(chatId, '❌ Сессия настройки истекла. Начните заново с /config', {
+                message_thread_id: pending ? pending.message_thread_id || undefined : undefined
+            });
+            return;
+        }
+
+        // Очищаем предыдущие активные сообщения
+        if (pending.lastMessageId) {
+            try {
+                await this.bot.deleteMessage(chatId, pending.lastMessageId);
+            } catch (e) {
+                // Игнорируем ошибки удаления
+            }
+        }
+
+        // Отправляем сообщение с запросом города и кнопкой отмены
+        const sentMessage = await this.bot.sendMessage(chatId,
+            `🏙️ <b>Для получения расписания в своем городе</b>\n\n` +
+            `Пришлите мне, пожалуйста, <b>название своего города</b>.\n` +
+            `Постарайтесь написать его так, как город называется на картах.\n\n` +
+            `<i>Например:</i> Москва, Санкт-Петербург, Казань`,
+            {
+                parse_mode: 'HTML',
+                reply_markup: {
+                    inline_keyboard: [[
+                        { text: '❌ Отмена', callback_data: 'cancel_config' }
+                    ]]
+                },
+                message_thread_id: pending.message_thread_id || undefined
+            }
+        );
+
+        // Обновляем состояние сессии
+        pending.waitingForTownInput = 1;  // Новый флаг, нужно добавить
+        pending.lastMessageId = sentMessage.message_id;
+        pending.lastContentMessageId = null;  // Сбрасываем, так как это новый шаг
+        this.pendingConfigs.set(chatId, pending);
+
+        //console.log(`Запрошен город для chatId ${chatId}`);
+
+      } catch (err) {this.sendErrorMessage('Ошибка в getTownSlug: ' + err);}
 	}
 }
 

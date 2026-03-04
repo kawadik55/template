@@ -18,5 +18,8 @@
   "Raspis": false,
   "FileEg": "/../Rassilka/eg.txt",
   "FileRaspis": "/../Rassilka/raspis.txt",
-  "UrlSupport": "https://t.me/ссылкаДляВопросов"
+  "UrlSupport": "https://t.me/ссылкаДляВопросов",
+  "DirBaseES": "/../Rassilka/BaseES",
+  "FileNameRaspisES": "raspisES.html",
+  "fromES": false
 }
