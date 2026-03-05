@@ -376,7 +376,7 @@ try
 	
 	//любая текстовая кнопка
 	if(type=='text' || type=='admin')
-	{	if(!Object.hasOwn(Tree[index], 'text'))
+	{	if(!Object.hasOwn(Tree[index], 'text') && !Tree[index].filename)
 		{	Tree[index].text = 'Тут пока ничего нет\nДобавь текст командой /EditText';
 		}
 		//если есть текст, то чисто текстовая кнопка
