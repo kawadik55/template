@@ -116,23 +116,22 @@ try
 		{	let command = getMeetingsInTown;
 			command += '&&town='+listTowns[key].id+'&&exact_date='+dateToday;
 			await sleep(500);//задержка
-			//console.log('Запрашиваем город '+key+' ('+count+')');
 			res = await getObjectFromES(gURL+command);
 			if(res==='NO') //неудача
 			{	console.log('Не удалось получить расписание в городе '+key+'; попытка №'+(attempts+1));
 				attempts++;
-				await sleep(1000); // пауза перед повтором
+				await sleep(10000*attempts); // пауза перед повтором
 			}
 			else if(Array.isArray(res.results))//массив объектов, все собрания
 			{	
 				//собираем сообщение для ботов Все собрания на Сегодня
-				HtmlRaspis[key] = parseRaspisToHtml(dayOfWeekToday, res.results, listTowns[key].slug || null, key);
+				HtmlRaspis[key] = getBestRaspis(dayOfWeekToday, res.results, listTowns[key].slug || null, key);
 				//console.log('Запросили город '+key+' ('+res.results.length+')');
 				HtmlRaspis[key].UnixTime = moment().unix();//добавим время создания
 				HtmlRaspis[key].momentTime = moment().format();//добавим время создания
 				//собираем сообщение для ботов Открытые собрания на Сегодня
 				const opened = res.results.filter(item => item.types.some(typeId => id_open.includes(typeId)));//отфильтруем только Открытые
-				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key, 'open');//объект сообщения
+				const open_meets = getBestRaspis(dayOfWeekToday, opened, listTowns[key].slug || null, key, 'open');//объект сообщения
 				open_meets.UnixTime = moment().unix();//добавим время создания
 				open_meets.momentTime = moment().format();//добавим время создания
 				//для каждого города пишем в свою директорию
@@ -164,18 +163,18 @@ try
 			if(res==='NO') //неудача
 			{	console.log('Не удалось получить расписание в городе '+key+'; попытка №'+(attempts+1));
 				attempts++;
-				await sleep(1000); // пауза перед повтором
+				await sleep(10000*attempts); // пауза перед повтором
 			}
 			else if(Array.isArray(res.results))//массив объектов, все собрания
 			{	
 				//собираем сообщение для ботов Все собрания на Завтра
-				HtmlRaspis[key] = parseRaspisToHtml(dayOfWeekTomorrow, res.results, listTowns[key].slug || null, key);
+				HtmlRaspis[key] = getBestRaspis(dayOfWeekTomorrow, res.results, listTowns[key].slug || null, key);
 				//console.log('Запросили город '+key+' ('+res.results.length+')');
 				HtmlRaspis[key].UnixTime = moment().unix();//добавим время создания
 				HtmlRaspis[key].momentTime = moment().format();//добавим время создания
 				//собираем сообщение для ботов Открытые собрания на Завтра
 				const opened = res.results.filter(item => item.types.some(typeId => id_open.includes(typeId)));//отфильтруем только Открытые
-				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key, 'open');//объект сообщения
+				const open_meets = getBestRaspis(dayOfWeekToday, opened, listTowns[key].slug || null, key, 'open');//объект сообщения
 				open_meets.UnixTime = moment().unix();//добавим время создания
 				open_meets.momentTime = moment().format();//добавим время создания
 				//для каждого города пишем в свою директорию
@@ -207,18 +206,18 @@ try
 			if(res==='NO') //неудача
 			{	console.log('Не удалось получить расписание в городе '+key+'; попытка №'+(attempts+1));
 				attempts++;
-				await sleep(5000); // пауза перед повтором
+				await sleep(10000*attempts); // пауза перед повтором
 			}
 			else if(Array.isArray(res.results))//массив объектов, все собрания
 			{	
 				//собираем сообщение для ботов Все собрания на Вчера
-				HtmlRaspis[key] = parseRaspisToHtml(dayOfWeekYesterday, res.results, listTowns[key].slug || null, key);
+				HtmlRaspis[key] = getBestRaspis(dayOfWeekYesterday, res.results, listTowns[key].slug || null, key);
 				//console.log('Запросили город '+key+' ('+res.results.length+')');
 				HtmlRaspis[key].UnixTime = moment().unix();//добавим время создания
 				HtmlRaspis[key].momentTime = moment().format();//добавим время создания
 				//собираем сообщение для ботов Открытые собрания на Вчера
 				const opened = res.results.filter(item => item.types.some(typeId => id_open.includes(typeId)));//отфильтруем только Открытые
-				const open_meets = parseRaspisToHtml(dayOfWeekToday, opened, listTowns[key].slug || null, key, 'open');//объект сообщения
+				const open_meets = getBestRaspis(dayOfWeekToday, opened, listTowns[key].slug || null, key, 'open');//объект сообщения
 				open_meets.UnixTime = moment().unix();//добавим время создания
 				open_meets.momentTime = moment().format();//добавим время создания
 				//для каждого города пишем в свою директорию
@@ -286,6 +285,7 @@ function parseRaspisToHtml(day, arr, slug, town, format)
 	str += '<strong>'+day+'</strong>\n\n';//день недели в заголовке
 	if(!!town) str += '<strong>'+town+'</strong>\n\n';//город
 	if(arr.length==0) str += 'Сожалею, но сегодня собраний нет... 😥\n\n';
+	let count = 0;
 	for(let i=0;i<arr.length;i++)
 	{	//время
 		let time = arr[i].time ? arr[i].time.split(':').slice(0, 2).join(':') : 'unknown'; //без секунд
@@ -329,6 +329,7 @@ function parseRaspisToHtml(day, arr, slug, town, format)
 		{	str += '<i>Это не все собрания в этот день...</i>\n\n';
 			break;
 		}
+		count++;
 	}
 	//завершение
 	if(PathsList.Links && Array.isArray(PathsList.Links) && PathsList.Links.length>0)
@@ -348,7 +349,90 @@ function parseRaspisToHtml(day, arr, slug, town, format)
 		}
 	}
 	
-	return {text:str, mode:'HTML', slug};
+	return {text:str, mode:'HTML', slug, count};
+}
+//====================================================================
+function parseRaspisToMD(day, arr, slug, town, format)
+{	//if(arr.length==0) return '';
+	let str;
+	if(format && format==='open') str = '🔷*Расписание открытых собраний*🔷\n\n';//заголовок
+	else str = '🔷*Расписание собраний*🔷\n\n';//заголовок
+	str += '*'+day+'*\n\n';//день недели в заголовке
+	if(!!town) str += '*'+town+'*\n\n';//город
+	if(arr.length==0) str += 'Сожалею, но сегодня собраний нет... 😥\n\n';
+	let count = 0;
+	for(let i=0;i<arr.length;i++)
+	{	//время
+		let time = arr[i].time ? arr[i].time.split(':').slice(0, 2).join(':') : 'unknown'; //без секунд
+		//группа
+		let name = '«' + escapeMarkdown(arr[i].group.name) + '»';
+		//адрес
+		let address = escapeMarkdown(arr[i].group.location.address);
+		//как пройти
+		let place_description = arr[i]?.group?.location?.place_description ? escapeMarkdown(replaceHtml(arr[i].group.location.place_description)) : '';
+		//добавим к адресу
+		if(place_description) address = address + ' - ' + place_description + ';\n';
+		else address = address + ';\n';
+		//тема
+		let types, tema;
+		let meetingTypes = arr[i].types ? arr[i].types : [];
+		if(meetingTypes.length>0) types = meetingTypes.map(id => typesMeetings[id]).filter(Boolean).join(', ');
+		if(!!types) tema = 'Тема: _'+escapeMarkdown(types)+'_\n';//курсивом
+		//карта
+		let map_frame = arr[i]?.group?.location?.map_frame ? (arr[i].group.location.map_frame).trim() : '';
+		let match = map_frame.match(/^[^\s]+/);
+		map_frame = (match && match[0].startsWith('https://')) ? match[0] : '';
+		if(!!map_frame) map_frame = '[Маршрут](' + escapeMarkdown(map_frame) + ')';
+		//фото
+		let photo = '';
+		let url = arr[i]?.group?.location?.images ? arr[i].group.location.images : '';
+		if(!!url) photo = getFirstImageUrl(url);
+		if(!!photo) photo = '[Фото](' + escapeMarkdown(photo) + ')';
+		//таблица со ссылками
+		let tabl = '';
+		if(map_frame || photo)
+		{	tabl = map_frame ? map_frame : '';
+			if(!!photo) tabl += '  |  ' + photo;
+			else tabl += photo;
+			if(!!tabl) tabl += '\n';
+		}
+		//соберем результат в промежуточную
+		let tmpstr = '*'+time+'* - '+ name +' - '+ address + tema + tabl + '\n';
+		
+		if((str+tmpstr).length < 3700) str += tmpstr;//до предела не добрались
+		else if(i < (arr.length-1))
+		{	str += '_Это не все собрания в этот день..._\n\n';
+			break;
+		}
+		count++;
+	}
+	//завершение
+	if(PathsList.Links && Array.isArray(PathsList.Links) && PathsList.Links.length>0)
+	{	for(let i in PathsList.Links)
+		{	if (typeof PathsList.Links[i] === 'object' && PathsList.Links[i] !== null) 
+			{	let link = PathsList.Links[i]?.link ? PathsList.Links[i].link : 'https://na-russia.org/';
+				if (!link.endsWith('/')) {link += '/';}
+				if(slug) 
+				{	if(format && format==='open') link += slug + '/schedule-pro';
+					else link += slug + '/meetings-today';
+				}
+				let text = PathsList.Links[i]?.text ? PathsList.Links[i].text : 'Гораздо больше информации вы найдете на сайте АН РЗФ!';
+				let tempstr = '['+text+'](' + link + ')\n\n';
+				if((str+tempstr).length>4000) {break;}//добавлять не будем
+				else str += tempstr;
+			}
+		}
+	}
+	
+	return {text:str, mode:'markdown', slug, count};
+}
+//====================================================================
+function getBestRaspis(day, arr, slug, town, format)
+{	// Получаем оба варианта
+	let htmlResult = parseRaspisToHtml(day, arr, slug, town, format);
+	let mdResult = parseRaspisToMD(day, arr, slug, town, format);
+	// Сравниваем по количеству добавленных собраний
+	if (htmlResult.count >= mdResult.count) {return htmlResult;} else {return mdResult;}
 }
 //====================================================================
 function getFirstImageUrl(htmlString)
@@ -366,6 +450,12 @@ function escapeHtml(text)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+//====================================================================
+function escapeMarkdown(text) 
+{
+	// Экранируем только 4 символа: ` _ * [
+	return text.replace(/[`_*[]/g, '\\$&');
 }
 //====================================================================
 function writeFile(filename, message)
