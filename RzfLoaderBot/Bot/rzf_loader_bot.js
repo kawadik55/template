@@ -4350,7 +4350,8 @@ async function send_Raspis_ES()
 			let mode = obj?.mode ? obj.mode : 'HTML';
 			let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 			let raspis = obj?.text ? obj.text : '';
-			if(!raspis) raspis = 'Для того, чтобы получать расписание собраний в своем городе, \
+			if(!raspis) raspis = 'Вы подписались на получение Расписания.\n \
+						Для того, чтобы получать расписание собраний в своем городе, \
 						нужно повторить настройку бота @'+nameNews+' командой /config и выбрать свой город. 🤷';
 			else 
 			{	opt.disable_web_page_preview = true; 
