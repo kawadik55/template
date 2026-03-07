@@ -10,6 +10,7 @@
 	meeting.period - массив или число
 	meeting.day - день недели
 	meeting.ref_data - дата отсчета для floating
+	meeting.shiftDays - смещение даты в днях знаковое
  * @returns {string} Дата в формате ДД.ММ.ГГГГ
  */
 function getNextDate(meeting) {
@@ -29,6 +30,8 @@ function getNextDate(meeting) {
 function findNearestStaticMeeting(meeting, now, currentYear, currentMonth) {
     const dayOfWeek = getDayNumber(meeting.day);
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+	let shiftDays = 0;//смещение в днях
+	if(meeting.shiftDays && meeting.shiftDays !== 0) shiftDays = meeting.shiftDays;//если есть смещение
     
     // Сортируем недели по порядку, чтобы искать от ближайших к дальним
     const sortedWeeks = [...meeting.period].sort((a, b) => {
@@ -46,6 +49,7 @@ function findNearestStaticMeeting(meeting, now, currentYear, currentMonth) {
         for (const week of sortedWeeks) {
             const day = calculateDayInMonth(year, month, dayOfWeek, week);
             const meetingDate = new Date(year, month, day);
+			if(shiftDays!==0) meetingDate.setDate(meetingDate.getDate() + shiftDays);//с учетом смещения
             
             // Если дата сегодня - возвращаем 'Сегодня'
             if (isSameDate(meetingDate, today)) {
@@ -54,7 +58,7 @@ function findNearestStaticMeeting(meeting, now, currentYear, currentMonth) {
             
             // Если дата в будущем - возвращаем её
             if (meetingDate > today) {
-                return formatDate(meetingDate);
+				return formatDate(meetingDate);
             }
         }
     }
@@ -89,6 +93,8 @@ function calculateDayInMonth(year, month, dayOfWeek, week) {
 
 function findNearestFloatingMeeting(meeting, now) {
     const refDate = parseDate(meeting.ref_data);
+	let shiftDays = 0;//смещение в днях
+	if(meeting.shiftDays && meeting.shiftDays !== 0) shiftDays = meeting.shiftDays;//если есть смещение
     const periodWeeks = parseInt(meeting.period);
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
@@ -101,7 +107,7 @@ function findNearestFloatingMeeting(meeting, now) {
     
     // Проверяем текущее собрание (может быть сегодня)
     const currentMeetingDate = new Date(refDate);
-    currentMeetingDate.setDate(refDate.getDate() + meetingNumber * periodWeeks * 7);
+    currentMeetingDate.setDate(refDate.getDate() + meetingNumber * periodWeeks * 7 + shiftDays);//у учетом смещения
     
     if (isSameDate(currentMeetingDate, today)) {return 'Сегодня';}//если сегодня
     
@@ -109,7 +115,7 @@ function findNearestFloatingMeeting(meeting, now) {
     const nextMeetingNumber = meetingNumber + 1;
     const weeksFromRef = nextMeetingNumber * periodWeeks;
     const nextMeetingDate = new Date(refDate);
-    nextMeetingDate.setDate(refDate.getDate() + weeksFromRef * 7);
+    nextMeetingDate.setDate(refDate.getDate() + weeksFromRef * 7 + shiftDays);//с учетом смещения
     
     return formatDate(nextMeetingDate);
 }

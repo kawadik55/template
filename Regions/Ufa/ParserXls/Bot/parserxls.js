@@ -94,7 +94,7 @@ try{
 		for(let num=0;num<sheets[name_list].length;num++)
 		{	let town, day, time, name, adres, address_add, karta, photo, tema, comment, map2gis, longtime, online;
 			let format;
-			let stat = [], floating = {};
+			let stat = [], floating = {}, shiftDays = 0;
 			//если есть ссылка на лист локаций, то заполним из него
 			if(!!sheets[name_list][num]['Локация'])
 			{	let id = sheets[name_list][num]['Локация'];
@@ -118,14 +118,20 @@ try{
 			if(!!sheets[name_list][num]['4й']) stat.push(4);
 			if(!!sheets[name_list][num]['5й']) stat.push(5);
 			if(!!sheets[name_list][num]['Последний']) stat.push('last');
+			if(!!sheets[name_list][num]['Смещение'])
+			{	let tmp = parseInt(sheets[name_list][num]['Смещение']);
+				if (!isNaN(tmp)) shiftDays = Math.trunc(tmp);//смещение в днях знаковое
+				else shiftDays = 0;
+			}
 			if(!!sheets[name_list][num]['Период недель']&&!!sheets[name_list][num]['Дата'])
 			{	stat = [];//если плавающая периодичность, то чистим статический массив
 				try
 				{	floating.period = parseInt(sheets[name_list][num]['Период недель']);
 					floating.ref_data = sheets[name_list][num]['Дата'];
 					if(!floating.period || floating.period<1) {floating = {}; continue;}
+					floating.shiftDays = shiftDays;
 					//вычислим дату ближайшего собрания
-					floating.next_data = getNextDate({"type":"floating","period":floating.period,"ref_data":floating.ref_data});
+					floating.next_data = getNextDate({"type":"floating","period":floating.period,"ref_data":floating.ref_data,"shiftDays":shiftDays});
 				}catch(err){console.log(err);floating = {};}
 			}
 			if(stat.length==0 && !floating.period) {continue;}//если ошибки то пропускаем
@@ -162,12 +168,14 @@ try{
 				if(!!time) obj.time = time;//время
 				if(!!longtime) obj.longtime = longtime;
 				if(!!day) obj.day = day;//день
+				obj.shiftDays = shiftDays;//смещение в днях
 				if(stat.length>0) {obj.type = 'static'; obj.period = stat;}
 				if(!!floating.period) 
 				{obj.type = 'floating'; 
 				 obj.period = floating.period; 
 				 obj.ref_data = floating.ref_data;
 				 obj.next_data = floating.next_data;
+				 obj.shiftDays = floating.shiftDays;
 				 if(!!comment) comment += ' (ближайшее: '+obj.next_data+')';
 				 else comment = '(ближайшее: '+obj.next_data+')';
 				}
@@ -460,7 +468,6 @@ try{
 async function save_commitee_file()
 {
 try{	
-	let masDay=['','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
 	let groups = '';
 	if(!!List.commitee) groups = List.commitee;
 	else {console.log('Ошибка! Отсутствует объект List.commitee'); return;}
@@ -468,7 +475,6 @@ try{
 	var dayWeek = new Date().getDay();//сегодня день недели
 	if(dayWeek==0) dayWeek=7;//приведем к формату 1..7
 	let str = '🔷<strong>Расписание рабочих собраний комитетов</strong>🔷\n\n';//заголовок
-	//str += '<strong>'+masDay[dayWeek]+'</strong>\n\n';//день недели в заголовке
 	let town = Object.keys(groups);//массив городов
 	if(!town) {console.log('Ошибка! Отсутствует массив городов'); return;}
 	let out = {};//выходной объект
@@ -502,6 +508,8 @@ try{
 					let next_data = mas[n].next_data ? mas[n].next_data : '';
 					if(!out[town[i]]) out[town[i]] = [];
 					let cnt;
+					let shiftDays = mas[n].shiftDays ? mas[n].shiftDays : '';
+					//let shift = shiftDays ? shiftDays : '';
 					out[town[i]].push(new Array(7));//имя, время, адрес, день, карта, коммент, формат
 					cnt = out[town[i]].length-1;
 					//сделаем гиперссылку из названия комитета
@@ -521,14 +529,21 @@ try{
 					out[town[i]][cnt][3] = '';
 					if(mas[n].type=='static') //если период статический
 					{	let period = mas[n].period;//массив периода - недели месяца
-						let str = '<i>'+mas[n].day+' - ';//начало курсива жиром
-						for(let k in period) {if(period[k]=='last') str += 'последняя '; else str += period[k]+'я, ';}
-						str += 'неделя месяца (ближайшее: '+next_data+'):</i>';//конец курсива
+						let str;
+						if(shiftDays) str = '<i>Относительный день (ближайшее: '+next_data+'):</i>';
+						else
+						{	str = '<i>'+mas[n].day+' - ';//начало курсива жиром
+							for(let k in period) {if(period[k]=='last') str += 'последняя '; else str += period[k]+'я, ';}
+							str += 'неделя месяца '+'(ближайшее: '+next_data+'):</i>';//конец курсива
+						}
 						out[town[i]][cnt][3] = str;
 					}
 					else if(mas[n].type=='floating') //если период плавающий
-					{	let period = mas[n].period;//раз в x недели
-						let str = '<i>'+mas[n].day+' - раз в '+period+' недели (ближайшее: '+mas[n].next_data+'):</i>';//курсив жиром
+					{	let str;
+						if(shiftDays) str = '<i>Относительный день (ближайшее: '+next_data+'):</i>';
+						{	let period = mas[n].period;//раз в x недели
+							str = '<i>'+mas[n].day+' - раз в '+period+' недели '+'(ближайшее: '+next_data+'):</i>';//курсив жиром
+						}
 						out[town[i]][cnt][3] = str;
 					}
 					else out[town[i]][cnt][3] = 'Неизвестный день'; 
@@ -735,6 +750,67 @@ try{
     if(!!err) {console.log(err);}
 	
 }catch(err){console.log(err);}
+}
+//====================================================================
+function getLitkomDate(
+  currentDate,           // moment() объект
+  mkoSettings,           // { week: 'last'|1|2|3|4|5, weekday: 1..7 } (1=пн, 7=вс)
+  offsetDays             // число: -5, +3 и т.д.
+) 
+{
+	  offsetDays = Number(offsetDays);
+	  if (isNaN(offsetDays)) {
+		throw new Error(`offsetDays должен быть числом или строкой, convertible to number, получено: ${offsetDays}`);
+	  }
+	  // Клонируем дату, чтобы не мутировать исходную
+	  let date = currentDate.clone().startOf('month');
+	  let year = date.year();
+	  let month = date.month();
+	  
+	  // 1. Находим последний день месяца
+	  let lastDay = moment(date).endOf('month').date();
+	  
+	  // 2. Определяем нужную неделю для МКО
+	  let targetWeek = mkoSettings.week; // 'last' или число 1-5
+	  let targetWeekday = mkoSettings.weekday; // 1 пн, 2 вт, ..., 7 вс
+	  
+	  let mkoDay;
+	  
+	  if (targetWeek === 'last') {
+		// Ищем последний targetWeekday в месяце
+		for (let d = lastDay; d >= 1; d--) {
+		  let testDate = moment([year, month, d]);
+		  if (testDate.isoWeekday() === targetWeekday) {
+			mkoDay = d;
+			break;
+		  }
+		}
+	  } else {
+		// Ищем n-й targetWeekday в месяце
+		let count = 0;
+		for (let d = 1; d <= lastDay; d++) {
+		  let testDate = moment([year, month, d]);
+		  if (testDate.isoWeekday() === targetWeekday) {
+			count++;
+			if (count === targetWeek) {
+			  mkoDay = d;
+			  break;
+			}
+		  }
+		}
+	  }
+	  
+	  if (!mkoDay) {
+		throw new Error(`Не удалось найти МКО для месяца ${month+1}/${year} с настройками`, mkoSettings);
+	  }
+	  
+	  // 3. Создаём дату МКО
+	  let mkoDate = moment([year, month, mkoDay]);
+	  
+	  // 4. Применяем смещение для ЛитКом
+	  let litkomDate = mkoDate.clone().add(offsetDays, 'days');
+	  
+	  return litkomDate;
 }
 //====================================================================
 //запускаем функции
