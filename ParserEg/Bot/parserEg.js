@@ -16,6 +16,7 @@ try
  PathsList.Links = [];
  PathsList.FileEgHtml = 'eg.html';
  PathsList.FileEgMD = 'eg.txt';
+ //PathsList.FileEgAlice = '/../dir/alice_eg.json';
  PathsList.TimeZoneMinutes = '';
  fs.writeFileSync(FilePaths, JSON.stringify(PathsList,null,2));
 }
@@ -64,6 +65,7 @@ try
 	let filenameText = PathsList.FileEgMD ? PathsList.FileEgMD : 'eg.txt';
 	let filenameHtml = PathsList.FileEgHtml ? PathsList.FileEgHtml : 'eg.html';
 	let filenameTimestamp = 'timestamp.txt';
+	let pathAlice = PathsList.FileEgAlice ? currentDir+PathsList.FileEgAlice : ''
 	
 	//формируем даты для Ежиков
 	let timeServer = moment();//дата/время текущего момента
@@ -75,6 +77,7 @@ try
 	if(res=='NO') return res; 
 	writeFile(filenameText, parseEgToText(res));
 	writeFile(filenameHtml, parseEgToHtml(res));
+	if(!!pathAlice) {try{fs.writeFileSync(pathAlice, parseEgToAlice(res));}catch(err){console.log(err);}}
 	//получаем и пишем файлы на завтра
 	res = await getEgFromES(dateTomorrow);
 	if(res=='NO') return res; 
@@ -88,6 +91,10 @@ try
 	//пишем файл с таймстампом
 	let obj = {"UnixTime":timeServer.unix(), "Event":"Момент создания файлов Ежедневника", "momentTime":timeServer.format()};
 	writeFile('timestamp.json', JSON.stringify(obj,null,2));
+	
+	//пишем файл для Алисы
+	res = await getEgFromES(dateToday);
+	if(res=='NO') return res;
 
 		console.log(moment().format('DD-MM-YY HH:mm:ss:ms')+' - Парсер Ежедневника - OK!');
 		return 'OK';
@@ -148,6 +155,42 @@ function parseEgToText(EgObj)//собираем текст ежика для mar
 	}
 	
 	return message;
+}
+//====================================================================
+function parseEgToAlice(EgObj)//собираем текст ежика для markdown
+{	//fs.writeFileSync(currentDir+'/page_eg.txt', JSON.stringify(EgObj,null,2));// Запись полученного результата
+	if(typeof(EgObj) != 'object' || !EgObj.day || !EgObj.title || !EgObj.quote || !EgObj.body || !EgObj.jft)
+	{	throw new Error(`Ошибка объекта: ${EgObj}`);
+	}
+	let message='', resp = {};
+	message += 'ЕЖЕДНЕВНИК за ';//zagol;
+	message += EgObj.day + ' ' + mas[EgObj.month] + '.';//дата	
+	message += replaceHtml(EgObj.title) + '.';//тема жирно
+					
+	message += 'Аннотация: '+replaceHtml(EgObj.quote) + '.';//аннотация
+	//message += EgObj.quote_from + '.\n\n';//страница БТ
+				
+	message += replaceHtml(EgObj.body) + '';//сам текст
+		
+	message += 'ТОЛЬКО СЕГОДНЯ: ' + replaceHtml(EgObj.jft) + '.';
+	
+	function replaceHtml(str)
+	{	const options = {wordwrap: false};
+		str = htmlToText(str, options);
+		str = str.replace(/_/g, '\\_');//экранируем нижнее подчеркивание
+		return str;
+	}
+	
+	if(message.length>1020) message = message.substring(0, 1020);
+	
+	return	"return 200 '" + JSON.stringify(
+			{ "response": {
+				"text": "ЕЖЕДНЕВНИК",
+				"tts": message,
+				"end_session": true
+			  },
+			  "version": "1.0"
+			},null,2) + "';";
 }
 //====================================================================
 function parseEgToHtml(EgObj)//соберем текст в формате html	
