@@ -1885,8 +1885,9 @@ try{
 					str += '*Кол-во подписчиков* = '+allMembers+'\n';
 					if(allchannels>0) str += '*Каналы*  = '+allchannels+' ('+allchannelsMembers+')\n';
 					if(allgroups>0)   str += '*Группы*  = '+allgroups+' ('+allgroupsMembers+')\n';
-					if(allusers>0)   str +=  '*Приватные чаты* = '+allusers+'\n\n';
-					if(unknownchats>0) str +=  '*unknown* = '+unknownchats+'\n\n';
+					if(allusers>0)   str +=  '*Приватные чаты* = '+allusers+'\n';
+					if(unknownchats>0) str +=  '*unknown* = '+unknownchats+'\n';
+					str += '\n';
 					for(const key in obj)
 					{	const zoneName = 'Зона '+(zones[key] || `UTC+${parseInt(key)/60}`);
 						str += '*'+zoneName+':*\n';
