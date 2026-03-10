@@ -101,11 +101,15 @@ class SlaveBot {
 
     setupHandlers() {
         // Команда /config
-        this.bot.onText(/^\/config(?:@\w+)?$/, async (msg) => {
+        this.bot.onText(/^\/config(?:@(\w+))?$/, async (msg, match) => {
             try {
                 const chatId = msg.chat.id;
                 const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
                 const fromId = msg.from.id;
+				const mentionedBot = match[1];
+				
+				// Проверяем, нам ли адресована команда
+				if (mentionedBot && mentionedBot !== this.botUsername) {return;}
                 
                 // Проверяем права
                 const messageId = msg.message_id;
@@ -172,7 +176,7 @@ class SlaveBot {
                         `📢 <b>Настройка бота для канала</b>\n\n` +
                         `<b>Для настройки канала:</b>\n` +
                         `1. Перейдите в приватный чат с ботом @${this.botUsername}\n` +
-                        `2. Используйте команду /config_channel)}\n` +
+                        `2. Используйте команду /config_channel\n` +
                         `3. Выберите этот канал из списка\n\n` +
                         `<b>Только администраторы канала могут выполнить настройку.</b>`,
                         { 
@@ -197,11 +201,15 @@ class SlaveBot {
         });
 
         // Команда /info - информация о настройках
-        this.bot.onText(/^\/info(?:@\w+)?$/, async (msg) => {
+        this.bot.onText(/^\/info(?:@(\w+))?$/, async (msg, match) => {
             try {
                 const chatId = msg.chat.id;
                 const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
                 const fromId = msg.from.id;
+				const mentionedBot = match[1];
+				
+				// Проверяем, нам ли адресована команда
+				if (mentionedBot && mentionedBot !== this.botUsername) {return;}
                 
                 // Проверяем права
                 const messageId = msg.message_id;
@@ -227,10 +235,14 @@ class SlaveBot {
         });
 
         // Команда /help
-        this.bot.onText(/^\/help(?:@\w+)?$/, async (msg) => {
+        this.bot.onText(/^\/help(?:@(\w+))?$/, async (msg, match) => {
             try {
                 const chatId = msg.chat.id;
                 const fromId = msg.from.id;
+				const mentionedBot = match[1];
+				
+				// Проверяем, нам ли адресована команда
+				if (mentionedBot && mentionedBot !== this.botUsername) {return;}
                 
                 // Проверяем права
                 const messageId = msg.message_id;
