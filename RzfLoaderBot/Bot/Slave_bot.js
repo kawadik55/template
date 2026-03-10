@@ -113,10 +113,11 @@ class SlaveBot {
                 
                 // Проверяем права
                 const messageId = msg.message_id;
-                if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
+                const botCanDelete = await this.isBotAdmin(chatId, true);
+				if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
                     if (!await this.checkAdminRights(chatId, fromId)) {
                         try { // Удаляем сообщение с командой
-                            await this.bot.deleteMessage(chatId, messageId);
+                            if(botCanDelete) await this.bot.deleteMessage(chatId, messageId);
                         } catch (e) {} // Игнорируем, если нет прав на удаление
                         return;
                     }
@@ -124,6 +125,8 @@ class SlaveBot {
                 
                 // Сохраняем message_thread_id, если он есть (для форумов)
                 const messageThreadId = msg.message_thread_id || "";
+				// Если у бота нет прав - отправляем инструкцию
+				if (!botCanDelete) {await this.checkBotPerm(chatId, messageThreadId); return;}
                 
                 await this.startConfigProcess(chatId, chatTitle, messageThreadId);
             } catch (err) {
@@ -138,13 +141,14 @@ class SlaveBot {
                 const fromId = msg.from.id;
                 const params = match[1]; // Параметры после /start
                 const chatTitle = msg.chat.title || msg.chat.username || `Чат ${chatId}`;
+				const botCanDelete = await this.isBotAdmin(chatId, true);
 				
                 // Проверяем права
                 const messageId = msg.message_id;
                 if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
                     if (!await this.checkAdminRights(chatId, fromId)) {
                         try { // Удаляем сообщение с командой
-                            await this.bot.deleteMessage(chatId, messageId);
+                            if(botCanDelete) await this.bot.deleteMessage(chatId, messageId);
                         } catch (e) {} // Игнорируем, если нет прав на удаление
                         return;
                     }
@@ -194,7 +198,9 @@ class SlaveBot {
                 }
                 
                 const messageThreadId = msg.message_thread_id || "";
-                await this.startConfigProcess(chatId, chatTitle, messageThreadId);
+                // Если у бота нет прав - отправляем инструкцию
+				if (!botCanDelete) {await this.checkBotPerm(chatId, messageThreadId); return;}
+				await this.startConfigProcess(chatId, chatTitle, messageThreadId);
             } catch (err) {
                 this.sendErrorMessage('Ошибка в /start: ' + err);
             }
@@ -213,16 +219,20 @@ class SlaveBot {
                 
                 // Проверяем права
                 const messageId = msg.message_id;
+				const botCanDelete = await this.isBotAdmin(chatId, true);
                 if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
                     if (!await this.checkAdminRights(chatId, fromId)) {
                         try { // Удаляем сообщение с командой
-                            await this.bot.deleteMessage(chatId, messageId);
+                            if(botCanDelete) await this.bot.deleteMessage(chatId, messageId);
                         } catch (e) {} // Игнорируем, если нет прав на удаление
                         return;
                     }
                 }
                 
-                const info = await this.getChatInfo(chatId);
+                // Если у бота нет прав - отправляем инструкцию
+				if (!botCanDelete) {await this.checkBotPerm(chatId, msg.message_thread_id || undefined); return;}
+				
+				const info = await this.getChatInfo(chatId);
                 await this.bot.sendMessage(chatId, info, 
                     {
                         parse_mode: 'HTML',
@@ -246,14 +256,17 @@ class SlaveBot {
                 
                 // Проверяем права
                 const messageId = msg.message_id;
-                if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
+                const botCanDelete = await this.isBotAdmin(chatId, true);
+				if (chatId < 0) { // Только для групп/каналов (отрицательные ID)
                     if (!await this.checkAdminRights(chatId, fromId)) {
                         try { // Удаляем сообщение с командой
-                            await this.bot.deleteMessage(chatId, messageId);
+                            if(botCanDelete) await this.bot.deleteMessage(chatId, messageId);
                         } catch (e) {} // Игнорируем, если нет прав на удаление
                         return;
                     }
                 }
+				// Если у бота нет прав - отправляем инструкцию
+				if (!botCanDelete) {await this.checkBotPerm(chatId, msg.message_thread_id || undefined); return;}
                 
                 // Определяем тип чата
                 let chatType;
@@ -374,6 +387,7 @@ class SlaveBot {
                                         message_thread_id: msg.message_thread_id || undefined
                                     }
                                 );
+								await this.checkBotPerm(chatId, message_thread_id);
                             }
                         } catch (err) {
                             // Игнорируем ошибки, возможно бот не имеет прав
@@ -2616,14 +2630,17 @@ class SlaveBot {
     }
 	
 	// Проверка, является ли бот администратором в чате
-	async isBotAdmin(chatId) {
+	async isBotAdmin(chatId, checkDeletePermission = false) {
 		try {
 			// Для приватных чатов всегда true
 			if (chatId > 0) return true;
-			
 			const botId = this.bot.token.split(':')[0];
 			const botMember = await this.bot.getChatMember(chatId, botId);
-			return botMember.status === 'administrator';
+			const isAdmin = botMember.status === 'administrator';
+			if (!isAdmin) return false;
+			// Если запрошена проверка права на удаление
+			if (checkDeletePermission) return botMember.can_delete_messages === true;
+			return true;
 		} catch (err) {
 			this.sendErrorMessage('Ошибка проверки прав бота: ' + err);
 			return false; // При ошибке считаем, что не админ
@@ -2659,7 +2676,7 @@ class SlaveBot {
             // Если не админ - отправляем сообщение и выходим из настройки
             await this.bot.sendMessage(chatId,
                 `⚠️ <b>Для настройки расписания мне нужно быть администратором группы</b>\n\n` +
-                `1. Сделайте меня администратором с минимальными правами чтения, хотя бы на время настройки.\n` +
+                `1. Сделайте меня администратором с минимальными правами чтения и удаления.\n` +
                 `2. Начните настройку заново командой /config`,
                 {
                     parse_mode: 'HTML',
@@ -2702,6 +2719,33 @@ class SlaveBot {
         //console.log(`Запрошен город для chatId ${chatId}`);
 
       } catch (err) {this.sendErrorMessage('Ошибка в getTownSlug: ' + err);}
+	}
+	
+	// Проверка прав бота в группе и информирование пользователя
+	async checkBotPerm(chatId, messageThreadId = null) {
+		try {
+			// Проверяем, есть ли у бота права админа и на удаление
+			const hasPermissions = await this.isBotAdmin(chatId, true);
+			if (!hasPermissions) {
+				await this.bot.sendMessage(chatId,
+					`⚠️ <b>Для корректной работы мне нужно быть администратором</b>\n\n` +
+					`Пожалуйста, сделайте меня администратором с минимальными правами:\n` +
+					`• ✅ Удаление сообщений\n\n` +
+					`Остальные права можно отключить.\n\n` +
+					`После этого используйте /config для настройки.`,
+					{ 
+						parse_mode: 'HTML',
+						message_thread_id: messageThreadId || undefined
+					}
+				);
+				return false;
+			}
+			
+			return true;
+		} catch (err) {
+			this.sendErrorMessage('Ошибка проверки прав бота: ' + err);
+			return false;
+		}
 	}
 }
 
