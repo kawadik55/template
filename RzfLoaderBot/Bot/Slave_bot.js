@@ -4,7 +4,7 @@ const moment = require('moment-timezone');
 class SlaveBot {
     constructor(token, onConfigUpdate, mainChatNewsRef, mainArea, needTown) {
         this.bot = new TelegramBot(token, { polling: true });
-        this.onConfigUpdate = onConfigUpdate; // Колбэк для обновления конфига.
+        this.onConfigUpdate = onConfigUpdate; // Колбэк для обновления конфига
         this.pendingConfigs = new Map(); // chatId -> временные данные конфигурации
         this.pendingChannelSetup = null; // Для настройки каналов через приватный чат
         this.cleanupTimer = null; // Для очистки таймера при остановке
@@ -832,24 +832,24 @@ class SlaveBot {
 						// Флаг НЕ очищаем - оставляем waitingForTownInput = 1
 					}
 				}
+		});
+			
+		// Обработка ошибок бота
+		this.bot.on('polling_error', (error) => {
+			if (error.message.includes('502') || error.message.includes('Bad Gateway'))
+			{	const now = Date.now();
+				if (now - this.last502ErrorTime < 15000) return;
+				this.last502ErrorTime = now;
+			}
+			this.sendErrorMessage('Polling error in SlaveBot: ' + error.message);
+		});
 
-			// Обработка ошибок бота
-			this.bot.on('polling_error', (error) => {
-				if (error.message.includes('502') || error.message.includes('Bad Gateway'))
-				{	const now = Date.now();
-					if (now - this.last502ErrorTime < 15000) return;
-					this.last502ErrorTime = now;
-				}
-				this.sendErrorMessage('Polling error in SlaveBot: ' + error.message);
-			});
+		this.bot.on('webhook_error', (error) => {
+			this.sendErrorMessage('Webhook error in SlaveBot: ' + error.message);
+		});
 
-			this.bot.on('webhook_error', (error) => {
-				this.sendErrorMessage('Webhook error in SlaveBot: ' + error.message);
-			});
-
-			this.bot.on('error', (error) => {
-				this.sendErrorMessage('General error in SlaveBot: ' + error.message);
-			});
+		this.bot.on('error', (error) => {
+			this.sendErrorMessage('General error in SlaveBot: ' + error.message);
 		});
 	}
 
@@ -2603,6 +2603,21 @@ class SlaveBot {
         }
     }
 	
+	// Проверка, является ли бот администратором в чате
+	async isBotAdmin(chatId) {
+		try {
+			// Для приватных чатов всегда true
+			if (chatId > 0) return true;
+			
+			const botId = this.bot.token.split(':')[0];
+			const botMember = await this.bot.getChatMember(chatId, botId);
+			return botMember.status === 'administrator';
+		} catch (err) {
+			this.sendErrorMessage('Ошибка проверки прав бота: ' + err);
+			return false; // При ошибке считаем, что не админ
+		}
+	}
+	
 	sendErrorMessage(message) {
 		console.error(message);
 		this.saveConfig('error_message', {message: message, timestamp: Date.now()});
@@ -2625,6 +2640,27 @@ class SlaveBot {
             } catch (e) {
                 // Игнорируем ошибки удаления
             }
+        }
+		
+		const isAdmin = await this.isBotAdmin(chatId);
+        if (!isAdmin) {
+            // Если не админ - отправляем сообщение и выходим из настройки
+            await this.bot.sendMessage(chatId,
+                `⚠️ <b>Для настройки расписания мне нужно быть администратором группы</b>\n\n` +
+                `1. Сделайте меня администратором с минимальными правами чтения, хотя бы на время настройки.\n` +
+                `2. Начните настройку заново командой /config`,
+                {
+                    parse_mode: 'HTML',
+                    message_thread_id: pending.message_thread_id || undefined
+                }
+            );
+            
+            // Сбрасываем все флаги
+			if (pending.waitingForTownInput) pending.waitingForTownInput = 0;
+			if (pending.waitingForManualInput) pending.waitingForManualInput = false;
+			// Очищаем сессию настройки
+            this.pendingConfigs.delete(chatId);
+            return;
         }
 
         // Отправляем сообщение с запросом города и кнопкой отмены
