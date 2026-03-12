@@ -4346,14 +4346,18 @@ async function send_Raspis_ES()
 			if(!chat[i].Raspis) continue;//не выбрано расписание в доставке
 			if(!!chat[i][name[0]]) chatId = chat[i][name[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
+			let town = chat[i].town ? chat[i].town : 'не выбран';
+			
 			//запросим объект расписания в городе
 			let obj = await getRaspisBaseES(chat[i], groffset, listTowns);
 			let mode = obj?.mode ? obj.mode : 'HTML';
 			let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 			let raspis = obj?.text ? obj.text : '';
-			if(!raspis) raspis = 'Вы подписались на получение Расписания.\n \
+			if(!raspis)
+			{	raspis = 'Вы подписались на получение Расписания.\n \
 						Для того, чтобы получать расписание собраний в своем городе, \
 						нужно повторить настройку бота @'+nameNews+' командой /config и выбрать свой город. 🤷';
+			}
 			else 
 			{	opt.disable_web_page_preview = true; 
 				opt.parse_mode = mode;
@@ -4377,7 +4381,10 @@ async function send_Raspis_ES()
 					await WriteLogFile('Что-то случилось...\ncode='+obj.message,'вчат');
 				}
 			}
-			else count_chats++;//await WriteLogFile('в '+name[0]+' = ОК');
+			else 
+			{	await WriteLogFile('город = '+count_chats);
+				count_chats++;
+			}
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis_ES()=>for()','вчат');}
 		}
