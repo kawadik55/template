@@ -4382,7 +4382,7 @@ async function send_Raspis_ES()
 				}
 			}
 			else 
-			{	await WriteLogFile('город = '+count_chats);
+			{	await WriteLogFile('город = '+town);
 				count_chats++;
 			}
 
