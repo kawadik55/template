@@ -1171,7 +1171,7 @@ try{
 	//пришел отредактированный текст от Админа
 	if((validAdmin(chatId) || (validUser(chatId) && !PRIVAT)) && WaitEditText[chatId]==1)
 	{	WaitEditText[chatId]=0;
-		if(!!LastKey[chatId] && Object.hasOwn(Tree, LastKey[chatId]))//если в Tree[]
+		if(!!LastKey[chatId] && Object.hasOwn(Tree, LastKey[chatId]) && Object.hasOwn(Tree[LastKey[chatId]], 'text'))//если в Tree[]
 		{	Tree[LastKey[chatId]].text = msg.text;
 			Tree[LastKey[chatId]].entities = msg.entities;
 			if(msg.link_preview_options) Tree[LastKey[chatId]].link_preview_options = msg.link_preview_options;
