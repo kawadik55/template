@@ -3,6 +3,7 @@
     "moment-timezone": "^0.6.0",
     "node-telegram-bot-api": "latest",
 	"tz-lookup": "^6.1.25",
-	"needle": "^3.3.1"
+	"needle": "^3.3.1",
+	"socks-proxy-agent": "^6.2.1"
   }
 }

@@ -9,7 +9,7 @@ const tzLookup = require('tz-lookup');
 const homedir = '/home/pi';
 const needle = require('needle');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
-const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше.
+const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше
 const FileAdminList = currentDir+"/AdminList.txt";//имя файла списка админов
 const FileUserList = currentDir+"/UserList.txt";//имя файла списка служенцев
 const FileEventList = currentDir+"/EventList.txt";//имя файла списка событий
@@ -57,7 +57,31 @@ const filenamebot = '/' + require(currentDir+"/filename_bot.json").filename;//и
 const tokenBot = require(TokenDir+filenamebot).token;//рабочий бот
 var nameBot = 'my_bot'; try{nameBot = require(TokenDir+filenamebot).comment} catch (err) {}//имя бота
 const LogFile = PathToLog+'/'+nameBot+'.log';
-var Bot = new TelegramBot(tokenBot, {polling: true});
+//проверим наличие файла конфига, если файл отсутствует, то создадим его 
+let config = {};
+try 
+{	config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
+	if(!config.community_text) {config.community_text = "чистого времени"; WriteFileJson(currentDir+"/config.json",config);}
+	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
+	if(!config.button2col) {config.button2col = {active:true,lenName:17}; WriteFileJson(currentDir+"/config.json",config);}
+} 
+catch (err) 
+{config = 
+ {community_text:"чистого времени",
+  utcOffset:String(moment().utcOffset()),
+  button2col:{active:true,lenName:17}
+ };
+ WriteFileJson(currentDir+'/config.json',config);
+}
+//проверим необходимость сокета
+let requestagent = {};
+if(config.socks5)
+{	const { SocksProxyAgent } = require('socks-proxy-agent');
+    const proxyUri = `socks5://${config.socks5.username}:${config.socks5.password}@${config.socks5.host}:${config.socks5.port}`;
+    const agent = new SocksProxyAgent(proxyUri);
+	requestagent = {agent: agent};
+}
+var Bot = new TelegramBot(tokenBot, {polling: true, request: requestagent});
 Bot.isPolling = true;//доп свойство
 let tokenLog;
 try{tokenLog = require(TokenDir+"/logs_bot.json").token;}catch(err){}
@@ -110,22 +134,6 @@ try {GrandCount = JSON.parse(fs.readFileSync(FileGrandCount));}
 catch (err) {GrandCount = initObjCount(); fs.writeFileSync(FileGrandCount, JSON.stringify(GrandCount,null,2));}
 //проверим наличие файла историй, если файл отсутствует, то создадим его 
 try {let history = JSON.parse(fs.readFileSync(FileHistory));} catch (err) {WriteFileJson(FileHistory,new Object());}
-//проверим наличие файла конфига, если файл отсутствует, то создадим его 
-let config = {};
-try 
-{	config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
-	if(!config.community_text) {config.community_text = "чистого времени"; WriteFileJson(currentDir+"/config.json",config);}
-	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
-	if(!config.button2col) {config.button2col = {active:true,lenName:17}; WriteFileJson(currentDir+"/config.json",config);}
-} 
-catch (err) 
-{config = 
- {community_text:"чистого времени",
-  utcOffset:String(moment().utcOffset()),
-  button2col:{active:true,lenName:17}
- };
- WriteFileJson(currentDir+'/config.json',config);
-}
 //устанавливаем локальную таймзону
 if(isNaN(Number(config.utcOffset))) {config.utcOffset = String(utcOffset); WriteLogFile('Ошибка в utcOffset');}
 utcOffset = Number(config.utcOffset);
@@ -5188,7 +5196,7 @@ try{
 //если бот запускается в пустой папке местности, то нужно создать папки и файлы по-умолчанию
 //из контекста сборки, или из ENV
 //это будет работать только из контейнера
-function setContextFiles()
+async function setContextFiles()
 {//файлы контекста находятся в /home/pi/context/Bot
 	let cBot = '/home/pi/context/Bot';
 	let cToken = cBot+'/Token';
@@ -5220,74 +5228,10 @@ function setContextFiles()
 		{fs.copyFileSync(cBot+'/barrels.txt',currentDir+'/barrels.txt');}
 		if(fs.existsSync(cBot+'/CreatorUserGuid.txt'))
 		{fs.copyFileSync(cBot+'/CreatorUserGuid.txt',currentDir+'/CreatorUserGuid.txt');}
-		if(!fs.existsSync(currentDir+'/filename_bot.json'))
-		{	let tmp=currentDir.split('/'); let name=tmp[tmp.length-1]+'_bot.json';//вытащим чисто имя папки в конце
-			let obj = {};
-			obj.filename = name;
-			obj.FileEg = '/../Rassilka/eg.txt';
-			obj.FileRaspis = '/../Rassilka/raspis.txt';
-			obj.DirBaseES = '/../Rassilka/BaseES';
-			obj.FileNameRaspisES = 'raspisES.html';
-			WriteFileJson(currentDir+'/filename_bot.json',obj);
-		}
-		if(fs.existsSync(currentDir+'/filename_bot.json'))//если файл уже имеется
-		{	let obj;
-			try{obj = require(currentDir+'/filename_bot.json');}catch(err){console.log(err);}
-			if(typeof(obj) != 'object') 
-			{obj={};
-			 let tmp=currentDir.split('/'); let name=tmp[tmp.length-1]+'_bot.json';//вытащим чисто имя папки в конце
-			 obj.filename = name;
-			 obj.FileEg = '/../Rassilka/eg.txt';
-			 obj.FileRaspis = '/../Rassilka/raspis.txt';
-			 obj.DirBaseES = '/../Rassilka/BaseES';
-			 obj.FileNameRaspisES = 'raspisES.html';
-			 WriteFileJson(currentDir+'/filename_bot.json',obj);
-			}
-			if(!obj.FileEg){obj.FileEg = '/../Rassilka/eg.txt'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
-			if(!obj.FileRaspis){obj.FileRaspis = '/../Rassilka/raspis.txt'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
-			if(!obj.DirBaseES){obj.DirBaseES = '/../Rassilka/BaseES'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
-			if(!obj.FileNameRaspisES){obj.FileNameRaspisES = 'raspisES.html'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
-			if(!!PATHEG) {obj.FileEg = PATHEG; WriteFileJson(currentDir+'/filename_bot.json',obj);}
-			if(!!PATHRASPIS) {obj.FileRaspis = PATHRASPIS; WriteFileJson(currentDir+'/filename_bot.json',obj);}
-FileNameRaspisES = currentDir+require(currentDir+"/filename_bot.json").FileNameRaspisES;//имя файла в Расписаниях ЕС
-		}
 		if(!fs.existsSync(currentDir+'/privat.json') && fs.existsSync(cBot+'/privat.json'))
 		{fs.copyFileSync(cBot+'/privat.json',currentDir+'/privat.json');}
-		//если запрошено изменение приватности или дистанции в ENV
-		if(PRIVAT >= 0 || DISTANCE >= 0)
-		{	let obj;
-			try{obj = require(currentDir+'/privat.json');}catch(err){console.log(err);}
-			if(typeof(obj) != 'object') {obj={}; obj.privat=0; obj.distance=1;}
-			if(!!PRIVAT) {obj.privat = PRIVAT;}
-			if(!!DISTANCE) {obj.distance = DISTANCE;}
-			WriteFileJson(currentDir+'/privat.json',obj);
-		}
 		if(!fs.existsSync(currentDir+'/config.json') && fs.existsSync(cBot+'/config.json'))
-		{	fs.copyFileSync(cBot+'/config.json',currentDir+'/config.json');
-		}
-		if(fs.existsSync(currentDir+'/config.json'))
-		{	let obj;
-			try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
-			let offset = moment().utcOffset();
-			if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = offset>0?'+'+String(offset):String(offset); WriteFileJson(currentDir+'/config.json',obj);}
-			if(!Object.hasOwn(obj,'community_text')) {obj.community_text='чистого времени'; WriteFileJson(currentDir+'/config.json',obj);}
-		}
-		//если запрошено изменение текста сообщества
-		if(!!COMMUNITY_TEXT_QW)
-		{	let obj;
-			try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
-			if(typeof(obj) != 'object') {obj={}; obj.community_text='чистого времени'; obj.utcOffset='+180';}
-			obj.community_text = COMMUNITY_TEXT_QW;
-			WriteFileJson(currentDir+'/config.json',obj);
-		}
-		//если запрошено изменение таймзоны
-		if(!!TIMEZONE_MINUTES)
-		{	let obj;
-			try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
-			if(typeof(obj) != 'object') {obj={}; obj.community_text='чистого времени'; obj.utcOffset='+180';}
-			obj.utcOffset = TIMEZONE_MINUTES;
-			WriteFileJson(currentDir+'/config.json',obj);
-		}
+		{fs.copyFileSync(cBot+'/config.json',currentDir+'/config.json');}
 		if(fs.existsSync(cBot+'/gif/Salut.gif'))
 		{if(!fs.existsSync(currentDir+'/gif')) {fs.mkdirSync(currentDir+'/gif');}//создадим папку, если ее нет
 		 if(fs.readdirSync(currentDir+'/gif').length===0)//если папка пустая
@@ -5299,6 +5243,73 @@ FileNameRaspisES = currentDir+require(currentDir+"/filename_bot.json").FileNameR
 		 {fs.copyFileSync(cBot+'/sticker/sticker.json',FileSticker);}
 		}
 	}
+		
+	if(!fs.existsSync(currentDir+'/filename_bot.json'))
+	{	let tmp=currentDir.split('/'); let name=tmp[tmp.length-1]+'_bot.json';//вытащим чисто имя папки в конце
+		let obj = {};
+		obj.filename = name;
+		obj.FileEg = '/../Rassilka/eg.txt';
+		obj.FileRaspis = '/../Rassilka/raspis.txt';
+		obj.DirBaseES = '/../Rassilka/BaseES';
+		obj.FileNameRaspisES = 'raspisES.html';
+		await WriteFileJson(currentDir+'/filename_bot.json',obj);
+	}
+	if(fs.existsSync(currentDir+'/filename_bot.json'))//если файл уже имеется
+	{	let obj;
+		try{obj = require(currentDir+'/filename_bot.json');}catch(err){console.log(err);}
+		if(typeof(obj) != 'object') 
+		{let tmp=currentDir.split('/'); let name=tmp[tmp.length-1]+'_bot.json';//вытащим чисто имя папки в конце
+		 obj={};
+		 obj.filename = name;
+		 obj.FileEg = '/../Rassilka/eg.txt';
+		 obj.FileRaspis = '/../Rassilka/raspis.txt';
+		 obj.DirBaseES = '/../Rassilka/BaseES';
+		 obj.FileNameRaspisES = 'raspisES.html';
+		 WriteFileJson(currentDir+'/filename_bot.json',obj);
+		}
+		if(!obj.FileEg){obj.FileEg = '/../Rassilka/eg.txt'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
+		if(!obj.FileRaspis){obj.FileRaspis = '/../Rassilka/raspis.txt'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
+		if(!obj.DirBaseES){obj.DirBaseES = '/../Rassilka/BaseES'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
+		if(!obj.FileNameRaspisES){obj.FileNameRaspisES = 'raspisES.html'; WriteFileJson(currentDir+'/filename_bot.json',obj);}
+		if(!!PATHEG) {obj.FileEg = PATHEG; WriteFileJson(currentDir+'/filename_bot.json',obj);}
+		if(!!PATHRASPIS) {obj.FileRaspis = PATHRASPIS; WriteFileJson(currentDir+'/filename_bot.json',obj);}
+		FileNameRaspisES = currentDir+'/'+require(currentDir+"/filename_bot.json").FileNameRaspisES;//имя файла в Расписаниях ЕС
+	}
+	
+	//если запрошено изменение приватности или дистанции в ENV
+	if(PRIVAT >= 0 || DISTANCE >= 0)
+	{	let obj;
+		try{obj = require(currentDir+'/privat.json');}catch(err){console.log(err);}
+		if(typeof(obj) != 'object') {obj={}; obj.privat=0; obj.distance=1;}
+		if(!!PRIVAT) {obj.privat = PRIVAT;}
+		if(!!DISTANCE) {obj.distance = DISTANCE;}
+		WriteFileJson(currentDir+'/privat.json',obj);
+	}
+	
+	if(fs.existsSync(currentDir+'/config.json'))
+	{	let obj;
+		try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
+		let offset = moment().utcOffset();
+		if(!Object.hasOwn(obj,'utcOffset')) {obj.utcOffset = offset>0?'+'+String(offset):String(offset); WriteFileJson(currentDir+'/config.json',obj);}
+		if(!Object.hasOwn(obj,'community_text')) {obj.community_text='чистого времени'; WriteFileJson(currentDir+'/config.json',obj);}
+	}
+	//если запрошено изменение текста сообщества
+	if(!!COMMUNITY_TEXT_QW)
+	{	let obj;
+		try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
+		if(typeof(obj) != 'object') {obj={}; obj.community_text='чистого времени'; obj.utcOffset='+180';}
+		obj.community_text = COMMUNITY_TEXT_QW;
+		WriteFileJson(currentDir+'/config.json',obj);
+	}
+	//если запрошено изменение таймзоны
+	if(!!TIMEZONE_MINUTES)
+	{	let obj;
+		try{obj = require(currentDir+'/config.json');}catch(err){console.log(err);}
+		if(typeof(obj) != 'object') {obj={}; obj.community_text='чистого времени'; obj.utcOffset='+180';}
+		obj.utcOffset = TIMEZONE_MINUTES;
+		WriteFileJson(currentDir+'/config.json',obj);
+	}
+		
 	if(fs.existsSync(cToken))
 	{	
 		if(!fs.existsSync(TokenDir+'/chatId.json') && fs.existsSync(cToken+'/chatId.json'))
