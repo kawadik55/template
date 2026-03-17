@@ -3767,6 +3767,11 @@ try{
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
+		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -3793,6 +3798,11 @@ try{
 		if(key=='')
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
+		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
 		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
@@ -3821,6 +3831,11 @@ try{
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
+		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -3848,6 +3863,11 @@ try{
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
+		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -3874,6 +3894,11 @@ try{
 		if(key=='')
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
+		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
 		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
@@ -3908,6 +3933,11 @@ try{
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 		 return true;
 		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
+		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -3935,6 +3965,11 @@ try{
 		if(key=='')
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
+		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
 		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
@@ -3965,6 +4000,11 @@ try{
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
+		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -3993,6 +4033,11 @@ try{
 		if(key=='')
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
+		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
 		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
@@ -4023,6 +4068,11 @@ try{
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
+		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -4051,6 +4101,11 @@ try{
 		if(key=='')
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
+		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
 		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
@@ -4091,6 +4146,11 @@ try{
 		{	await sendMessage(chatId, '😉', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
 			return true;
 		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
+		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -4126,6 +4186,11 @@ try{
 		 return true;
 		}
 		if(!!mypath && !checkPathFile(currentDir+mypath)) {await sendMessage(chatId, '😉', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));return true;}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
+		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -4157,6 +4222,11 @@ try{
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
+		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -4183,6 +4253,11 @@ try{
 		if(key=='')
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
+		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
 		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
@@ -4211,6 +4286,11 @@ try{
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
 		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
+		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
 		for(let i=0;i<mas.length;i++) if(Number(mas[i]) > max) max = Number(mas[i]);//выберем максимальный номер
@@ -4237,6 +4317,11 @@ try{
 		if(key=='')
 		{await sendMessage(chatId, 'Что-то не так с именем кнопки.', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));//Отмена
 		 return true;
+		}
+		//проверим имя кнопки на уникальность
+		if(isButtonNameUnique(LastKey[chatId], key)===false) {
+			await sendMessage(chatId, 'Кнопка с таким именем '+key+' уже существует!', klava('Назад',{'backbutton':LastKey[chatId]}, chatId));
+			return true;
 		}
 		//сначала выберем номер новой кнопки
 		let mas = Object.keys(Tree), max = -1;
@@ -5483,6 +5568,19 @@ try{
 	if(raspis.text&&raspis.mode) return raspis;
 	else return {"text":'😥','mode':'HTML'};
 }catch(err){WriteLogFile(err+'\nfrom getRaspisBaseES(slug)','вчат'); return '😥';}
+}
+//====================================================================
+// проверить на совпадение имен в родителе
+function isButtonNameUnique(parentId, buttonName) 
+{
+  // Получаем массив дочерних ID
+  const childIds = Tree[parentId]?.child || [];
+  // Проверяем каждого ребенка на совпадение имени
+  for (const childId of childIds) 
+  {	const childNode = Tree[childId];
+	if (childNode && childNode.name === buttonName) {return false;} // Нашли кнопку с таким же именем
+  }
+  return true; // Имя уникально
 }
 //====================================================================
 		
