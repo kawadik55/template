@@ -10,10 +10,10 @@ default:
         local message="$1"
         echo "=== Отправляем в Telegram:"
         echo "$message"
-        curl -s -X POST "https://api.telegram.org/bot${TOKEN_BOT}/sendMessage" \
-          -d chat_id="${CHAT_ID}" \
-          -d text="${message}" \
-          -d parse_mode="HTML" > /dev/null
+        #curl -s -X POST "https://api.telegram.org/bot${TOKEN_BOT}/sendMessage" \
+        #  -d chat_id="${CHAT_ID}" \
+        #  -d text="${message}" \
+        #  -d parse_mode="HTML" > /dev/null
         echo "==============================================="  
       }
 
