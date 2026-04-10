@@ -2041,6 +2041,7 @@ try{
 		str += '` /EditUrl новыйUrl` - изменить ссылку в Вопросах\n';
 		str += '` /EditLifeTime новыйСрок` - изменить срок действия регистрации юзеров, в днях\n';
 		str += '` /ShowLifeTime` - посмотреть общий срок действия регистрации юзеров\n';
+		str += '` /GetQueue` - посмотреть состояние очереди\n';
 		sendMessage(chatId, str, {parse_mode:"markdown"});
 	}
 	else sendMessage(chatId, smilik);
@@ -2491,6 +2492,28 @@ try{
 		config.lifeTime = lifeTime;
 		WriteFileJson(currentDir+"/config.json", config);
 		let str='Новый срок '+url+' принят!';
+		sendMessage(chatId, str);
+	}
+}catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/EditLifeTime/)','вчат');}	
+});
+//====================================================================
+// Проверить состояние очереди
+LoaderBot.onText(/^\/GetQueue/, async (msg) => 
+{
+try{
+	const chatId = msg.chat.id;
+	const name = ' '+msg.chat.first_name;
+	let ban = banUser(chatId);
+	const userId = msg.from.id;
+	let valid = validAdmin(userId) | validAdminBot(userId);
+	
+	//проверяем только незарегистрированного юзера
+	if(ban) sendMessage(chatId, 'Извините, ' + name + ', но Вы забанены! Обратитесь к админу.');
+	else if(!valid)
+	{	sendMessage(chatId, 'Извините, ' + name + ', но Вы не являетесь админом бота!');	
+	}
+	else //если все ОК
+	{	let str = JSON.stringify(queue.getQueueStats(),null,2) || smilik;
 		sendMessage(chatId, str);
 	}
 }catch(err){WriteLogFile(err+'\nfrom LoaderBot.on(/EditLifeTime/)','вчат');}	
@@ -4817,10 +4840,36 @@ queue.on('error', (error) => {WriteLogFile(error);});
 queue.on('failed', (item, error) => 
 {if(!!item.bot) delete item.bot;
  try
- {	WriteLogFile('Ошибка отправки сообщения из очереди: '+error.message+'\n'+JSON.stringify(item,null,2));
-	if(error.message.includes('chat not found') && item.chatId)//левый чат в списке, удалим
+ {	WriteLogFile('Ошибка отправки сообщения из очереди: '+error.message/*+'\n'+JSON.stringify(item,null,2)*/);
+	// Ошибки, при которых нужно удалить чат/пользователя
+	const errorMessage = error.message || '';
+	const chatErrors = [
+		'chat not found',
+		'user not found',
+		'bot was kicked',
+		'bot was blocked',
+		'user is deactivated',
+		'bot is not a member of',
+		"bot can't send messages to bots",
+		"bot can't initiate conversation",
+		'group chat was migrated'
+	];
+	
+	const shouldRemoveChat = chatErrors.some(err => 
+		errorMessage.toLowerCase().includes(err.toLowerCase())
+	);
+	
+	if(shouldRemoveChat && item.chatId)//левый чат в списке, удалим
 	{	let flag = 0;
 		let chatId = String(item.chatId);
+		
+		// Если ошибка о миграции группы - можно попробовать обновить ID
+		/*if(errorMessage.toLowerCase().includes('migrated') && error.parameters?.migrate_to_chat_id) {
+			const newChatId = error.parameters.migrate_to_chat_id;
+			WriteLogFile(`Группа ${chatId} мигрировала в супергруппу ${newChatId}`);
+			// Здесь можно обновить chat_id на новый
+		}*/
+		
 		Object.keys(chat_news || {}).forEach(key => 
 		{	if (Array.isArray(chat_news[key])) 
 			{	const originalLength = chat_news[key].length;

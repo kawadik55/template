@@ -91,6 +91,27 @@ class TelegramQueue extends EventEmitter {
             'EAI_AGAIN', 'ECONNREFUSED', 'ENETUNREACH'
         ];
         
+        // Проверка EFATAL с сетевыми проблемами
+        if (error.code === 'EFATAL') {
+            const errorMessage = (error.message || '').toLowerCase();
+            const networkMessages = [
+				'socket hang up',      // Разрыв соединения
+				'getaddrinfo',         // DNS ошибка
+				'connect e',           // Ошибка подключения
+				'econnreset',          // Сброс соединения
+				'etimedout',           // Таймаут
+				'enotfound',           // Хост не найден
+				'eai_again',           // DNS временная ошибка
+				'econnrefused',        // Соединение отклонено
+				'enetunreach',         // Сеть недоступна
+				'timeout',             // Таймаут
+				'network',             // Сетевая проблема
+				'tls',                 // TLS/SSL ошибка (проблемы с соединением)
+				'certificate'          // Ошибка сертификата (сетевая проблема)
+            ];
+            return networkMessages.some(msg => errorMessage.includes(msg));
+        }
+        
         return networkErrors.some(netError => 
             error.code === netError || 
             error.message?.includes(netError) ||
@@ -198,7 +219,12 @@ class TelegramQueue extends EventEmitter {
 					this.emit('failed', queueItem, error);//отправка с ошибкой
 					await this._delay(10);
 					//если пропала связь, то выходим
-					if (error.code === 'EFATAL' || this._isNetworkError(error) || !this.isConnected) {return;}
+					if (this._isNetworkError(error) || !this.isConnected) 
+					{
+						await this._delay(60000);
+						this.consecutiveErrors = 0;
+						continue; // Бесконечные попытки при потере связи
+					}
                 }
 				//удаляем из очереди в любом случае
                 this.queue.shift();
