@@ -2165,8 +2165,8 @@ try{
 		if(String(err).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
 		else if(String(err).indexOf('bot was blocked by the user')+1) delete LastMessId[chatId];//удаляем ушедшего
 		else if(String(err).indexOf('chat not found')+1) delete LastMessId[chatId];//удаляем ушедшего
-		else if(String(err).indexOf('Too Many Requests:')+1) WriteLogFile(err+'\nfrom Bot.sendMessage','вчат');
-		else WriteLogFile(err+'\nfrom Bot.sendMessage("'+chatId+'")'+'\nstr = '+str+'\noption = '+JSON.stringify(option,null,2),'вчат');
+		else if(String(err).indexOf('Too Many Requests:')+1) WriteLogFile(err+'\nfrom Bot.sendMessage');
+		else WriteLogFile(err+'\nfrom Bot.sendMessage("'+chatId+'")'/*+'\nstr = '+str+'\noption = '+JSON.stringify(option,null,2)*/);
 		return err;	
 	}
 	
@@ -2225,8 +2225,8 @@ try{
 		if(String(err).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
 		else if(String(err).indexOf('bot was blocked by the user')+1) delete LastMessId[chatId];//удаляем ушедшего
 		else if(String(err).indexOf('chat not found')+1) delete LastMessId[chatId];//удаляем ушедшего
-		else if(String(err).indexOf('Too Many Requests:')+1) WriteLogFile(err+'\nfrom Bot.sendMessage','вчат');
-		else WriteLogFile(err+'\nfrom Bot.sendMessageImage("'+chatId+'")'+'\nstr = '+path+'\noption = '+JSON.stringify(option,null,2),'вчат');
+		else if(String(err).indexOf('Too Many Requests:')+1) WriteLogFile(err+'\nfrom Bot.sendMessage');
+		else WriteLogFile(err+'\nfrom Bot.sendMessageImage("'+chatId+'")'/*+'\nstr = '+path+'\noption = '+JSON.stringify(option,null,2)*/);
 		return err;	
 	}
 	
