@@ -2158,7 +2158,8 @@ try{
 	if(Object.hasOwn(option, 'link_preview_options')) option.link_preview_options = JSON.stringify(option.link_preview_options);
 	//посылаем сообщение
 	if(!!option.text) delete option.text;
-	try{res = await Bot.sendMessage(chatId, str, option);
+	try{
+		res = await Bot.sendMessage(chatId, str, option);
 	}catch(err)
 	{	console.log(err+'\nfrom Bot.sendMessage("'+chatId+'")'); 
 		if(String(err).indexOf('user is deactivated')+1) delete LastMessId[chatId];//удаляем ушедшего
