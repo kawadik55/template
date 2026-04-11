@@ -4840,7 +4840,7 @@ queue.on('error', (error) => {WriteLogFile(error);});
 queue.on('failed', (item, error) => 
 {if(!!item.bot) delete item.bot;
  try
- {	WriteLogFile('Ошибка отправки сообщения из очереди: '+error.message/*+'\n'+JSON.stringify(item,null,2)*/);
+ {	WriteLogFile('Ошибка отправки сообщения из очереди: '+error.message+' ('+(item.chatId||'unknown')+')');
 	// Ошибки, при которых нужно удалить чат/пользователя
 	const errorMessage = error.message || '';
 	const chatErrors = [
@@ -4852,7 +4852,8 @@ queue.on('failed', (item, error) =>
 		'bot is not a member of',
 		"bot can't send messages to bots",
 		"bot can't initiate conversation",
-		'group chat was migrated'
+		'group chat was migrated',
+		'not enough rights to send'
 	];
 	
 	const shouldRemoveChat = chatErrors.some(err => 
