@@ -540,7 +540,7 @@ class SlaveBot {
                         } catch (e) {}
                     }
                     
-                    await this.requestChannelId(userId);
+                    await this.requestChannelId(userId);//посылаем клаву запроса ID канала
                     await this.bot.answerCallbackQuery(msg.id);
                     
                 } else if (data === 'channel_help') {
@@ -858,6 +858,23 @@ class SlaveBot {
 						// Флаг НЕ очищаем - оставляем waitingForTownInput = 1
 					}
 				}
+				
+				// Обработка ввода ID канала для настройки каналов
+				else if (pending && this.pendingChannelSetup?.waitingForChannelId)
+				{
+					const userId = msg.from.id;
+					const channelIdInput = msg.text.trim();
+					
+					const userPending = this.pendingConfigs.get(userId);
+					if (userPending && userPending.lastMessageId) {
+						try {
+							await this.bot.deleteMessage(userId, userPending.lastMessageId);
+						} catch(e) {}
+					}
+					
+					await this.processChannelInput(userId, channelIdInput, 'id');
+					this.pendingChannelSetup = null;
+				}
 		});
 			
 		// Обработка ошибок бота
@@ -940,7 +957,9 @@ class SlaveBot {
 
     async showChannelSelection(userId) {
         try {
-            // Если есть старая сессия настройки канала, удаляем её сообщения
+            // Очищаем старый флаг ожидания ID канала
+			this.pendingChannelSetup = null;
+			// Если есть старая сессия настройки канала, удаляем её сообщения
             const oldPending = this.pendingConfigs.get(userId);
             if (oldPending) {
                 // Удаляем текущее активное сообщение
