@@ -11,6 +11,7 @@ class SlaveBot {
 		this.botName = null;//имя бота
 		this.botUsername = null;//имя бота
 		this.last502ErrorTime = 0;
+		this.recoveryTimer = null;
         
         // Используем ссылку на объект из основного кода
         this.chat_news = mainChatNewsRef || {};
@@ -878,13 +879,25 @@ class SlaveBot {
 		});
 			
 		// Обработка ошибок бота
-		this.bot.on('polling_error', (error) => {
+		this.bot.on('polling_error', (error) => 
+		{
+			if(this.recoveryTimer) return;
+			
 			if (error.message.includes('502') || error.message.includes('Bad Gateway'))
-			{	const now = Date.now();
-				if (now - this.last502ErrorTime < 15000) return;
-				this.last502ErrorTime = now;
+			{	this.sendErrorMessage('Polling error in SlaveBot: ' + error.message);
+				const checkConnection = (delay) => 
+				{
+					this.recoveryTimer = setTimeout(() => {
+						this.bot.getMe().then(() => {
+							this.sendErrorMessage('Polling return in SlaveBot: Polling восстановлен');
+							this.recoveryTimer = null;
+						}).catch(() => {
+							checkConnection(Math.min(delay * 2, 60000));
+						});
+					}, delay);
+				};
+				checkConnection(15000);
 			}
-			this.sendErrorMessage('Polling error in SlaveBot: ' + error.message);
 		});
 
 		this.bot.on('webhook_error', (error) => {
@@ -1918,6 +1931,12 @@ class SlaveBot {
                 // Очищаем pending конфигурации
                 this.pendingConfigs.clear();
                 this.pendingChannelSetup = null;
+				
+				//очищаем таймер ошибки поллинга
+				if(this.recoveryTimer) {
+					clearTimeout(this.recoveryTimer);
+					this.recoveryTimer = null;
+				}
                 
             } catch (err) {
                 this.sendErrorMessage('Ошибка остановки SlaveBot: ' + err);
