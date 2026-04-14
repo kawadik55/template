@@ -4871,23 +4871,33 @@ queue.on('failed', (item, error) =>
 			// Здесь можно обновить chat_id на новый
 		}*/
 		
+		let chat_name = null;
 		Object.keys(chat_news || {}).forEach(key => 
-		{	if (Array.isArray(chat_news[key])) 
-			{	const originalLength = chat_news[key].length;
-                chat_news[key] = chat_news[key].filter(chatObj => 
-				{	// Проверяем все значения объекта
-                    const values = Object.values(chatObj || {});
-                    // Если ни одно значение не совпадает с chatId - оставляем объект
-                    return !values.some(value => String(value) === chatId);
-                });
-                if (chat_news[key].length !== originalLength) {flag++;}
-            }
-        });
+		{
+			if (Array.isArray(chat_news[key])) {
+				const originalLength = chat_news[key].length;
+				chat_news[key] = chat_news[key].filter(chatObj => {
+					const keys = Object.keys(chatObj || {});
+					const values = Object.values(chatObj || {});
+					let found = false;
+					for (let i = 0; i < values.length; i++) 
+					{	if (String(values[i]) === chatId) 
+						{	found = true;
+							chat_name = keys[i];
+							break;
+						}
+					}
+					return !found;
+				});
+				if (chat_news[key].length !== originalLength) flag++;
+			}
+		});
+		
 		if(flag)
 		{	let obj = require(TokenDir+"/chatId.json");
 			obj.chat_news = chat_news;
 			WriteFileJson(TokenDir+"/chatId.json",obj);
-			WriteLogFile('Чат '+chatId+' удален из списка чатов.');
+			WriteLogFile('Чат "'+(chat_name||'unknown')+'"('+chatId+') удален из списка чатов.');
 		}
 	}		
  }catch(err){WriteLogFile('Не могу распарсить item из ошибки очереди');}
