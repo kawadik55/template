@@ -5,12 +5,15 @@ default:
   before_script:
     - apk update && apk add --no-cache curl
     - curl --version    # Проверяем, что curl установился
+    - export HTTPS_PROXY=http://192.168.1.197:8118
+    - export HTTP_PROXY=http://192.168.1.197:8118
     - |                 # многострочный блок
       send_telegram() {
         local message="$1"
         echo "=== Отправляем в Telegram:"
         echo "$message"
-        curl -s -X POST "https://api.telegram.org/bot${TOKEN_BOT}/sendMessage" \
+        #curl -s -X POST "https://api.telegram.org/bot${TOKEN_BOT}/sendMessage" \
+        curl -s -x http://192.168.1.197:8118 -X POST "https://api.telegram.org/bot${TOKEN_BOT}/sendMessage" \
           -d chat_id="${CHAT_ID}" \
           -d text="${message}" \
           -d parse_mode="HTML" > /dev/null
@@ -20,6 +23,9 @@ default:
 variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_TLS_CERTDIR: ""
+  HTTP_PROXY: http://192.168.1.197:8118
+  HTTPS_PROXY: http://192.168.1.197:8118
+  NO_PROXY: localhost,127.0.0.1,docker
   
 build_ArchBot:
   stage: build
