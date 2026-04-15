@@ -4894,13 +4894,11 @@ queue.on('failed', (item, error) =>
 		});
 		
 		if(flag)
-		{	let obj = require(TokenDir+"/chatId.json");
-			obj.chat_news = chat_news;
-			WriteFileJson(TokenDir+"/chatId.json",obj);
+		{	WriteFileJson(currentDir+"/chatId.json",chat_news);
 			WriteLogFile('Чат "'+(chat_name||'unknown')+'"('+chatId+') удален из списка чатов.');
 		}
 	}		
- }catch(err){WriteLogFile('Не могу распарсить item из ошибки очереди');}
+ }catch(err){WriteLogFile('Ошибка в обработке failed из очереди: '+err);}
 });
 //queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 queue.on('connected', () => {WriteLogFile('=> bot connected');});
