@@ -3327,11 +3327,9 @@ function check_permissions(obj,offset)
 try{
 	//публикуем текст прямо сейчас, если дата или день недели и время совпадает
 	let flag = 0;
-	let now = getUserDateTime(moment(), offset);//текущий день в зоне
-	let day;
-	if(Object.hasOwn(obj, 'dayOfWeek')) day=obj.dayOfWeek;
+	let now = getUserDateTime(moment(), offset);//текущий день/время в зоне
+	let day = obj?.dayOfWeek || '';
 	if(!Object.hasOwn(obj, 'date') || !moment(obj.date,'DD.MM.YYYY').isValid()) return 0;
-	
 	if(!day) return 0;
 	
 	//если по Дате
@@ -3361,6 +3359,7 @@ try{
 	else
 	{	let time = now.format('DD.MM.YYYY');
 		if(obj.date==time) flag++;//прям сегодня
+		//if(moment(obj.date, 'DD.MM.YYYY').isSameOrBefore(now, 'day')) flag++;//если сегодня или ранее
 	}
 	
 	return flag;
@@ -3569,9 +3568,9 @@ try{//проверяем разрешение на публикацию неме
 	
 	//публикуем в каналах из массива, если условия совпадают
 	if(flag && sec>0)//если после времени утренней публикации 
-    {	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
-		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
-		let date = !!obj.date?obj.date:'';//запись даты
+    {	let timestr = obj?.time || '';//запись времени
+		let day = obj?.dayOfWeek || '';//запись дня
+		let date = obj?.date || '';//запись даты
 		WriteLogFile(obj.type+' "Сегодня" в зону '+offset+' => день='+day+'; дата='+date+timestr);
 	 //соберем все чаты в новый массив
 	 count_chats = 0;
@@ -3612,7 +3611,7 @@ try{//проверяем разрешение на публикацию неме
 		  }
 		}catch(err){WriteLogFile(err+'\nfrom publicImage()=>for()','вчат');}
 	 }
-	 await WriteLogFile('Всего чатов = '+count_chats+' = ОК');
+	 await WriteLogFile('Всего чатов = '+count_chats);
 	}
 }catch(err){WriteLogFile(err+'\nfrom publicImage()','вчат');}
 }
