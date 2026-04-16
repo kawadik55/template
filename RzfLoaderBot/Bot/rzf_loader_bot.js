@@ -4377,9 +4377,9 @@ async function send_Raspis_ES()
 			let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 			let raspis = obj?.text ? obj.text : '';
 			if(!raspis)
-			{	raspis = 'Вы подписались на получение Расписания.\n \
-						Для того, чтобы получать расписание собраний в своем городе, \
-						нужно повторить настройку бота @'+nameNews+' командой /config и выбрать свой город. 🤷';
+			{	raspis = 'Вы подписались на получение Расписания.\n'+
+						'Для того, чтобы получать расписание собраний в своем городе, '+
+						'нужно повторить настройку бота @'+nameNews+' командой /config и выбрать свой город. 🤷';
 			}
 			else 
 			{	opt.disable_web_page_preview = true; 
@@ -4423,9 +4423,8 @@ async function getRaspisBaseES(chatobj, offset, listTowns, format)
 {	
 try{
 	//загрузим город чата
-	let town, slug;
-	if(!!chatobj.town) town = chatobj.town;
-	if(!!chatobj.slug) slug = chatobj.slug;
+	let town = chatobj?.town || '';
+	let slug = chatobj?.slug || '';
 	if(!town) return null;//чат не настроен на город
 	//проверяем город
 	if(!Object.keys(listTowns).includes(town))
