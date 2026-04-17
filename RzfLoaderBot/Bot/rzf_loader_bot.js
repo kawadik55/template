@@ -146,7 +146,8 @@ if(config && config.chat_news)
             }
         }
     }
-    WriteFileJson(currentDir + "/chatId.json", chat_news);
+    chat_news = sortObjectByKeys(chat_news);
+	WriteFileJson(currentDir + "/chatId.json", chat_news);
     delete config.chat_news;
     WriteFileJson(currentDir + "/config.json", config);
 }
@@ -220,17 +221,20 @@ const onConfigUpdate = (update) => {
     switch(update.event) {
         case 'chat_configured':
                 WriteLogFile(`Чат ${update.data.chatTitle} настроен на таймзону ${update.data.timezone}`);
-                WriteFileJson(currentDir+"/chatId.json",chat_news);
+                chat_news = sortObjectByKeys(chat_news);
+				WriteFileJson(currentDir+"/chatId.json",chat_news);
 				break;
                 
         case 'chat_removed':
                 WriteLogFile('Чат '+update.data.chatName+'('+update.data.chatId+') удален из рассылки');
-                WriteFileJson(currentDir+"/chatId.json",chat_news);
+                chat_news = sortObjectByKeys(chat_news);
+				WriteFileJson(currentDir+"/chatId.json",chat_news);
 				break;
                 
         case 'cleanup_completed':
                 WriteLogFile(`Очищено ${update.data.cleanedCount} несуществующих чатов`);
-                WriteFileJson(currentDir+"/chatId.json",chat_news);
+                chat_news = sortObjectByKeys(chat_news);
+				WriteFileJson(currentDir+"/chatId.json",chat_news);
 				break;
     
 		case 'error_message':
@@ -4892,7 +4896,8 @@ queue.on('failed', (item, error) =>
 		});
 		
 		if(flag)
-		{	WriteFileJson(currentDir+"/chatId.json",chat_news);
+		{	chat_news = sortObjectByKeys(chat_news);
+			WriteFileJson(currentDir+"/chatId.json",chat_news);
 			WriteLogFile('Чат "'+(chat_name||'unknown')+'"('+chatId+') удален из списка чатов.');
 		}
 	}		
