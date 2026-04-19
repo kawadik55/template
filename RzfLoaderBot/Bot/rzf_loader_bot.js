@@ -2796,14 +2796,17 @@ try{
 	if(!!opt && !!opt.caption)
 	{	if(!mas[0].caption) mas[0].caption = '';
 		mas[0].caption += opt.caption;
+		delete opt.caption;
 	}
 	if(!!mas[0].caption_entities && typeof(mas[0].caption_entities) == 'string')
 	{	mas[0].caption_entities = JSON.parse(mas[0].caption_entities);
 	}
 	if(!!mas[0].caption && mas[0].caption.length > 1024) {mas[0].caption = mas[0].caption.substr(0,1023);}//обрезаем подпись
+	if(!!opt.caption_entities) delete opt.caption_entities;
+	
 	if(Bot==='default')
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
-		await queue.addToQueue({type:'sendMediaGroup', chatId:chatId, data:mas, bot:Bot});
+		await queue.addToQueue({type:'sendMediaGroup', chatId:chatId, data:mas, bot:Bot, options:opt});
 	}
 	else 
 	{	// Подмена на file_id из кэша
@@ -4598,8 +4601,8 @@ async function send_Images(now,offset)
 				 else if(ImagesList[key].type == 'document') {res = await sendDocument('default', chatId, ImagesList[key].path, opt);}
 				 else if(ImagesList[key].type == 'album') 
 				 {	let tmp = [...ImagesList[key].media];
-					if(!!threadId) tmp.message_thread_id = threadId;
-					res = await sendAlbum('default', chatId, tmp);
+					//if(!!threadId) tmp.message_thread_id = threadId;
+					res = await sendAlbum('default', chatId, tmp, opt);
 				 }
 				 else if(ImagesList[key].type == 'animation') {res = await sendAnimation('default', chatId, ImagesList[key].path, opt);}
 				}
