@@ -2802,7 +2802,7 @@ try{
 	{	mas[0].caption_entities = JSON.parse(mas[0].caption_entities);
 	}
 	if(!!mas[0].caption && mas[0].caption.length > 1024) {mas[0].caption = mas[0].caption.substr(0,1023);}//обрезаем подпись
-	if(!!opt.caption_entities) delete opt.caption_entities;
+	if(!!opt && !!opt.caption_entities) delete opt.caption_entities;
 	
 	if(Bot==='default')
 	{	while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
@@ -3608,8 +3608,8 @@ try{//проверяем разрешение на публикацию неме
 					{	obj.media[0].caption_entities = JSON.parse(obj.media[0].caption_entities);
 					}
 					let tmp = [...obj.media];
-					if(!!threadId) tmp.message_thread_id = threadId;
-					await sendAlbum('default', chatId, tmp);
+					//if(!!threadId) tmp.message_thread_id = threadId;
+					await sendAlbum('default', chatId, tmp, opt);
 				}
 				else if(obj.type=='animation') {await sendAnimation('default', chatId, obj.path, opt);}
 			}
