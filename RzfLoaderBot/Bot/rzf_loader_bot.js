@@ -4574,7 +4574,8 @@ async function send_Images(now,offset)
           //публикуем пост
           if(flag) 
           { let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
-			WriteLogFile('image "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);
+			let type = ImagesList[key]?.type ? ImagesList[key].type : 'unknown_type';
+			WriteLogFile(type+' "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);
 			//выделим массив по смещению
 			//let all_chats = getAllChats();
 			let all_chats = chat_news[offset] ? chat_news[offset] : [];
@@ -4594,12 +4595,12 @@ async function send_Images(now,offset)
 				if(!!threadId) opt.message_thread_id = threadId;
 				//посылаем пост
 				let res;
-				if(!!ImagesList[key].type)
-				{if(ImagesList[key].type == 'image') res = await sendPhoto('default', chatId, ImagesList[key].path, opt);
-				 else if(ImagesList[key].type == 'video') res = await sendVideo('default', chatId, ImagesList[key].path, opt);
-				 else if(ImagesList[key].type == 'audio') {res = await sendAudio('default', chatId, ImagesList[key].path, opt);}
-				 else if(ImagesList[key].type == 'document') {res = await sendDocument('default', chatId, ImagesList[key].path, opt);}
-				 else if(ImagesList[key].type == 'album') 
+				if(!!type && type!=='unknown_type')
+				{if(type == 'image') res = await sendPhoto('default', chatId, ImagesList[key].path, opt);
+				 else if(type == 'video') res = await sendVideo('default', chatId, ImagesList[key].path, opt);
+				 else if(type == 'audio') {res = await sendAudio('default', chatId, ImagesList[key].path, opt);}
+				 else if(type == 'document') {res = await sendDocument('default', chatId, ImagesList[key].path, opt);}
+				 else if(type == 'album') 
 				 {	let tmp = [...ImagesList[key].media];
 					//if(!!threadId) tmp.message_thread_id = threadId;
 					res = await sendAlbum('default', chatId, tmp, opt);
