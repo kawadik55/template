@@ -697,6 +697,8 @@ try{
 			TempPost[chatId].date = date;
 			TempPost[chatId].dayOfWeek = day;
 			if(!!time) TempPost[chatId].time = time;
+			//добавляем file_id для определения порядка файлов в соответствии с MediaList[media_group_id].count
+			MediaList[media_group_id].media[MediaList[media_group_id].media.length - 1].file_id = msg.photo[msg.photo.length-1].file_id;
 			//проверяем конец альбома
 			if(MediaList[media_group_id].media.length == MediaList[media_group_id].count.length)
 			{	let obj = {};
@@ -707,10 +709,10 @@ try{
 				obj.chatId = MediaList[media_group_id].chatId;
 				obj.type = MediaList[media_group_id].type;
 				if(!!MediaList[media_group_id].time) obj.time = MediaList[media_group_id].time;
+				obj.media = sortMedia(obj.media, MediaList[media_group_id].count);
 				delete WaitFlag[obj.chatId];
 				delete TempPost[obj.chatId];
 				delete MediaList[media_group_id];
-				obj.media = sortMedia(obj.media);
 				let len = await setToModerImagesList(null, null, obj);
 				//пошлем сообщение админам
 				sendMessageToAdmin('Юзер "'+name+'" ('+user+') просит добавить альбом '+'"'+date+' ('+day+')"');
@@ -813,6 +815,8 @@ try{
 			TempPost[chatId].date = date;
 			TempPost[chatId].dayOfWeek = day;
 			if(!!time) TempPost[chatId].time = time;
+			//добавляем file_id для определения порядка файлов в соответствии с MediaList[media_group_id].count
+			MediaList[media_group_id].media[MediaList[media_group_id].media.length - 1].file_id = msg.video.file_id;
 			//проверяем конец альбома
 			if(MediaList[media_group_id].media.length == MediaList[media_group_id].count.length)
 			{	let obj = {};
@@ -823,10 +827,10 @@ try{
 				obj.chatId = MediaList[media_group_id].chatId;
 				obj.type = MediaList[media_group_id].type;
 				if(!!MediaList[media_group_id].time) obj.time = MediaList[media_group_id].time;
+				obj.media = sortMedia(obj.media, MediaList[media_group_id].count);
 				delete WaitFlag[obj.chatId];
 				delete TempPost[obj.chatId];
 				delete MediaList[media_group_id];
-				obj.media = sortMedia(obj.media);
 				let len = await setToModerImagesList(null, null, obj);
 				//пошлем сообщение админам
 				sendMessageToAdmin('Юзер "'+name+'" ('+user+') просит добавить альбом '+'"'+date+' ('+day+')"');
@@ -3830,19 +3834,12 @@ function setContextFiles()
 		}
 }
 //====================================================================
-//сортируем массив медиа, если caption не в первом элементе
-function sortMedia(mas)
-{	if(!!mas[0].caption) return mas;
-	let media = [];
-	for(let i=0;i<mas.length;i++)
-	{	if(!!mas[i].caption)
-		{	media.push(mas[i]);//положим первым
-			mas.splice(i,1);
-			break;
-		}
-	}
-	for(let i=0;i<mas.length;i++) {media.push(mas[i]);}//остатки
-	return media;
+//сортируем массив медиа, по порядку в order
+function sortMedia(mas, order) {
+    return mas.sort((a, b) => {
+        if(order.indexOf(a.file_id)==-1 || order.indexOf(b.file_id)==-1) return 0;
+		else return order.indexOf(a.file_id) - order.indexOf(b.file_id);
+    });
 }
 //====================================================================
 function deleteMediaFiles(obj)
