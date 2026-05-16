@@ -7,6 +7,7 @@ const {htmlToText} = require('html-to-text');//преобразователь ht
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const FilePaths = currentDir+'/paths.json';//файл со списком выходных файлов.
 let PathsList={};//список выходных файлов
+let EgBook = [];//массив объектов всей книги по дням
 //файл списка выходных путей и файлов
 try 
 { PathsList = JSON.parse(fs.readFileSync(FilePaths));
@@ -20,6 +21,10 @@ try
  PathsList.TimeZoneMinutes = '';
  fs.writeFileSync(FilePaths, JSON.stringify(PathsList,null,2));
 }
+//файл EgBook.json
+try 
+{ EgBook = JSON.parse(fs.readFileSync(currentDir+'/EgBook.json')).results;
+} catch (err) {}
 
 //проверим наличие папок, если папки нет, то создадим ее
 if(!!PathsList.DirEg && PathsList.DirEg.length>0)
@@ -61,6 +66,11 @@ try
 			else console.log('Ошибка формата положительного числа таймзоны');
 		}
 	}*/
+	//подгрузим книгу, если нет
+	if(EgBook.length==0)
+	{	let res = await getter_book();
+		if(res && !!res.results) EgBook = res.results;
+	}
 	
 	let filenameText = PathsList.FileEgMD ? PathsList.FileEgMD : 'eg.txt';
 	let filenameHtml = PathsList.FileEgHtml ? PathsList.FileEgHtml : 'eg.html';
@@ -73,32 +83,45 @@ try
 	let dateTomorrow = moment(timeServer).add(1, 'day').format('YYYY-MM-DD');
 	let dateYesterday = moment(timeServer).subtract(1, 'day').format('YYYY-MM-DD');
 	//получаем и пишем файлы на сегодня
-	let res = await getEgFromES(dateToday);
+	let res;
+	if(EgBook.length > 0) res = getMeditation(dateToday);
+	else res = await getEgFromES(dateToday);
 	if(res=='NO') return res; 
 	writeFile(filenameText, parseEgToText(res));
 	writeFile(filenameHtml, parseEgToHtml(res));
 	if(!!pathAlice) {try{fs.writeFileSync(pathAlice, parseEgToAlice(res));}catch(err){console.log(err);}}
 	//получаем и пишем файлы на завтра
-	res = await getEgFromES(dateTomorrow);
+	if(EgBook.length > 0) res = getMeditation(dateTomorrow); 
+	else res = await getEgFromES(dateTomorrow);
 	if(res=='NO') return res; 
 	writeFile('tomorrow_'+filenameText, parseEgToText(res));
 	writeFile('tomorrow_'+filenameHtml, parseEgToHtml(res));
 	//получаем и пишем файлы на вчера
-	res = await getEgFromES(dateYesterday);
+	if(EgBook.length > 0) res = getMeditation(dateYesterday);
+	else res = await getEgFromES(dateYesterday);
 	if(res=='NO') return res; 
 	writeFile('yesterday_'+filenameText, parseEgToText(res));
 	writeFile('yesterday_'+filenameHtml, parseEgToHtml(res));
 	//пишем файл с таймстампом
 	let obj = {"UnixTime":timeServer.unix(), "Event":"Момент создания файлов Ежедневника", "momentTime":timeServer.format()};
 	writeFile('timestamp.json', JSON.stringify(obj,null,2));
-	
-	//пишем файл для Алисы
-	res = await getEgFromES(dateToday);
-	if(res=='NO') return res;
 
 		console.log(moment().format('DD-MM-YY HH:mm:ss:ms')+' - Парсер Ежедневника - OK!');
 		return 'OK';
+	
 } catch(err) {console.log('Ошибка в parser_eg()\n'+err.message);}//
+}
+//====================================================================
+function getMeditation(date) 
+{	// Проверяем, что EgBook существует и не пустой
+    if (!EgBook || EgBook.length === 0) 
+	{	console.log('EgBook не загружен или пуст');
+        return null;
+    }
+    const m = moment(date);
+    const obj = EgBook.find(item => item.day === m.date() && item.month === m.month() + 1);
+    
+    return obj || null;
 }
 //====================================================================
 async function getEgFromES(date)
@@ -118,6 +141,24 @@ async function getEgFromES(date)
 		});//конец промиса
 		return await promise;
 	} catch(err) {console.log('Ошибка в parser_eg()\n'+err.message);}//
+}
+//====================================================================
+async function getBookFromES()
+{	try
+	{
+		let promise = new Promise((resolve, reject) => 
+		{	let URL = 'https://na-russia.org/api/daily-meditation/list/';
+			needle.get(URL, async function(err, response) 
+			{ 	if(!err && response.statusCode==200)
+				{
+					resolve (response.body);	
+				}
+				else {console.log(moment().format('DD-MM-YY HH:mm:ss:ms ')+'Список Ежиков не получен! ' +response.statusCode); resolve('NO');} 
+			});
+  
+		});//конец промиса
+		return await promise;
+	} catch(err) {console.log('Ошибка в parser_eg()\n'+err.message); return 'NO';}//
 }
 //====================================================================
 function parseEgToText(EgObj)//собираем текст ежика для markdown
@@ -229,6 +270,15 @@ function writeFile(filename, message)
 	}
 }
 //====================================================================
+async function getter_book()
+{	
+try
+{	//загрузим всю книгу в JSON
+	let res = await getBookFromES();
+	if(res !== 'NO') {fs.writeFileSync(currentDir+'/EgBook.json', JSON.stringify(res,null,2)); return res;}
+	else return null;
+} catch(err) {console.log('Ошибка в getter_book()\n'+err.message); return null;}
+}
 //====================================================================
 //====================================================================
 let repeate = 12;//счетчик повторений запросов в случае ошибок
