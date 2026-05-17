@@ -4372,7 +4372,7 @@ async function send_Raspis_ES()
 			if(!chat[i].Raspis) continue;//не выбрано расписание в доставке
 			if(!!chat[i][name[0]]) chatId = chat[i][name[0]];
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
-			let town = chat[i].town ? chat[i].town : 'не выбран';
+			let town = chat[i].town ? chat[i].town : 'не выбран ('+name[0]+')';
 			
 			//запросим объект расписания в городе
 			let obj = await getRaspisBaseES(chat[i], groffset, listTowns);
