@@ -4380,7 +4380,7 @@ async function send_Raspis_ES()
 			let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 			let raspis = obj?.text ? obj.text : '';
 			if(!raspis)
-			{	raspis = 'Вы подписались на получение Расписания.\n'+
+			{	raspis = 'Вы подписались на получение Расписания, но не выбрали город.\n'+
 						'Для того, чтобы получать расписание собраний в своем городе, '+
 						'нужно повторить настройку бота @'+nameNews+' командой /config и выбрать свой город. 🤷';
 			}
@@ -4409,6 +4409,7 @@ async function send_Raspis_ES()
 			}
 			else 
 			{	await WriteLogFile('город = '+town);
+				//if (town.includes('не выбран')) chat[i].Raspis = false;//принудительно убираем, если без города
 				count_chats++;
 			}
 
