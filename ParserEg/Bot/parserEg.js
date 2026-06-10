@@ -21,10 +21,6 @@ try
  PathsList.TimeZoneMinutes = '';
  fs.writeFileSync(FilePaths, JSON.stringify(PathsList,null,2));
 }
-//файл EgBook.json
-try 
-{ EgBook = JSON.parse(fs.readFileSync(currentDir+'/EgBook.json')).results;
-} catch (err) {}
 
 //проверим наличие папок, если папки нет, то создадим ее
 if(!!PathsList.DirEg && PathsList.DirEg.length>0)
@@ -66,8 +62,18 @@ try
 			else console.log('Ошибка формата положительного числа таймзоны');
 		}
 	}*/
-	//подгрузим книгу, если нет
-	if(EgBook.length==0)
+	//первым делом прочитаем книгу с диска
+	let flagOld = false;
+	try 
+	{ 	const tmp = JSON.parse(fs.readFileSync(currentDir+'/EgBook.json'));
+		EgBook = tmp?.results ? tmp.results : [];
+		let TimeEgBook = tmp?.timestamp ? tmp.timestamp : 0;
+		const ageInDays = (Date.now() - TimeEgBook) / (24*3600000);
+		if(ageInDays > 10 || EgBook.length == 0) flagOld = true;//устарел, нужно скачать заново
+	} catch (err) {console.log(err); flagOld = true;}
+	
+	//подгрузим книгу, если надо
+	if(flagOld)
 	{	let res = await getter_book();
 		if(res && !!res.results) EgBook = res.results;
 	}
@@ -275,7 +281,12 @@ async function getter_book()
 try
 {	//загрузим всю книгу в JSON
 	let res = await getBookFromES();
-	if(res !== 'NO') {fs.writeFileSync(currentDir+'/EgBook.json', JSON.stringify(res,null,2)); return res;}
+	if(res !== 'NO') 
+	{
+		res.timestamp = Date.now();//дата создания ms
+		fs.writeFileSync(currentDir+'/EgBook.json', JSON.stringify(res,null,2)); 
+		return res;
+	}
 	else return null;
 } catch(err) {console.log('Ошибка в getter_book()\n'+err.message); return null;}
 }
