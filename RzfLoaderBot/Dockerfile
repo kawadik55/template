@@ -28,7 +28,6 @@ RUN mkdir -p /home/pi
 COPY --from=builder /app/rzf_loader_bot /home/pi/rzf_loader_bot
 # Даем права на бинарник всем пользователям
 RUN chmod 755 /home/pi/rzf_loader_bot
-RUN mkdir -p /home/pi/sessions && chmod 777 /home/pi/sessions
 
 ENV container="docker"
 # переменная окружения по-умолчанию, может быть переопределена в команде
