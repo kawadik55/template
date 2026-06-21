@@ -4,6 +4,7 @@ FROM node:18.17.1 as builder
 # Исходники
 WORKDIR /app
 COPY ./Bot/rzf_loader_bot.js ./Bot/TelegramQueue.js ./Bot/Slave_bot.js package.json package-lock.json ./
+COPY ./Bot/Max/ ./Max/
 
 # Зависимости
 RUN npm i
