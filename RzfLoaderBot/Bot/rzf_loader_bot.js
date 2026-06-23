@@ -5590,7 +5590,7 @@ queueMax.on('sent', (item) =>
 	WriteLogFile(`${type} ${id} успешно отправлен в чат Макс -> ${item.username || item.chatId}`);
 });
 queueMax.on('failed', (item, error) => 
-{WriteLogFile('Ошибка отправки сообщения из очереди: '+error+' ('+(item.username || item.chatId)+')');
+{WriteLogFile('Ошибка отправки сообщения '+(item.id||'number')+' из очереди: '+error+' ('+(item.username || item.chatId)+')');
 });
 //queueMax.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 queueMax.on('connected', () => {WriteLogFile('=> WebMaxClient connected');});
