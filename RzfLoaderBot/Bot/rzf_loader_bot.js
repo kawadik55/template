@@ -5586,7 +5586,8 @@ queueMax.on('error', (error) => {WriteLogFile(error);});
 //queueMax.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь: ${item.id}`);});
 queueMax.on('sent', (item) => 
 {	const type = item.type.replace('send','');
-	WriteLogFile(`${type} успешно отправлен в чат Макс -> ${item.username || item.chatId}`);
+	const id = item.id ? item.id : '000';
+	WriteLogFile(`${type} ${id} успешно отправлен в чат Макс -> ${item.username || item.chatId}`);
 });
 queueMax.on('failed', (item, error) => 
 {WriteLogFile('Ошибка отправки сообщения из очереди: '+error+' ('+(item.username || item.chatId)+')');
@@ -5721,13 +5722,13 @@ async function findTownInList(name)
 async function addToQueueMax(type,chatId,name,data)
 {
 try {
-	await queueMax.addToQueue(
+	let res = await queueMax.addToQueue(
 	{	type: type,
 		chatId: chatId,
 		username: name,
 		data: data
 	});
-	await WriteLogFile(type+' поставили в очередь чата Макс: '+name);
-} catch (err) {await WriteLogFile('Ошибка постановки  '+type+' в очередь чата Макс: '+name+': '+err);}
+	await WriteLogFile(type+' '+res+' поставили в очередь чата Макс: '+name);
+} catch (err) {await WriteLogFile('Ошибка постановки  '+type+' '+res+' в очередь чата Макс: '+name+': '+err);}
 }//====================================================================
 
