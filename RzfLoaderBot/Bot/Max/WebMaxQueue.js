@@ -22,6 +22,7 @@ class WebMaxQueue extends EventEmitter {
         this.retryCounts = new Map();
         this.lastSentTime = 0;
         this.consecutiveErrors = 0;
+		this.queueCount = 0;
 		
 		max.emitter.on('watchdogTimer', (res) => {
 			if(res.status === 'OK') this.emit('disconnected',res.status);
@@ -72,9 +73,11 @@ class WebMaxQueue extends EventEmitter {
      * Добавление сообщения в очередь
      */
     addToQueue(messageData) {
-        const queueItem = {
-            id: moment().format('DD/MM-HH_mm_ss_') + Math.random().toString(36).substr(2, 9),
-            timestamp: Date.now(),
+        console.log(String(num3).padStart(4, '0'));
+		const queueItem = {
+            //id: moment().format('DD/MM-HH_mm_ss_') + Math.random().toString(36).substr(2, 9),
+            id: String(++this.queueCount).padStart(4, '0'),
+			timestamp: Date.now(),
             type: messageData.type || 'sendText',
             chatId: messageData.chatId,
 			username: messageData.username || 'undefined',
