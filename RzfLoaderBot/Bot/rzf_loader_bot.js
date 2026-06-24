@@ -5728,7 +5728,8 @@ try {
 		username: name,
 		data: data
 	});
-	await WriteLogFile(type+' '+res+' поставили в очередь чата Макс: '+name);
+	const typestr = type.replace('send','');
+	await WriteLogFile(typestr+' '+res+' поставили в очередь чата Макс: '+name);
 } catch (err) {await WriteLogFile('Ошибка постановки  '+type+' '+res+' в очередь чата Макс: '+name+': '+err);}
 }//====================================================================
 
