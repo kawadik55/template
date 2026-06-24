@@ -339,7 +339,7 @@ try{
 			for(let n in mas)//по массиву собраний
 			{	//пропускаем группу, если нет нужных форматов
 				if(mas[n].format!='Закрытое'&&mas[n].format!='Открытое'/*&&mas[n].format!='Рабочее'*/) continue;
-				//будем собирать выходной массив - имя, время, адрес, тема, карта, коммент, некст дата, format
+				//будем собирать выходной массив - имя, время, адрес, тема, карта, коммент, format
 				//если сегодняшний день недели имеется в записи
 				if(masDay[dayWeek] == mas[n].day)
 				{	let time = mas[n].time;
@@ -399,10 +399,17 @@ try{
 						else if(tema.indexOf('Рабочее')+1) out[town[i]][cnt][3] += '\nТема: <b>'+tema+'</b>';//жирный
 						else out[town[i]][cnt][3] += '\nТема: <i>'+tema+'</i>';//курсивом
 					}
-					//карта
+					//карта и фото
 					let karta = '';
-					if(!!mas[n].add_url) karta += '\n'+'<a  href="'+mas[n].add_url+'" >Маршрут</a>';
-					out[town[i]][cnt][4] = karta;
+					if(!!mas[n].add_url) karta = '<a  href="'+mas[n].add_url+'" >Маршрут</a>';
+					let photo = '';
+					if(!!mas[n].photo) photo = '<a  href="'+mas[n].photo+'" >Фото</a>';
+					let tabl = '';//таблица со ссылками по краям
+					if(karta && photo) tabl = karta + '  |  ' + photo;
+					else if(karta) tabl = karta;
+					else if(photo) tabl = photo;
+					if(!!tabl) tabl = '\n' +tabl;
+					out[town[i]][cnt][4] = tabl;
 					//комментарий
 					out[town[i]][cnt][5] = '';
 					let comment;
