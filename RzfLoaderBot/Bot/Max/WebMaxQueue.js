@@ -73,8 +73,7 @@ class WebMaxQueue extends EventEmitter {
      * Добавление сообщения в очередь
      */
     addToQueue(messageData) {
-        console.log(String(num3).padStart(4, '0'));
-		const queueItem = {
+        const queueItem = {
             //id: moment().format('DD/MM-HH_mm_ss_') + Math.random().toString(36).substr(2, 9),
             id: String(++this.queueCount).padStart(4, '0'),
 			timestamp: Date.now(),
