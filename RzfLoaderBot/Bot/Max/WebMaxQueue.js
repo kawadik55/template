@@ -1,5 +1,5 @@
 const { EventEmitter } = require('events');
-const moment = require('moment-timezone');
+//const moment = require('moment-timezone');
 const max = require('./WebMaxModule');
 
 class WebMaxQueue extends EventEmitter {
