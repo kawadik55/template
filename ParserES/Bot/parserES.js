@@ -388,12 +388,10 @@ function parseRaspisToMD(day, arr, slug, town, format)
 		if(!!photo) photo = '[Фото](' + escapeMarkdown(photo) + ')';
 		//таблица со ссылками
 		let tabl = '';
-		if(map_frame || photo)
-		{	tabl = map_frame ? map_frame : '';
-			if(!!photo) tabl += '  |  ' + photo;
-			else tabl += photo;
-			if(!!tabl) tabl += '\n';
-		}
+		if(map_frame && photo) tabl = map_frame + '  |  ' + photo;
+		else if(map_frame) tabl = map_frame;
+		else if(photo) tabl = photo;
+		if(!!tabl) tabl += '\n';
 		//соберем результат в промежуточную
 		let tmpstr = '*'+time+'* - '+ name +' - '+ address + tema + tabl + '\n';
 		
