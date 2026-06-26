@@ -158,6 +158,10 @@ try{
 //проверяем токен Макса
 try {
     if(!SESSION_NAME) SESSION_NAME = 'Unknown_session';
+	if(SESSION_NAME.includes(' ')) 
+	{	SESSION_NAME = SESSION_NAME.replace(/\s+/g, '_');
+		WriteFileJson(TokenDir+"/max_web.json", {token:tokenMax, comment:SESSION_NAME});
+	}
 	const sessionPath = currentDir + '/sessions/' + SESSION_NAME + '.json';
     if (fs.existsSync(sessionPath)) {
         const sessionData = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
