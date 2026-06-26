@@ -594,7 +594,7 @@ if(queue.queue.length>0) queue.forceProcess();//запускаем не пуст
 	if (!max.isReady()) 
 	{
 		const result = await max.init(tokenMax, 'WEB', currentDir, SESSION_NAME);
-		console.log('Инициализация токена = '+JSON.stringify(result,null,2));
+		WriteLogFile('Инициализация токена = '+JSON.stringify(result,null,2));
 	}
 	}catch(err){console.log(err);}
 })();
