@@ -62,7 +62,7 @@ async function init(token, deviceType = 'WEB', sessionPath, sessionName = 'RZF_s
     
     return new Promise((resolve, reject) => {
         client.onStart(async () => {
-            const userName = client.me?.firstname || 'Пользователь';
+            const userName = '«'+(client.me?.firstname || 'Пользователь')+'»';
 			console.log('✅ WebMax клиент '+userName+' инициализирован!');
             resetWatchdog();
             resolve({ status: 'OK', data: 'WebMax клиент '+userName+' инициализирован!' });
