@@ -42,7 +42,7 @@ function _isNetworkError(err) {
 
 //====================================================================
 async function init(token, deviceType = 'WEB', sessionPath, sessionName = 'RZF_session') {
-    if(isReady()) return { status: 'OK', data: 'WebMax клиент инициализирован' };
+    if(isReady()) return { status: 'OK', data: 'WebMax клиент уже инициализирован' };
     
     // Формируем параметры клиента
     const clientParams = {
@@ -62,9 +62,10 @@ async function init(token, deviceType = 'WEB', sessionPath, sessionName = 'RZF_s
     
     return new Promise((resolve, reject) => {
         client.onStart(async () => {
-            console.log('✅ WebMax клиент инициализирован');
+            const userName = client.me?.firstname || 'Пользователь';
+			console.log('✅ WebMax клиент '+userName+' инициализирован!');
             resetWatchdog();
-            resolve({ status: 'OK', data: 'WebMax клиент инициализирован' });
+            resolve({ status: 'OK', data: 'WebMax клиент '+userName+' инициализирован!' });
         });
         
         client.onError((err) => {
@@ -76,7 +77,7 @@ async function init(token, deviceType = 'WEB', sessionPath, sessionName = 'RZF_s
             if (_isNetworkError(err)) {
                 reject(err);  // сетевая ошибка — пробрасываем
             } else {
-                resolve({ status: 'ERROR', data: 'не удалось запустить клиент' });
+                resolve({ status: 'ERROR', data: 'не удалось запустить клиент Макс' });
             }
         });
     });
