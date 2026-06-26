@@ -46,7 +46,7 @@ async function init(token, deviceType = 'WEB', sessionPath, sessionName = 'RZF_s
     
     // Формируем параметры клиента
     const clientParams = {
-        name: sessionName,
+        name: sessionName.replace(/\s+/g, '_'),//заменяем пробелы в имени файла сессии
         saveToken: true,
         deviceType: deviceType,
         maxReconnectAttempts: 0,
@@ -69,7 +69,7 @@ async function init(token, deviceType = 'WEB', sessionPath, sessionName = 'RZF_s
         
         client.onError((err) => {
             console.error('❌ Ошибка инициализации клиента:', err);
-            resolve({ status: 'ERROR', data: 'инициализация не удалась' });
+            resolve({ status: 'ERROR', data: 'инициализация не удалась, '+err });
         });
         
         client.start().catch((err) => {
