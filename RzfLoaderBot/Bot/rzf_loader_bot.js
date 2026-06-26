@@ -588,9 +588,16 @@ if(fs.existsSync(currentDir+'/queue.json'))
 
 if(queue.queue.length>0) queue.forceProcess();//запускаем не пустую очередь на выполнение
 
-/*(async () => {   
-	let res = await addToQueueMax('sendText', -75877785739904, 'Тест-Канал', {text:"Привет!"});
-})();*/
+(async () => {   
+	const max = require('./Max/WebMaxModule');
+	try{
+	if (!max.isReady()) 
+	{
+		const result = await max.init(tokenMax, 'WEB', currentDir, SESSION_NAME);
+		console.log('Инициализация токена = '+JSON.stringify(result,null,2));
+	}
+	}catch(err){console.log(err);}
+})();
 //====================================================================
 // СТАРТ
 LoaderBot.onText(/^\/start/, async (msg) => 
