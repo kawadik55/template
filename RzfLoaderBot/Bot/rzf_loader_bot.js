@@ -592,7 +592,7 @@ if(queue.queue.length>0) queue.forceProcess();//запускаем не пуст
 (async () => {   
 	const max = require('./Max/WebMaxModule');
 	try{
-	if (tokenMax && SESSION_NAME) 
+	if (config.useMax && tokenMax && SESSION_NAME) 
 	{
 		const result = await max.init(tokenMax, 'WEB', currentDir, SESSION_NAME);
 		WriteLogFile('Инициализация токена = '+JSON.stringify(result,null,2));
