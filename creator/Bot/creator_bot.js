@@ -83,7 +83,6 @@ if(config.socks5)
 }
 var Bot = new TelegramBot(tokenBot, {polling: true, request: requestagent});
 Bot.isPolling = true;//доп свойство
-console.log('Прошел Bot');
 let tokenLog;
 try{tokenLog = require(TokenDir+"/logs_bot.json").token;}catch(err){}
 //if(!!tokenLog && tokenLog=='ТокенБотаЛогов') tokenLog = null;
