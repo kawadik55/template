@@ -2921,7 +2921,7 @@ try{//а также DayCount в недельном файле только но�
 //====================================================================
 //подписка на выход из скрипта
 [`SIGINT`, `uncaughtException`, `SIGTERM`].forEach((event) => 
-{	process.on(event, async ()=>
+{	process.on(event, async (err)=>
 	{	fs.writeFileSync(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2));
 		fs.writeFileSync(currentDir+'/FileId.txt', JSON.stringify(FileId,null,2));
 		let WeekCount = JSON.parse(fs.readFileSync(FileWeekCount));//читаем недельный файл
@@ -2931,7 +2931,13 @@ try{//а также DayCount в недельном файле только но�
         fs.writeFileSync(FileWeekCount, JSON.stringify(WeekCount,null,2));
         await WriteLogFile('выход из процесса по '+event);
         fs.writeFileSync(FileGrandCount, JSON.stringify(GrandCount,null,2));
-        if(event==`uncaughtException`) console.log(event);
+        if(event==`uncaughtException`) {
+            console.log('=== НЕОТЛОВЛЕННАЯ ОШИБКА ===');
+            console.log('Событие:', event);
+            console.log('Сообщение:', err.message || String(err));
+            console.log('Стек:', err.stack || 'Нет стека');
+            console.log('=== КОНЕЦ ОШИБКИ ===');
+        }
         fs.writeFileSync(currentDir+"/answer.txt", JSON.stringify(AnswerList));
 		if(!!interval1) clearInterval(interval1);
 		if(!!interval2) clearInterval(interval2);
