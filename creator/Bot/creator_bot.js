@@ -62,6 +62,7 @@ const filenamebot = '/' + require(currentDir+"/filename_bot.json").filename;//и
 const tokenBot = require(TokenDir+filenamebot).token;//рабочий бот
 var nameBot = 'my_bot'; try{nameBot = require(TokenDir+filenamebot).comment} catch (err) {}//имя бота
 const LogFile = PathToLog+'/'+nameBot+'.log';
+console.log('Прошел Настройки');
 //проверим наличие файла конфига, если файл отсутствует, то создадим его 
 let config = {};
 try 
@@ -88,6 +89,7 @@ if(config.socks5)
 }
 var Bot = new TelegramBot(tokenBot, {polling: true, request: requestagent});
 Bot.isPolling = true;//доп свойство
+console.log('Прошел Bot');
 let tokenLog;
 try{tokenLog = require(TokenDir+"/logs_bot.json").token;}catch(err){}
 //if(!!tokenLog && tokenLog=='ТокенБотаЛогов') tokenLog = null;
