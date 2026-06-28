@@ -1,13 +1,18 @@
 ﻿process.env["NTBA_FIX_350"] = 1;
 const fs = require('fs');
 const moment = require('moment-timezone');
+console.log('Прошел moment');
 const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
+console.log('Прошел node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
+console.log('Прошел TelegramQueue');
 const tzLookup = require('tz-lookup');
+console.log('Прошел tz-lookup');
 //const homedir = require('os').homedir();
 const homedir = '/home/pi';
 const needle = require('needle');
+console.log('Прошел needle');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше.
 const FileAdminList = currentDir+"/AdminList.txt";//имя файла списка админов
@@ -75,12 +80,12 @@ catch (err)
 }
 //проверим необходимость сокета
 let requestagent = {};
-/*if(config.socks5)
+if(config.socks5)
 {	const { SocksProxyAgent } = require('socks-proxy-agent');
     const proxyUri = `socks5://${config.socks5.username}:${config.socks5.password}@${config.socks5.host}:${config.socks5.port}`;
     const agent = new SocksProxyAgent(proxyUri);
 	requestagent = {agent: agent};
-}*/
+}
 var Bot = new TelegramBot(tokenBot, {polling: true, request: requestagent});
 Bot.isPolling = true;//доп свойство
 let tokenLog;
