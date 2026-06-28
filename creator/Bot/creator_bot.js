@@ -75,12 +75,12 @@ catch (err)
 }
 //проверим необходимость сокета
 let requestagent = {};
-if(config.socks5)
+/*if(config.socks5)
 {	const { SocksProxyAgent } = require('socks-proxy-agent');
     const proxyUri = `socks5://${config.socks5.username}:${config.socks5.password}@${config.socks5.host}:${config.socks5.port}`;
     const agent = new SocksProxyAgent(proxyUri);
 	requestagent = {agent: agent};
-}
+}*/
 var Bot = new TelegramBot(tokenBot, {polling: true, request: requestagent});
 Bot.isPolling = true;//доп свойство
 let tokenLog;
@@ -2921,7 +2921,7 @@ try{//а также DayCount в недельном файле только но�
 //====================================================================
 //подписка на выход из скрипта
 [`SIGINT`, `uncaughtException`, `SIGTERM`].forEach((event) => 
-{	process.on(event, async (err)=>
+{	process.on(event, async ()=>
 	{	fs.writeFileSync(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2));
 		fs.writeFileSync(currentDir+'/FileId.txt', JSON.stringify(FileId,null,2));
 		let WeekCount = JSON.parse(fs.readFileSync(FileWeekCount));//читаем недельный файл
@@ -2931,13 +2931,7 @@ try{//а также DayCount в недельном файле только но�
         fs.writeFileSync(FileWeekCount, JSON.stringify(WeekCount,null,2));
         await WriteLogFile('выход из процесса по '+event);
         fs.writeFileSync(FileGrandCount, JSON.stringify(GrandCount,null,2));
-        if(event==`uncaughtException`) {
-            console.log('=== НЕОТЛОВЛЕННАЯ ОШИБКА ===');
-            console.log('Событие:', event);
-            console.log('Сообщение:', err.message || String(err));
-            console.log('Стек:', err.stack || 'Нет стека');
-            console.log('=== КОНЕЦ ОШИБКИ ===');
-        }
+        if(event==`uncaughtException`) console.log(event);
         fs.writeFileSync(currentDir+"/answer.txt", JSON.stringify(AnswerList));
 		if(!!interval1) clearInterval(interval1);
 		if(!!interval2) clearInterval(interval2);
