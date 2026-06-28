@@ -1,18 +1,13 @@
 ﻿process.env["NTBA_FIX_350"] = 1;
 const fs = require('fs');
 const moment = require('moment-timezone');
-console.log('Прошел moment');
 const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
-console.log('Прошел node-telegram-bot-api');
 const TelegramQueue = require('./TelegramQueue');
-console.log('Прошел TelegramQueue');
 const tzLookup = require('tz-lookup');
-console.log('Прошел tz-lookup');
 //const homedir = require('os').homedir();
 const homedir = '/home/pi';
 const needle = require('needle');
-console.log('Прошел needle');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const AudioDir=currentDir+"/../../Audio";//путь к папке с книгами, на 2 уровня выше.
 const FileAdminList = currentDir+"/AdminList.txt";//имя файла списка админов
@@ -62,7 +57,6 @@ const filenamebot = '/' + require(currentDir+"/filename_bot.json").filename;//и
 const tokenBot = require(TokenDir+filenamebot).token;//рабочий бот
 var nameBot = 'my_bot'; try{nameBot = require(TokenDir+filenamebot).comment} catch (err) {}//имя бота
 const LogFile = PathToLog+'/'+nameBot+'.log';
-console.log('Прошел Настройки');
 //проверим наличие файла конфига, если файл отсутствует, то создадим его 
 let config = {};
 try 
