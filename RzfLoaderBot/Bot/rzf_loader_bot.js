@@ -595,7 +595,7 @@ if(queue.queue.length>0) queue.forceProcess();//запускаем не пуст
 	if (config.useMax && tokenMax && SESSION_NAME) 
 	{
 		const result = await max.init(tokenMax, 'WEB', currentDir, SESSION_NAME);
-		WriteLogFile('Инициализация токена = '+JSON.stringify(result,null,2));
+		WriteLogFile('Инициализация токена Макс = '+JSON.stringify(result,null,2));
 	}
 	}catch(err){console.log(err);}
 })();
@@ -612,7 +612,7 @@ try{
 	let valid = validUser(userId);
 	
 	let str='Привет, '+name+'! Это чат-бот '+area+'! ';
-	str+='С моей помощью Вы сможете опубликовать в NAших Телеграм-каналах свои файлы и текстовые объявления. ';
+	str+='С моей помощью Вы сможете опубликовать в NAших ТГ/Макс-каналах свои файлы и текстовые объявления. ';
 	
 	//проверим юзера
 	if(ban) sendMessage(chatId, str+'Извините, ' + name + ', но Вы забанены! Обратитесь к админу. ');
@@ -4451,7 +4451,7 @@ async function send_Eg()
 		}		
 		let eg = (await fs.promises.readFile(refpath)).toString();//получаем "сегодняшний" для юзера Ежик
 		
-		WriteLogFile('Рассылка *Ежика* '+refdate+' подписчикам Телеграм '+groffset+':');
+		WriteLogFile('Рассылка *Ежика* '+refdate+' подписчикам ТГ '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
