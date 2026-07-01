@@ -175,15 +175,16 @@ function parseEgToText(EgObj)//собираем текст ежика для mar
 	let message='';
 	message += '🔷*ЕЖЕДНЕВНИК*🔷\n';//zagol;
 	message += 'https://na-russia.org/\n\n';
-	message += EgObj.day + ' ' + mas[EgObj.month] + '\n\n';//дата	
-	message += '*' + replaceHtml(EgObj.title) + '*' + '\n\n';//тема жирно
+	if(EgObj?.day && EgObj?.month) message += EgObj.day + ' ' + mas[EgObj.month] + '\n\n';//дата	
+	if(EgObj?.title) message += '*' + replaceHtml(EgObj.title) + '*' + '\n\n';//тема жирно
 					
-	message += '_' + replaceHtml(EgObj.quote) + '_' + '\n';//аннотация курсивом
-	message += '_' + EgObj.quote_from + '_' + '\n\n';//страница БТ курсивом
+	if(EgObj?.quote) message += '_' + replaceHtml(EgObj.quote) + '_' + '\n';//аннотация курсивом
+	if(EgObj?.quote_from) message += '_' + EgObj.quote_from + '_' + '\n\n';//страница БТ курсивом
+	else if(EgObj?.quote) message += '\n';
 				
-	message += replaceHtml(EgObj.body) + '\n\n';//сам текст
+	if(EgObj?.body) message += replaceHtml(EgObj.body) + '\n\n';//сам текст
 		
-	message += '*ТОЛЬКО СЕГОДНЯ:* ' + replaceHtml(EgObj.jft) + '\n\n';
+	if(EgObj?.jft) message += '*ТОЛЬКО СЕГОДНЯ:* ' + replaceHtml(EgObj.jft) + '\n\n';
 					
 	//в конце добавляем ссылки на аудио треки в markdown, если есть
 	try{
