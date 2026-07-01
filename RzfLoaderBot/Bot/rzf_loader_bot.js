@@ -352,32 +352,33 @@ var Cron1 = cron.schedule(timeCron, async function()
 				}
 			}
 		}
+		const now = moment();
 		//сначала в ТГ
 		//ежик
 		if(config.Eg===true) 
-		{	await send_Eg();//Телега
+		{	await send_Eg(now);//Телега
 		}
 		//расписание
 		if(config.Raspis===true) 
 		{	if(config.fromES && config.fromES==true) 
-			{	await send_Raspis_ES();//Телега
+			{	await send_Raspis_ES(now);//Телега
 			}
 			else 
-			{	await send_Raspis_standart();//Телега
+			{	await send_Raspis_standart(now);//Телега
 			}
 		}
 		//потом в Макс
 		//ежик
 		if(config.Eg===true) 
-		{	await send_Eg_max();//Макс
+		{	await send_Eg_max(now);//Макс
 		}
 		//расписание
 		if(config.Raspis===true) 
 		{	if(config.fromES && config.fromES==true) 
-			{	await send_Raspis_ES_max();//Макс
+			{	await send_Raspis_ES_max(now);//Макс
 			}
 			else 
-			{	await send_Raspis_standart_max();//Макс
+			{	await send_Raspis_standart_max(now);//Макс
 			}
 		}
 		
@@ -4431,12 +4432,12 @@ async function sendTextToBot(Bot, chat, text, opt)
 function getTimeStr() {return moment().format('DD-MM-YY HH:mm:ss:ms ');}
 //====================================================================
 //посылает Ежик в ТГ всегда в markdown
-async function send_Eg()
+async function send_Eg(time)
 { try
   {		if(!fs.existsSync(FileEg)) {WriteLogFile(getTimeStr()+'файл с ежиком отсутствует'); return;}
 		let offset = Object.keys(chat_news);//массив смещений строками
 		if(offset.length==0) {return;}
-		let now = moment();
+		let now = moment(time || undefined);
 		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 		for(let i=0;i<offset.length;i++)
 		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
@@ -4503,7 +4504,7 @@ async function send_Eg()
 }
 //====================================================================
 //рассылка стандартного расписания местности в ТГ
-async function send_Raspis_standart()
+async function send_Raspis_standart(time)
 { try
   {		let raspis = '';
 		if(fs.existsSync(FileRaspis)) raspis = fs.readFileSync(FileRaspis).toString();
@@ -4528,7 +4529,7 @@ async function send_Raspis_standart()
 		
 		let offset = Object.keys(chat_news);//массив смещений строками
 		if(offset.length==0) {return;}
-		let now = moment();
+		let now = moment(time || undefined);
 		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 		for(let i=0;i<offset.length;i++)
 		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
@@ -4578,13 +4579,13 @@ async function send_Raspis_standart()
 }
 //====================================================================
 //посылает Ежик в Max, хранится всегда в markdown
-async function send_Eg_max()
+async function send_Eg_max(time)
 { try
   {		if(!config.useMax) return;
 		if(!fs.existsSync(FileEg)) {WriteLogFile(getTimeStr()+'файл с ежиком отсутствует'); return;}
 		let offset = Object.keys(chat_news_max);//массив смещений строками
 		if(offset.length==0) {return;}
-		let now = moment();
+		let now = moment(time || undefined);
 		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 		for(let i=0;i<offset.length;i++)
 		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
@@ -4636,7 +4637,7 @@ async function send_Eg_max()
 }
 //====================================================================
 //рассылка стандартного расписания местности в Макс
-async function send_Raspis_standart_max()
+async function send_Raspis_standart_max(time)
 { try
   {		if(!config.useMax) return;
 		let raspis = '';
@@ -4672,7 +4673,7 @@ async function send_Raspis_standart_max()
 		
 		let offset = Object.keys(chat_news_max);//массив смещений строками
 		if(offset.length==0) {return;}
-		let now = moment();
+		let now = moment(time || undefined);
 		let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 		for(let i=0;i<offset.length;i++)
 		{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
@@ -4713,7 +4714,7 @@ async function send_Raspis_standart_max()
 }
 //====================================================================
 //рассылка в Макс расписаний для городов юзеров из настроек chat_news_max
-async function send_Raspis_ES_max()
+async function send_Raspis_ES_max(time)
 { try
   {	if(!config.useMax) return;
 	//ищем файл со списком городов listTowns.json
@@ -4730,7 +4731,7 @@ async function send_Raspis_ES_max()
 	// делаем рассылку в нужные чаты
 	let offset = Object.keys(chat_news_max);//массив смещений чатов строками
 	if(offset.length==0) {return;}
-	let now = moment();
+	let now = moment(time || undefined);
 	let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 	for(let i=0;i<offset.length;i++)
 	{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
@@ -4786,7 +4787,7 @@ async function send_Raspis_ES_max()
 }
 //====================================================================
 //рассылка в ТГ расписаний для городов юзеров из настроек chat_news
-async function send_Raspis_ES()
+async function send_Raspis_ES(time)
 { try
   {	//ищем файл со списком городов listTowns.json
 	listTowns = {};
@@ -4802,7 +4803,7 @@ async function send_Raspis_ES()
 	// делаем рассылку в нужные чаты
 	let offset = Object.keys(chat_news);//массив смещений чатов строками
 	if(offset.length==0) {return;}
-	let now = moment();
+	let now = moment(time || undefined);
 	let publicHour = moment(timePablic, 'HH:mm:ss').hour();//Установленный час публикаций как число
 	for(let i=0;i<offset.length;i++)
 	{	let userHour = getUserDateTime(now, Number(offset[i])).hour();//час юзера как число
