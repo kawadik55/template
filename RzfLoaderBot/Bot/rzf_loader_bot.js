@@ -162,7 +162,6 @@ try {
 	{	SESSION_NAME = SESSION_NAME.replace(/\s+/g, '_');
 		WriteFileJson(TokenDir+"/max_web.json", {token:tokenMax, comment:SESSION_NAME});
 	}
-	//const sessionPath = currentDir + '/sessions/' + SESSION_NAME + '.json';
 	const sessionPath = currentDir + '/sessions/' + SESSION_NAME + '.last_ok.json';
     if (fs.existsSync(sessionPath)) {
         const sessionData = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
@@ -353,20 +352,32 @@ var Cron1 = cron.schedule(timeCron, async function()
 				}
 			}
 		}
+		//сначала в ТГ
 		//ежик
 		if(config.Eg===true) 
 		{	await send_Eg();//Телега
-			await send_Eg_max();//Макс
 		}
 		//расписание
 		if(config.Raspis===true) 
 		{	if(config.fromES && config.fromES==true) 
 			{	await send_Raspis_ES();//Телега
-				await send_Raspis_ES_max();//Макс
 			}
 			else 
 			{	await send_Raspis_standart();//Телега
-				await send_Raspis_standart_max();//Макс
+			}
+		}
+		//потом в Макс
+		//ежик
+		if(config.Eg===true) 
+		{	await send_Eg_max();//Макс
+		}
+		//расписание
+		if(config.Raspis===true) 
+		{	if(config.fromES && config.fromES==true) 
+			{	await send_Raspis_ES_max();//Макс
+			}
+			else 
+			{	await send_Raspis_standart_max();//Макс
 			}
 		}
 		
