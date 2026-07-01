@@ -67,6 +67,11 @@ function parseMarkdownToElements(text)
 			const before = processedText.slice(0, match.index);//от 0 до match.index, не включая самого
 			const after = processedText.slice(match.index+match[0].length);
 			processedText = before + content + after;
+		} else {
+			// Если content пустой, просто удаляем match[0]
+			const before = processedText.slice(0, match.index);
+			const after = processedText.slice(match.index + match[0].length);
+			processedText = before + after;
 		}
         
         // Сбрасываем lastIndex и продолжаем поиск с новой позиции
