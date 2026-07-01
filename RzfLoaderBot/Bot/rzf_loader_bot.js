@@ -4463,7 +4463,8 @@ async function send_Eg(time)
 		}		
 		let eg = (await fs.promises.readFile(refpath)).toString();//получаем "сегодняшний" для юзера Ежик
 		
-		WriteLogFile('Рассылка *Ежика* '+refdate+' подписчикам ТГ '+groffset+':');
+		const hasTrue = chat.some(item => item.Eg === true);//есть ли разрешенные вообще
+		if(hasTrue) WriteLogFile('Рассылка *Ежика* '+refdate+' подписчикам ТГ '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
@@ -4496,7 +4497,7 @@ async function send_Eg(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Eg()=>for()','вчат');}
 		}
-		await WriteLogFile('Всего чатов = '+count_chats);
+		if(hasTrue) await WriteLogFile('Всего чатов ТГ = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Eg()','вчат');
@@ -4539,7 +4540,8 @@ async function send_Raspis_standart(time)
 	async function go2public(chat,groffset)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
-		await WriteLogFile('Рассылка *Расписания* подписчикам ТГ '+groffset+':');
+		const hasTrue = chat.some(item => item.Raspis === true);//есть ли разрешенные вообще
+		if(hasTrue) await WriteLogFile('Рассылка *Расписания* подписчикам ТГ '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{
@@ -4571,7 +4573,7 @@ async function send_Raspis_standart(time)
 
 		  }catch(err){WriteLogFile(err+'\n from send_Raspis_standart()=>for()','вчат');}
 		}
-		await WriteLogFile('Всего чатов = '+count_chats);
+		if(hasTrue) await WriteLogFile('Всего чатов ТГ = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Raspis_standart()','вчат');
@@ -4612,7 +4614,8 @@ async function send_Eg_max(time)
 		let eg = (await fs.promises.readFile(refpath)).toString();//получаем "сегодняшний" для юзера Ежик
 		let data = utils.parseMarkdownToElements(eg);//преобразуем markdown в elements
 		
-		await WriteLogFile('Рассылка *Ежика* '+refdate+' подписчикам Макс '+groffset+':');
+		const hasTrue = chat.some(item => item.Eg === true);//есть ли разрешенные вообще
+		if(hasTrue) await WriteLogFile('Рассылка *Ежика* '+refdate+' подписчикам Макс '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
@@ -4629,7 +4632,7 @@ async function send_Eg_max(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Eg_max()=>for()','вчат');}
 		}
-		await WriteLogFile('Всего чатов Макс = '+count_chats);
+		if(hasTrue) await WriteLogFile('Всего чатов Макс = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Eg_max()','вчат');
@@ -4683,7 +4686,8 @@ async function send_Raspis_standart_max(time)
 	async function go2public(chat,groffset)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
-		await WriteLogFile('Рассылка *Расписания* подписчикам Макс '+groffset+':');
+		const hasTrue = chat.some(item => item.Raspis === true);//есть ли разрешенные вообще
+		if(hasTrue) await WriteLogFile('Рассылка *Расписания* подписчикам Макс '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
@@ -4706,7 +4710,7 @@ async function send_Raspis_standart_max(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis_standart_max()=>for()','вчат');}
 		}
-		await WriteLogFile('Всего чатов Макс = '+count_chats);
+		if(hasTrue) await WriteLogFile('Всего чатов Макс = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Raspis_standart_max()','вчат');
@@ -4742,7 +4746,8 @@ async function send_Raspis_ES_max(time)
 	async function go2public(chat,groffset,listTown)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
-		await WriteLogFile('Рассылка *Расписания* подписчикам Макс '+groffset+':');
+		const hasTrue = chat.some(item => item.Raspis === true);//есть ли разрешенные вообще
+		if(hasTrue) await WriteLogFile('Рассылка *Расписания* подписчикам Макс '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{
@@ -4778,7 +4783,7 @@ async function send_Raspis_ES_max(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis_ES_max()=>for()','вчат');}
 		}
-		await WriteLogFile('Всего чатов Макс = '+count_chats);
+		if(hasTrue) await WriteLogFile('Всего чатов Макс = '+count_chats);
 	}
 	
   } catch (err) 
@@ -4814,7 +4819,8 @@ async function send_Raspis_ES(time)
 	async function go2public(chat,groffset,listTown)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
-		await WriteLogFile('Рассылка *Расписания* подписчикам ТГ '+groffset+':');
+		const hasTrue = chat.some(item => item.Raspis === true);//есть ли разрешенные вообще
+		if(hasTrue) await WriteLogFile('Рассылка *Расписания* подписчикам ТГ '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{
@@ -4867,7 +4873,7 @@ async function send_Raspis_ES(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis_ES()=>for()','вчат');}
 		}
-		await WriteLogFile('Всего чатов ТГ = '+count_chats);
+		if(hasTrue) await WriteLogFile('Всего чатов ТГ = '+count_chats);
 	}
 	
   } catch (err) 
