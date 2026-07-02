@@ -1,6 +1,7 @@
 // webMaxModule.js
 const { WebMaxClient } = require('mywebmaxsocket');
 const EventEmitter = require('events');
+const fs = require('fs');
 const Emit = new EventEmitter();
 
 let client = null;
@@ -44,9 +45,15 @@ function _isNetworkError(err) {
 async function init(token, deviceType = 'WEB', sessionPath, sessionName = 'RZF_session') {
     if(isReady()) return { status: 'OK', data: 'WebMax клиент уже инициализирован' };
     
-    // Формируем параметры клиента
+    if(sessionName.trim() === '') sessionName = 'RZF_session';
+	sessionName = sessionName.replace(/\s+/g, '_');
+    const sessionFile = (sessionPath || process.cwd()) + '/sessions/' + sessionName + '.json';
+	// Если файл сессии существует — игнорируем переданный токен
+    if (fs.existsSync(sessionFile)) token = '';
+	
+	// Формируем параметры клиента
     const clientParams = {
-        name: sessionName.replace(/\s+/g, '_'),//заменяем пробелы в имени файла сессии
+        name: sessionName,
         saveToken: true,
         deviceType: deviceType,
         maxReconnectAttempts: 0,

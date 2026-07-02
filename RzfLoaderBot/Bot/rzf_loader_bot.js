@@ -148,6 +148,8 @@ let namebot = 'unnown', nameNews = 'unnown';
 try{namebot = require(TokenDir+"/loader_bot.json").comment;}catch(err){console.log(err);}//юзернейм бота
 try{tokenNews = require(TokenDir+"/news_bot.json").token;}catch(err){console.log(err);}
 try{nameNews = require(TokenDir+"/news_bot.json").comment;}catch(err){console.log(err);}//юзернейм бота
+
+//проверяем токен Макса
 let SESSION_NAME;
 try{
 	tokenMax = require(TokenDir+"/max_web.json").token;
@@ -155,25 +157,10 @@ try{
 }catch(err){
 	console.log(err); WriteFileJson(TokenDir+"/max_web.json", {token:"",comment:""});
 }
-//проверяем токен Макса
-try {
-    if(!SESSION_NAME) SESSION_NAME = 'Unknown_session';
-	if(SESSION_NAME.includes(' ')) 
-	{	SESSION_NAME = SESSION_NAME.replace(/\s+/g, '_');
-		WriteFileJson(TokenDir+"/max_web.json", {token:tokenMax, comment:SESSION_NAME});
-	}
-	const sessionPath = currentDir + '/sessions/' + SESSION_NAME + '.last_ok.json';
-    if (fs.existsSync(sessionPath)) {
-        const sessionData = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
-        const sessionToken = sessionData.token;
-        // Сравниваем с токеном из настроек
-        if (sessionToken && sessionToken !== tokenMax) {
-            WriteLogFile('🔄 Обнаружен новый токен в сессии, обновляем tokenMax');
-            tokenMax = sessionToken;
-        }
-    }
-} catch (err) {
-    WriteLogFile('Ошибка проверки токена Макс: ' + err.message);
+if(!SESSION_NAME) SESSION_NAME = 'Unknown_session';
+if(SESSION_NAME.includes(' ')) 
+{	SESSION_NAME = SESSION_NAME.replace(/\s+/g, '_');
+	WriteFileJson(TokenDir+"/max_web.json", {token:tokenMax, comment:SESSION_NAME});
 }
 
 //пользователь 'Supervisor'
