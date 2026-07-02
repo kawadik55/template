@@ -44,6 +44,7 @@ function _isNetworkError(err) {
 //====================================================================
 async function init(token, deviceType = 'WEB', sessionPath, sessionName = 'RZF_session') {
     if(isReady()) return { status: 'OK', data: 'WebMax клиент уже инициализирован' };
+	const initialToken = token || '';
     
     if(sessionName.trim() === '') sessionName = 'RZF_session';
 	sessionName = sessionName.replace(/\s+/g, '_');
@@ -72,6 +73,9 @@ async function init(token, deviceType = 'WEB', sessionPath, sessionName = 'RZF_s
             const userName = '«'+(client.me?.firstname || 'Пользователь')+'»';
 			console.log('✅ WebMax клиент '+userName+' инициализирован!');
             resetWatchdog();
+			const newToken = client._token;
+            // Сравниваем с переданным токеном
+            if (newToken && newToken !== initialToken) Emit.emit('tokenUpdated', newToken);
             resolve({ status: 'OK', data: 'WebMax клиент '+userName+' инициализирован!' });
         });
         

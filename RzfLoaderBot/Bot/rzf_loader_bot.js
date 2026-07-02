@@ -5612,6 +5612,11 @@ queueMax.on('failed', (item, error) =>
 //queueMax.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 queueMax.on('connected', () => {WriteLogFile('=> WebMaxClient connected');});
 queueMax.on('disconnected', (error) => {WriteLogFile('=> WebMaxClient disconnected = '+error);});
+queueMax.on('tokenUpdated', (newToken) => 
+{	WriteLogFile('=> Получен новый токен от WebMaxClient!');
+	tokenMax = newToken;
+	WriteFileJson(TokenDir+"/max_web.json", {token:tokenMax, comment:SESSION_NAME});
+});
 //queueMax.on('processing_started', (item) => {WriteLogFile('processing_started, queue length = '+item);});
 //queueMax.on('processing_finished', () => {WriteLogFile('processing_finished');});
 //queueMax.on('cleared', (item) => {WriteLogFile('cleared = '+item);});

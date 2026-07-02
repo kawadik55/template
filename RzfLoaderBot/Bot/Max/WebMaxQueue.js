@@ -1,5 +1,4 @@
 const { EventEmitter } = require('events');
-//const moment = require('moment-timezone');//
 const max = require('./WebMaxModule');
 
 class WebMaxQueue extends EventEmitter {
@@ -27,6 +26,11 @@ class WebMaxQueue extends EventEmitter {
 		max.emitter.on('watchdogTimer', (res) => {
 			if(res.status === 'OK') this.emit('disconnected',res.status);
  			else this.emit('disconnected',res.data);
+		});
+		
+		max.emitter.on('tokenUpdated', (newToken) => {
+			this.token = newToken;
+			this.emit('tokenUpdated', newToken);
 		});
     }
     
