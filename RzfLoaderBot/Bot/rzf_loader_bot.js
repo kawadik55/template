@@ -119,11 +119,11 @@ if(fs.existsSync(currentDir+"/Url.txt")&&!config.UrlSupport)
 if(!Object.hasOwn(config,'UrlSupport')) {config.UrlSupport = 'https://t.me/ссылкаДляВопросов'; WriteFileJson(currentDir+"/config.json",config);}
 
 //список чатов ТГ
-try{chat_news = require(currentDir+"/chatId.json");
+try{chat_news = JSON.parse(fs.readFileSync(currentDir+"/chatId.json", 'utf8'));
 }catch(err){WriteFileJson(currentDir+"/chatId.json",chat_news);}
 
 //список чатов Max
-try{chat_news_max = require(currentDir+"/chatId_max.json");
+try{chat_news_max = JSON.parse(fs.readFileSync(currentDir+"/chatId_max.json", 'utf8'));
 }catch(err){
 	chat_news_max = {
 	  "+300": [
@@ -143,21 +143,27 @@ try{chat_news_max = require(currentDir+"/chatId_max.json");
 
 // выбор токена
 let tokenLoader = '', tokenNews = '', tokenMax = '';
-try{tokenLoader = require(TokenDir+"/loader_bot.json").token;}catch(err){console.log(err);}
 let namebot = 'unnown', nameNews = 'unnown';
-try{namebot = require(TokenDir+"/loader_bot.json").comment;}catch(err){console.log(err);}//юзернейм бота
-try{tokenNews = require(TokenDir+"/news_bot.json").token;}catch(err){console.log(err);}
-try{nameNews = require(TokenDir+"/news_bot.json").comment;}catch(err){console.log(err);}//юзернейм бота
+try{
+	const tmp = JSON.parse(fs.readFileSync(TokenDir+"/loader_bot.json", 'utf8'));
+	tokenLoader = tmp.token || 'default_token';
+	namebot = tmp.comment || 'default_name';//юзернейм бота
+}catch(err){console.log(err);}
+try{
+	const tmp = JSON.parse(fs.readFileSync(TokenDir+"/news_bot.json", 'utf8'));
+	tokenNews = tmp.token || 'default_token';
+	nameNews = tmp.comment || 'default_name';//юзернейм бота
+}catch(err){console.log(err);}
 
 //проверяем токен Макса
-let SESSION_NAME;
+let SESSION_NAME = "Unknown_session";
 try{
-	tokenMax = require(TokenDir+"/max_web.json").token;
-	SESSION_NAME = require(TokenDir+"/max_web.json").comment;
+	const tmp = JSON.parse(fs.readFileSync(TokenDir + "/max_web.json", 'utf8'));
+	tokenMax = tmp.token || 'default_token';
+	SESSION_NAME = tmp.comment || 'default_name';
 }catch(err){
-	console.log(err); WriteFileJson(TokenDir+"/max_web.json", {token:"",comment:""});
+	console.log(err); WriteFileJson(TokenDir+"/max_web.json", {token:"default_token",comment:SESSION_NAME});
 }
-if(!SESSION_NAME) SESSION_NAME = 'Unknown_session';
 if(SESSION_NAME.includes(' ')) 
 {	SESSION_NAME = SESSION_NAME.replace(/\s+/g, '_');
 	WriteFileJson(TokenDir+"/max_web.json", {token:tokenMax, comment:SESSION_NAME});
