@@ -5613,7 +5613,7 @@ queueMax.on('failed', (item, error) =>
 queueMax.on('connected', () => {WriteLogFile('=> WebMaxClient connected');});
 queueMax.on('disconnected', (error) => {WriteLogFile('=> WebMaxClient disconnected = '+error);});
 queueMax.on('tokenUpdated', (newToken) => 
-{	WriteLogFile('=> Получен новый токен от WebMaxClient!');
+{	WriteLogFile('=> Получен новый токен от WebMaxClient!', 'вчат');
 	tokenMax = newToken;
 	WriteFileJson(TokenDir+"/max_web.json", {token:tokenMax, comment:SESSION_NAME});
 });
