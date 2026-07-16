@@ -3524,7 +3524,7 @@ try{
 	{	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
 		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
 		let date = !!obj.date?obj.date:'';//запись даты
-		WriteLogFile('text "Сегодня" в зону ТГ '+offset+' => день='+day+'; дата='+date+timestr);
+		WriteLogFile('text "Сегодня" в зону '+offset+' ТГ => день='+day+'; дата='+date+timestr);
 		//соберем все чаты в новый массив
 		let count_chats = 0;
 		//let all_chats = getAllChats();//посылаем без разбору по зонам
@@ -3586,7 +3586,7 @@ try{
 	{	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
 		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
 		let date = !!obj.date?obj.date:'';//запись даты
-		WriteLogFile('text "Сегодня" в зону Макс '+offset+' => день='+day+'; дата='+date+timestr);
+		WriteLogFile('text "Сегодня" в зону '+offset+' Макс => день='+day+'; дата='+date+timestr);
 		//готовим текст
 		let data = {};
 		data.text = obj.text;
@@ -3752,7 +3752,7 @@ try{//проверяем разрешение на публикацию неме
     {	let timestr = obj?.time || '';//запись времени
 		let day = obj?.dayOfWeek || '';//запись дня
 		let date = obj?.date || '';//запись даты
-		WriteLogFile(obj.type+' "Сегодня" в зону '+offset+' => день='+day+'; дата='+date+timestr);
+		WriteLogFile(obj.type+' "Сегодня" в зону '+offset+' ТГ => день='+day+'; дата='+date+timestr);
 	 //соберем все чаты в новый массив
 	 count_chats = 0;
 	 //let all_chats = getAllChats();
@@ -3825,7 +3825,7 @@ try{if(!config.useMax) return;
     {	let timestr = obj?.time || '';//запись времени
 		let day = obj?.dayOfWeek || '';//запись дня
 		let date = obj?.date || '';//запись даты
-		WriteLogFile(obj.type+' "Сегодня" в зону Макс '+offset+' => день='+day+'; дата='+date+timestr);
+		WriteLogFile(obj.type+' "Сегодня" в зону '+offset+' Макс => день='+day+'; дата='+date+timestr);
 		let type = obj?.type ? obj.type : 'unknown_type';
 		//готовим объект data: { text, path, paths[], elements[] }
 		let data = {};
@@ -5025,7 +5025,7 @@ async function send_Images(now,offset)
           if(flag) 
           { let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
 			let type = ImagesList[key]?.type ? ImagesList[key].type : 'unknown_type';
-			WriteLogFile(type+' "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);
+			WriteLogFile(type+' "'+key+'"'+' в зону '+offset+' ТГ => день='+day+'; дата='+date+timestr);
 			//выделим массив по смещению
 			//let all_chats = getAllChats();
 			let all_chats = chat_news[offset] ? chat_news[offset] : [];
@@ -5313,7 +5313,7 @@ async function send_Text(now,offset)
           //публикуем текст
 		  if(flag)
           { let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
-			WriteLogFile('text ТГ "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);
+			WriteLogFile('text "'+key+'"'+' в зону '+offset+' ТГ => день='+day+'; дата='+date+timestr);
 			//соберем все чаты в новый массив
 			//let all_chats = getAllChats();
 			let all_chats = chat_news[offset] ? chat_news[offset] : [];
@@ -5444,7 +5444,7 @@ async function send_Text_max(now,offset)
           //публикуем текст
 		  if(flag)
           { let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
-			WriteLogFile('text Макс "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);
+			WriteLogFile('text "'+key+'"'+' в зону '+offset+' Макс => день='+day+'; дата='+date+timestr);
 			//готовим текст
 			let data = {};
 			data.text = TextList[key].text;
