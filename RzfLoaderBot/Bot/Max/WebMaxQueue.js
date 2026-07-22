@@ -331,6 +331,53 @@ class WebMaxQueue extends EventEmitter {
 		}
 	}
 	//====================================================================
+	/**
+	 * Получает список участников группового чата
+	 * @param {Array<string|number>} chatIds - массив ID чатов
+	 * @returns {Promise<Array<{chatId: string, count: number}>>} Массив объектов с ID и количеством участников
+	*/
+	async getChatMembersCounts(chatIds) 
+	{
+		// Проверяем готовность, инициализируем при необходимости (как в _sendMessage)
+		if (!max.isReady()) {
+			const result = await max.init(this.token, 'WEB', this.sessionsPath, this.sessionName);
+			if (result.status !== 'OK') {
+				return { status: 'ERROR', data: result.data };
+			}
+			this.emit('connected');
+		}
+		
+		// Вызываем метод модуля
+		try {
+			return await max.getChatMembersCounts(chatIds);//Объект {status:'OK', data:...}
+		} catch (err) {
+			// Сетевая ошибка — возвращаем объект
+			return { status: 'ERROR', data: err.message };
+		}
+	}
+	//====================================================================
+	/**
+	 * Получает информацию о чатах по их ID
+	 * @param {Array<string|number>} chatIds - массив ID чатов
+	 * @returns {Promise<{status: string, data: Array}>} 
+	 */
+	async getChatInfo(chatIds) 
+	{
+		if (!max.isReady()) {
+			const result = await max.init(this.token, 'WEB', this.sessionsPath, this.sessionName);
+			if (result.status !== 'OK') {
+				return { status: 'ERROR', data: result.data };
+			}
+			this.emit('connected');
+		}
+		
+		try {
+			return await max.getChatInfo(chatIds);
+		} catch (err) {
+			return { status: 'ERROR', data: err.message };
+		}
+	}	
+	//====================================================================
 	async sendCommandOpcode(opcode, payload) 
 	{
 		// Проверяем готовность, инициализируем при необходимости

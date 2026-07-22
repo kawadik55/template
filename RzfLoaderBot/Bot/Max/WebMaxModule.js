@@ -304,6 +304,72 @@ async function getChatMembers(chatId) {
     }
 }
 //====================================================================
+/**
+ * Получает количество участников для списка чатов
+ * @param {Array<string|number>} chatIds - массив ID чатов
+ * @returns {Promise<Array<{chatId: string, count: number}>>} Массив объектов с ID и количеством участников
+ */
+async function getChatMembersCounts(chatIds) 
+{
+    try {
+        if (!chatIds || !Array.isArray(chatIds) || chatIds.length === 0) {
+            return { status: 'ERROR', data: 'отсутствует массив chatIds' };
+        }
+        
+        // Приводим все ID к числу
+        const numericIds = chatIds.map(id => typeof id === 'string' ? parseInt(id, 10) : id);
+        
+        if (!isReady()) throw new Error('MAX клиент не готов');
+        
+        const result = await getChatInfo(numericIds);
+        
+        if (result.status === 'OK') {
+            const mapped = result.data.map(chat => ({
+                chatId: String(chat.id),
+                count: chat.participantsCount || 0
+            }));
+            return { status: 'OK', data: mapped };
+        }
+        
+        return { status: 'ERROR', data: result.data };
+    } catch (err) {
+        if (_isNetworkError(err)) throw err;
+        return { status: 'ERROR', data: 'Ошибка в getChatMembersCounts(): ' + err };
+    }
+}
+//====================================================================
+/**
+ * Получает информацию о чатах по их ID
+ * @param {Array<string|number>} chatIds - массив ID чатов
+ * @returns {Promise<{status: string, data: Array}>} 
+ */
+async function getChatInfo(chatIds) {
+    try {
+        if (!chatIds || !Array.isArray(chatIds) || chatIds.length === 0) {
+            return { status: 'ERROR', data: 'отсутствует массив chatIds' };
+        }
+        
+        const numericIds = chatIds.map(id => typeof id === 'string' ? parseInt(id, 10) : id);
+        
+        if (numericIds.some(id => isNaN(id))) {
+            return { status: 'ERROR', data: 'некорректный chatId в массиве' };
+        }
+        
+        if (!isReady()) throw new Error('MAX клиент не готов');
+        
+        const result = await sendCommandOpcode(48, { chatIds: numericIds });
+        
+        if (result.status === 'OK' && result.data.payload && result.data.payload.chats) {
+            return { status: 'OK', data: result.data.payload.chats };//массив
+        }
+        
+        return { status: 'OK', data: [] };
+    } catch (err) {
+        if (_isNetworkError(err)) throw err;
+        return { status: 'ERROR', data: 'Ошибка в getChatInfo(): ' + err };
+    }
+}
+//====================================================================
 async function sendCommandOpcode(opcode, payload) 
 {
     // Проверяем, что opcode — число
@@ -348,64 +414,59 @@ async function getMyId()
 //====================================================================
 async function canWrite(chatId) 
 {
-try{
-	if (!isReady()) throw new Error('MAX клиент не готов');
-	
-	// Приводим chatId к числу
-	chatId = typeof chatId === 'string' ? parseInt(chatId, 10) : chatId;
-	if (isNaN(chatId)) {
-		return { status: 'ERROR', data: 'Неверный chatId: ' + chatId };
-	}
-		
-	// 1. Получаем свой ID
-	const meResult = await getMyId();
-	if (meResult.status !== 'OK') {
-		return { status: 'ERROR', data: 'Не удалось получить свой ID'};
-	}
-	const myId = meResult.data.id;
+    try {
+        if (!isReady()) throw new Error('MAX клиент не готов');
         
-	// 2. Проверяем, есть ли я в чате (opcode 59)
-    const membersResult = await sendCommandOpcode(59, { chatId: chatId });
-    if (membersResult.status === 'ERROR') {
-        return { status: 'ERROR', data: 'Я не участник чата '+chatId+' или нет доступа'};
-    }
-        
-    // 3. Получаем информацию о чате (opcode 48)
-    const infoResult = await sendCommandOpcode(48, { chatIds: [chatId] });
-    if (infoResult.status !== 'OK' || !infoResult.data || !infoResult.data.payload) {
-        return { status: 'ERROR', data: 'Не удалось получить информацию о чате '+chatId+':\n'+JSON.stringify(infoResult,null,2)};
-    }
-        
-    const chat = infoResult.data.payload.chats[0];
-    if (!chat) {
-        return { status: 'ERROR', data: 'Чат '+chatId+' не найден'};
-    }
-        
-    // 4. Определяем тип чата
-    if (chat.type === 'CHAT') {
-        return { status: 'OK', data: 'Есть право записи в чате '+chatId+'!'};
-    }
-        
-    if (chat.type === 'CHANNEL') {
-        // Проверяем наличие в adminParticipants
-        const adminParticipant = chat.adminParticipants?.[myId];
-        if (!adminParticipant) {
-            return { status: 'ERROR', data: 'Нет права записи в чате '+chatId+'!'};
+        // Приводим chatId к числу
+        chatId = typeof chatId === 'string' ? parseInt(chatId, 10) : chatId;
+        if (isNaN(chatId)) {
+            return { status: 'ERROR', data: 'Неверный chatId: ' + chatId };
         }
-        // Проверяем бит 0 (write) в permissions
-        const permissions = adminParticipant.permissions || 0;
-		if ((permissions & 1) !== 0) {
-			return { status: 'OK', data: 'Есть право записи в чате ' + chatId + '!' };
-		} else {
-			return { status: 'ERROR', data: 'Нет права записи в чате ' + chatId + '!' };
-		}
-    }
         
-    return { status: 'ERROR', data: 'Неизвестный тип чата: '+chat.type+'!'};
-  } catch (err) {
+        // 1. Получаем свой ID
+        const meResult = await getMyId();
+        if (meResult.status !== 'OK') {
+            return { status: 'ERROR', data: 'Не удалось получить свой ID' };
+        }
+        const myId = meResult.data.id;
+        
+        // 2. Проверяем, есть ли я в чате (opcode 59)
+        const membersResult = await sendCommandOpcode(59, { chatId: chatId });
+        if (membersResult.status === 'ERROR') {
+            return { status: 'ERROR', data: 'Я не участник чата '+chatId+' или нет доступа' };
+        }
+        
+        // 3. Получаем информацию о чате через getChatInfo
+        const infoResult = await getChatInfo([chatId]);
+        if (infoResult.status !== 'OK' || !infoResult.data || infoResult.data.length === 0) {
+            return { status: 'ERROR', data: 'Не удалось получить информацию о чате '+chatId };
+        }
+        
+        const chat = infoResult.data[0];
+        
+        // 4. Определяем тип чата
+        if (chat.type === 'CHAT') {
+            return { status: 'OK', data: 'Есть право записи в чате '+chatId+'!' };
+        }
+        
+        if (chat.type === 'CHANNEL') {
+            const adminParticipant = chat.adminParticipants?.[myId];
+            if (!adminParticipant) {
+                return { status: 'ERROR', data: 'Нет права записи в чате '+chatId+'!' };
+            }
+            const permissions = adminParticipant.permissions || 0;
+            if ((permissions & 1) !== 0) {
+                return { status: 'OK', data: 'Есть право записи в чате ' + chatId + '!' };
+            } else {
+                return { status: 'ERROR', data: 'Нет права записи в чате ' + chatId + '!' };
+            }
+        }
+        
+        return { status: 'ERROR', data: 'Неизвестный тип чата: '+chat.type+'!' };
+    } catch (err) {
         if (_isNetworkError(err)) throw err;
         return { status: 'ERROR', data: 'Ошибка в canWrite(): ' + err.message };
-  }
+    }
 }
 //====================================================================
 module.exports = {
@@ -419,6 +480,8 @@ module.exports = {
     sendFile,
     sendAlbum,
 	getChatMembers,
+	getChatInfo,
+	getChatMembersCounts,
 	sendCommandOpcode,
 	getMyId,
 	canWrite,

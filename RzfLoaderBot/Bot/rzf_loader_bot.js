@@ -1935,14 +1935,18 @@ try{
 					'+660': 'Магадан UTC+11',
 					'+720': 'Камчатка UTC+12' 
 				}
-				let obj = {};
-				let offset = Object.keys(chat_news);
-				if(offset.length > 0)
-				{	const botInfo = await LoaderBot.getMe();
+				let offsetTG = Object.keys(chat_news);
+				let offsetMAX = config.useMax ? Object.keys(chat_news_max) : [];
+				
+				//для ТГ
+				if(offsetTG.length > 0)
+				{	const botInfo = await NewsBot.getMe();
 					if (botInfo && botInfo.first_name) str += '🔷*'+botInfo.first_name+'*🔷\n\n';
 					str += 'Статистика на сегодня:\n';
+					let obj = {};
 					let allgroups = 0, allMembers = 0, allchannels = 0, allusers = 0;
 					let allchannelsMembers = 0, allgroupsMembers = 0, unknownchats = 0;
+					let offset = offsetTG;
 					for(let i=0;i<offset.length;i++)
 					{	let chats = chat_news[offset[i]];
 						obj[offset[i]] = {}; obj[offset[i]].groups = 0; obj[offset[i]].users = 0;
@@ -1984,11 +1988,11 @@ try{
 						}
 					}
 					obj = sortObjectByKeys(obj);//сортируем по смещениям
-					str += '*Кол-во подписчиков* = '+allMembers+'\n';
-					if(allchannels>0) str += '*Каналы*  = '+allchannels+' ('+allchannelsMembers+')\n';
-					if(allgroups>0)   str += '*Группы*  = '+allgroups+' ('+allgroupsMembers+')\n';
-					if(allusers>0)   str +=  '*Приватные чаты* = '+allusers+'\n';
-					if(unknownchats>0) str +=  '*unknown* = '+unknownchats+'\n';
+					str += '*Кол-во подписчиков ТГ* = '+allMembers+'\n';
+					if(allchannels>0) str += '*Каналы ТГ*  = '+allchannels+' ('+allchannelsMembers+')\n';
+					if(allgroups>0)   str += '*Группы ТГ*  = '+allgroups+' ('+allgroupsMembers+')\n';
+					if(allusers>0)   str +=  '*Приватные чаты ТГ* = '+allusers+'\n';
+					if(unknownchats>0) str +=  '*unknown ТГ* = '+unknownchats+'\n';
 					str += '\n';
 					for(const key in obj)
 					{	const zoneName = 'Зона '+(zones[key] || `UTC+${parseInt(key)/60}`);
@@ -1998,7 +2002,77 @@ try{
 						if(obj[key].users>0)    str += '• Приватные чаты = *'+obj[key].users+'*\n';
 					}
 				}
-                else str += '*Упс... На сегодня ничего нет!*\n';
+				//для Макса
+				if(offsetMAX.length > 0)
+				{	let res = await queueMax.getMyId();//возвращает объект
+					//if(res.status === 'OK') botInfo = res.data?.firstname || 'Пользователь';
+					const botInfo = (res.status === 'OK') ? (res.data?.firstname || 'Пользователь') : 'MaxBot';
+					str += '\n';
+					str += '🔷*'+botInfo+'*🔷\n\n';
+					str += 'Статистика на сегодня:\n';
+					let obj = {};
+					let allgroups = 0, allMembers = 0, allchannels = 0, allusers = 0;
+					let allchannelsMembers = 0, allgroupsMembers = 0, unknownchats = 0;
+					let offset = offsetMAX;
+					for(let i=0;i<offset.length;i++)
+					{	let chats = chat_news_max[offset[i]];
+						obj[offset[i]] = {}; obj[offset[i]].groups = 0; obj[offset[i]].users = 0;
+						obj[offset[i]].groupMembers = 0; obj[offset[i]].channels = 0; obj[offset[i]].channelMembers = 0;
+						for(let j=0;j<chats.length;j++)
+						{	let chatId = chats[j].chatId.toString();
+							if(chatId.startsWith('-'))
+							{	
+								let chatInfo;
+								let membersCount;
+								try{while(!getMessageCount()) await sleep(10);//получаем разрешение.
+									res = await queueMax.getChatInfo([chatId]);
+									if(res.status==='OK') chatInfo = res.data[0] || {};
+								}catch(err){console.log(err);}
+								try{while(!getMessageCount()) await sleep(10);//получаем разрешение
+									res = await queueMax.getChatMembersCounts([chatId]);
+									if(res.status==='OK') membersCount = res.data[0].count || 0;
+								}catch(err){console.log(err);}
+								if(chatInfo && chatInfo.type==='CHANNEL')
+								{	obj[offset[i]].channels++;
+									allchannels++;
+									if(membersCount>0)
+									{	obj[offset[i]].channelMembers += membersCount;
+										allMembers += membersCount;
+										allchannelsMembers += membersCount;
+									}
+								}
+								else if(chatInfo && chatInfo.type==='CHAT')
+								{	allgroups++;
+									obj[offset[i]].groups++;
+									if(membersCount>0)
+									{	obj[offset[i]].groupMembers += membersCount;
+										allMembers += membersCount;
+										allgroupsMembers += membersCount;
+									}
+								}
+								else unknownchats++;
+								
+							}
+							else {allMembers++; allusers++; obj[offset[i]].users++;}//это приватные чаты
+						}
+					}
+					obj = sortObjectByKeys(obj);//сортируем по смещениям
+					str += '*Кол-во подписчиков МАКС* = '+allMembers+'\n';
+					if(allchannels>0) str += '*Каналы МАКС*  = '+allchannels+' ('+allchannelsMembers+')\n';
+					if(allgroups>0)   str += '*Группы МАКС*  = '+allgroups+' ('+allgroupsMembers+')\n';
+					if(allusers>0)   str +=  '*Приватные чаты МАКС* = '+allusers+'\n';
+					if(unknownchats>0) str +=  '*unknown МАКС* = '+unknownchats+'\n';
+					str += '\n';
+					for(const key in obj)
+					{	const zoneName = 'Зона '+(zones[key] || `UTC+${parseInt(key)/60}`);
+						str += '*'+zoneName+':*\n';
+						if(obj[key].channels>0) str += '• Каналы = *'+obj[key].channels+' ('+obj[key].channelMembers+')*\n';
+						if(obj[key].groups>0)   str += '• Группы = *'+obj[key].groups+' ('+obj[key].groupMembers+')*\n';
+						if(obj[key].users>0)    str += '• Приватные чаты = *'+obj[key].users+'*\n';
+					}
+				}
+                
+				if(offsetTG.length==0 && offsetMAX.length==0) str += '*Упс... На сегодня ничего нет!*\n';
                 await sendMessage(chatId, str, klava(keyboard['102']));//Назад		
 			}
 		}
