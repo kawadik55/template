@@ -1562,8 +1562,8 @@ try{
 		// Убираем текстовую клавиатуру
 		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
 		try {await remove_message(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
-		let index=LastKey[chatId];
-		await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].entities ? {entities:Tree[index].entities} : null, chatId), index);
+		let index = LastMessId[chatId]?.lastIndex || '0';
+		await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].entities ? {entities:Tree[index].entities} : null, chatId));
 	}
 	else if(msg.text === "Удалить мою локацию")
 	{	//Убираем предыдущее сообщение
@@ -1573,8 +1573,8 @@ try{
 		let res = await sendMessage(chatId, 'Привет, '+firstname+'!', {reply_markup: {remove_keyboard: true}});//удаляем белую кнопку
 		try {await remove_message(chatId, res.message_id);} catch(err) {console.log(err);}//удаляем верхнее сообщение
 		delete LastMessId[chatId].location;
-		let index=LastKey[chatId];
-	await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].entities ? {entities:Tree[index].entities} : null, chatId), index);
+		let index = LastMessId[chatId]?.lastIndex || '0';
+	await sendMessage(chatId, Tree[index].text, klava(index, Tree[index].entities ? {entities:Tree[index].entities} : null, chatId));
 	}
 	else
 	{	//если пришел текст 'от фонаря'
@@ -2129,9 +2129,9 @@ try{
 	}
 
 	async function exit()
-	{	let index=LastKey[chatId];
+	{	let index = LastMessId[chatId]?.lastIndex || '0';
 		let str = (Tree[index] && Tree[index].text) ? Tree[index].text : 'Тут пока ничего нет\n';
-		await sendMessage(chatId, str, klava(index, Tree[index].entities ? {entities:Tree[index].entities} : null, chatId), index);
+		await sendMessage(chatId, str, klava(index, Tree[index].entities ? {entities:Tree[index].entities} : null, chatId));
 	}
 }catch(err){WriteLogFile(err+'\nfrom ловим location','вчат');}
 });
@@ -2156,6 +2156,22 @@ try{
 	if(str.length > 4200) {str = str.slice(0,4200);}//обрезаем строку
 	
 	if(Object.hasOwn(option, 'link_preview_options')) option.link_preview_options = JSON.stringify(option.link_preview_options);
+	if(option.reply_markup && option.reply_markup.inline_keyboard) 
+	{	let currentIndex;
+		for(let row of option.reply_markup.inline_keyboard)
+		{	for(let button of row)
+			{	if(button.callback_data && button.text !== Tree['Назад'].name)
+				{	let parts = button.callback_data.split('_');
+					let childIndex = parts[0];
+					currentIndex = Tree[childIndex]?.parent || '0';
+					if(!LastMessId[chatId]) LastMessId[chatId] = {};
+					LastMessId[chatId].lastIndex = currentIndex;//ловим номер текущего набора
+					break;
+				}
+			}
+			if(currentIndex !== undefined) break;
+		}
+	}
 	//посылаем сообщение
 	if(!!option.text) delete option.text;
 	try{
@@ -2183,7 +2199,7 @@ try{
 	//сохраняем mess_id, если с кнопками
 	let off = (SignOff != 0 && !Object.hasOwn(LastMessId, chatId));//если ни разу не был, и подписка запрещена
 	if(Object.hasOwn(res, 'reply_markup') && Object.hasOwn(res.reply_markup, 'inline_keyboard') && !off)
-	{if(!Object.hasOwn(LastMessId, chatId)) LastMessId[chatId]=new Object();
+	{if(!LastMessId[chatId]) LastMessId[chatId] = {};
 	 if(res.message_id) LastMessId[chatId].messId=res.message_id;
 	 if(res.chat.username) LastMessId[chatId].username=res.chat.username;
      if(res.chat.first_name) LastMessId[chatId].first_name=res.chat.first_name;
@@ -2216,6 +2232,16 @@ try{
 	if(!!LastMessId[chatId]) {chat_id=chatId; mess_id=LastMessId[chatId].messId;}
 	if(!option) option = new Object();
 	let err='';
+	
+	if(option.reply_markup && option.reply_markup.inline_keyboard) 
+	{	let firstButton = option.reply_markup.inline_keyboard[0][0];
+		if(firstButton.text !== Tree['Назад'].name)
+		{	let parts = firstButton.callback_data.split('_');
+			let childIndex = parts[0];
+			let currentIndex = Tree[childIndex]?.parent || '0';
+			LastMessId[chatId].lastIndex = currentIndex;
+		}
+	}
 	
 	//посылаем сообщение
 	if(!!option.text) delete option.text;
