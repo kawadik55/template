@@ -188,7 +188,7 @@ if(config && config.chat_news)
             }
         }
     }
-    chat_news = sortObjectByKeys(chat_news);
+    sortObjectByKeys(chat_news);
 	WriteFileJson(currentDir + "/chatId.json", chat_news);
     delete config.chat_news;
     WriteFileJson(currentDir + "/config.json", config);
@@ -265,19 +265,19 @@ const onConfigUpdate = (update) => {
     switch(update.event) {
         case 'chat_configured':
                 WriteLogFile(`Чат ${update.data.chatTitle} настроен на таймзону ${update.data.timezone}`);
-                chat_news = sortObjectByKeys(chat_news);
+                sortObjectByKeys(chat_news);
 				WriteFileJson(currentDir+"/chatId.json",chat_news);
 				break;
                 
         case 'chat_removed':
                 WriteLogFile('Чат '+update.data.chatName+'('+update.data.chatId+') удален из рассылки');
-                chat_news = sortObjectByKeys(chat_news);
+                sortObjectByKeys(chat_news);
 				WriteFileJson(currentDir+"/chatId.json",chat_news);
 				break;
                 
         case 'cleanup_completed':
                 WriteLogFile(`Очищено ${update.data.cleanedCount} несуществующих чатов`);
-                chat_news = sortObjectByKeys(chat_news);
+                sortObjectByKeys(chat_news);
 				WriteFileJson(currentDir+"/chatId.json",chat_news);
 				break;
     
@@ -1987,7 +1987,7 @@ try{
 							else {allMembers++; allusers++; obj[offset[i]].users++;}//это приватные чаты
 						}
 					}
-					obj = sortObjectByKeys(obj);//сортируем по смещениям
+					sortObjectByKeys(obj);//сортируем по смещениям
 					str += '*Кол-во подписчиков ТГ* = '+allMembers+'\n';
 					if(allchannels>0) str += '*Каналы ТГ*  = '+allchannels+' ('+allchannelsMembers+')\n';
 					if(allgroups>0)   str += '*Группы ТГ*  = '+allgroups+' ('+allgroupsMembers+')\n';
@@ -2056,7 +2056,7 @@ try{
 							else {allMembers++; allusers++; obj[offset[i]].users++;}//это приватные чаты
 						}
 					}
-					obj = sortObjectByKeys(obj);//сортируем по смещениям
+					sortObjectByKeys(obj);//сортируем по смещениям
 					str += '*Кол-во подписчиков МАКС* = '+allMembers+'\n';
 					if(allchannels>0) str += '*Каналы МАКС*  = '+allchannels+' ('+allchannelsMembers+')\n';
 					if(allgroups>0)   str += '*Группы МАКС*  = '+allgroups+' ('+allgroupsMembers+')\n';
@@ -5664,7 +5664,7 @@ queue.on('failed', (item, error) =>
 		});
 		
 		if(flag)
-		{	chat_news = sortObjectByKeys(chat_news);
+		{	sortObjectByKeys(chat_news);
 			WriteFileJson(currentDir+"/chatId.json",chat_news);
 			WriteLogFile('Чат "'+(chat_name||'unknown')+'"('+chatId+') удален из списка чатов.');
 		}
@@ -5784,16 +5784,22 @@ function getEgDateTime(refpath)
 //====================================================================
 function sortObjectByKeys(obj)
 {
-    return Object.keys(obj)
-        .sort((a, b) => {
-            const numA = parseInt(a.toString().replace('+', ''));
-            const numB = parseInt(b.toString().replace('+', ''));
-            return numA - numB;
-        })
-        .reduce((sorted, key) => {
-            sorted[key] = obj[key];
-            return sorted;
-        }, {});
+    const keys = Object.keys(obj).sort((a, b) => {
+        const numA = parseInt(a.toString().replace('+', ''));
+        const numB = parseInt(b.toString().replace('+', ''));
+        return numA - numB;
+    });
+    
+    const sorted = {};
+    keys.forEach(key => { sorted[key] = obj[key]; });
+    
+    // Очищаем исходный объект
+    Object.keys(obj).forEach(key => { delete obj[key]; });
+    
+    // Копируем обратно
+    Object.keys(sorted).forEach(key => { obj[key] = sorted[key]; });
+    
+    return obj;
 }
 //====================================================================
 // Экранируем только то, что действительно ломает Markdown

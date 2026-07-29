@@ -320,7 +320,7 @@ class SlaveBot {
                 const botId = this.bot.token.split(':')[0];
                 if (msg.left_chat_member && msg.left_chat_member.id.toString() === botId) {
                     const chatId = msg.chat.id;
-                    await this.removeChatFromConfig(chatId, false);
+                    await this.removeChatFromConfig(chatId);
                 }
             } catch (err) {
                 this.sendErrorMessage('Ошибка в left_chat_member: ' + err);
@@ -336,7 +336,7 @@ class SlaveBot {
                 
                 // Бота удалили из чата
                 if (newStatus === 'left' || newStatus === 'kicked') {
-                    await this.removeChatFromConfig(chatId, false);
+                    await this.removeChatFromConfig(chatId);
                 }
                 
                 // Бота добавили в чат
@@ -1701,39 +1701,15 @@ class SlaveBot {
                `/config - перенастроить чат`;
     }
 
-    async removeChatFromConfig(chatId, showConfirm = true) {
+    async removeChatFromConfig(chatId) {
         try {
             // Сначала пытаемся найти чат в конфиге
             const existing = this.findChatInConfig(chatId);
             
-            if (!existing) {
-                if (showConfirm) {
-                    await this.bot.sendMessage(chatId, 
-                        '❌ Этот чат не найден в настройках рассылки.',
-                        {
-                            message_thread_id: existing && existing.threadId ? existing.threadId : undefined
-                        }
-                    );
-                }
-                return false;
-            }
+            if (!existing) {return false;}
 
             // Удаляем без подтверждения
             const removed = this.removeChatFromAllTimezones(chatId, true);
-            
-            if (removed && showConfirm) {
-                // Пытаемся отправить сообщение (если бот еще в чате)
-                try {
-                    await this.bot.sendMessage(chatId, 
-                        `✅ Чат "${existing.title}" удален из рассылки публикаций.`,
-                        {
-                            message_thread_id: existing && existing.threadId ? existing.threadId : undefined
-                        }
-                    );
-                } catch (err) {
-                    // Игнорируем ошибку, бот уже удален
-                }
-            }
             
             return removed;
 
