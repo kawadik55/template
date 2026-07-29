@@ -50,7 +50,8 @@ var LogFile;
 (() =>{	let tmp=currentDir.split('/'); let name=tmp[tmp.length-1]+'.log';//вытащим чисто имя папки в конце
 		LogFile = PathToLog+'/'+name;
 })();
-let config={}, chat_news = {}, chat_news_max = {};
+let config={};
+const chat_news = {}, chat_news_max = {};
 try{config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
 	if(!config.lifeTime) {config.lifeTime = lifeTime; WriteFileJson(currentDir+"/config.json",config);}
 	if(!config.utcOffset) {config.utcOffset = utcOffset>0?'+'+String(moment().utcOffset()):String(moment().utcOffset()); WriteFileJson(currentDir+"/config.json",config);}
@@ -119,14 +120,19 @@ if(fs.existsSync(currentDir+"/Url.txt")&&!config.UrlSupport)
 if(!Object.hasOwn(config,'UrlSupport')) {config.UrlSupport = 'https://t.me/ссылкаДляВопросов'; WriteFileJson(currentDir+"/config.json",config);}
 
 //список чатов ТГ
-try{chat_news = JSON.parse(fs.readFileSync(currentDir+"/chatId.json", 'utf8'));
+try{
+	const newData = require(currentDir+"/chatId.json");
+	Object.keys(chat_news).forEach(key => delete chat_news[key]);
+	Object.keys(newData).forEach(key => { chat_news[key] = newData[key]; });
 }catch(err){WriteFileJson(currentDir+"/chatId.json",chat_news);}
 
 //список чатов Max
-try{chat_news_max = JSON.parse(fs.readFileSync(currentDir+"/chatId_max.json", 'utf8'));
+try{
+	const newData = require(currentDir+"/chatId_max.json");
+	Object.keys(chat_news_max).forEach(key => delete chat_news_max[key]);
+	Object.keys(newData).forEach(key => { chat_news_max[key] = newData[key]; });
 }catch(err){
-	chat_news_max = {
-	  "+300": [
+	chat_news_max["+300"] = [
 		{
 		  "name": "Имя-Группы",
 		  "chatId": "-1234",
@@ -136,8 +142,7 @@ try{chat_news_max = JSON.parse(fs.readFileSync(currentDir+"/chatId_max.json", 'u
 		  "town": "",
 		  "slug": ""
 		}
-	  ]
-	}
+	];
 	WriteFileJson(currentDir+"/chatId_max.json",chat_news_max);
 }
 
@@ -175,7 +180,7 @@ if(chat_Supervisor==='1234') {WriteLogFile('Отсутствует chat_Supervis
 
 //если chat_news находится в старом файле, то переносим в новый
 if(config && config.chat_news)
-{	chat_news = structuredClone(config.chat_news);
+{	Object.assign(chat_news, structuredClone(config.chat_news));
     //в старом файле нету некоторых полей, добавим
 	// Проходим по всем часовым поясам
 	for (const [timezone, chatArray] of Object.entries(chat_news))
@@ -318,7 +323,11 @@ var Cron1 = cron.schedule(timeCron, async function()
 	  try{
 		//WriteLogFile('Начинаем стандартную Рассылку:');
 		//обновим список чатов ТГ
-		try{chat_news = require(currentDir+"/chatId.json");}catch(e){}
+		/*try{
+			const newData = require(currentDir+"/chatId.json");
+			Object.keys(chat_news).forEach(key => delete chat_news[key]);
+			Object.keys(newData).forEach(key => { chat_news[key] = newData[key]; });
+		}catch(e){}*/
 		if(typeof chat_news === 'object')
 		{	let num = Object.keys(chat_news);
 			if(num.length>0)
@@ -332,7 +341,11 @@ var Cron1 = cron.schedule(timeCron, async function()
 			}
 		}
 		//обновим список чатов Max
-		try{chat_news_max = require(currentDir+"/chatId_max.json");}catch(e){}
+		/*try{
+			const newData = require(currentDir+"/chatId_max.json");
+			Object.keys(chat_news_max).forEach(key => delete chat_news_max[key]);
+			Object.keys(newData).forEach(key => { chat_news_max[key] = newData[key]; });
+		}catch(e){}*/
 		if(typeof chat_news_max === 'object')
 		{	let num = Object.keys(chat_news_max);
 			if(num.length>0)
@@ -3130,6 +3143,10 @@ catch(err){
 {	process.on(event, async ()=>
 	{	fs.writeFileSync(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2));
 		clearInterval(timer);
+		sortObjectByKeys(chat_news);
+		WriteFileJson(currentDir+"/chatId.json", chat_news);
+		sortObjectByKeys(chat_news_max);
+		WriteFileJson(currentDir+"/chatId_max.json", chat_news_max);
 		await queue.destroy();// Корректно уничтожаем очередь
 		if(queue.queue.length>0)//Записываем остатки в файл
 		{	const state = {
@@ -5801,6 +5818,19 @@ function sortObjectByKeys(obj)
     
     return obj;
 }
+/*function sortObjectByKeys(obj)
+{
+    return Object.keys(obj)
+        .sort((a, b) => {
+            const numA = parseInt(a.toString().replace('+', ''));
+            const numB = parseInt(b.toString().replace('+', ''));
+            return numA - numB;
+        })
+        .reduce((sorted, key) => {
+            sorted[key] = obj[key];
+            return sorted;
+        }, {});
+}*/
 //====================================================================
 // Экранируем только то, что действительно ломает Markdown
 function escapeMarkdown(text)
