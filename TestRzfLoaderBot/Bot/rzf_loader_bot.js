@@ -45,7 +45,6 @@ let lifeTime = 180;//срок регистраци юзера в днях
 let rassilka = true;//выключатель крона рассылки
 //проверим папку логов
 if(!fs.existsSync(PathToLog)) {fs.mkdirSync(PathToLog); fs.chmod(currentDir+"/../log", 0o777, () => {});}
-WriteLogFile('=======================================================');
 //---------------------------------------------------
 //сразу проверяем или создаем необходимые папки и файлы
 setContextFiles();
@@ -54,6 +53,7 @@ var LogFile;
 (() =>{	let tmp=currentDir.split('/'); let name=tmp[tmp.length-1]+'.log';//вытащим чисто имя папки в конце
 		LogFile = PathToLog+'/'+name;
 })();
+WriteLogFile('=======================================================');
 let config={};
 const chat_news = {}, chat_news_maxweb = {}, chat_news_maxbot = {};
 try{config = JSON.parse(fs.readFileSync(currentDir+"/config.json"));
