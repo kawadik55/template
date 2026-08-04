@@ -3304,7 +3304,7 @@ catch(err){
 		WriteFileJson(currentDir+"/chatId.json", chat_news);
 		//сохраняем Макс чаты
 		sortObjectByKeys(chat_news_maxbot);
-		WriteFileJson(currentDir+"/chatId_max.json", chat_news_maxbot);
+		WriteFileJson(currentDir+"/chatId_maxbot.json", chat_news_maxbot);
 		//очередь ТГ
 		if(queue)
 		{	await queue.destroy();// Корректно уничтожаем очередь
