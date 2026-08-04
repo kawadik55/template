@@ -1,0 +1,12 @@
+{
+  "reply_markup": {
+    "inline_keyboard": [
+      [
+        {
+          "text": "Духовные принципы на каждый день",
+          "url": "https://t.me/+a8HO46bHu8MwZjZk"
+        }
+      ]
+    ]
+  }
+}
