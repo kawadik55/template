@@ -5816,7 +5816,7 @@ function clearTempWait(chatId)
 }
 //====================================================================
 // Обработчики событий очереди ТГ
-queue.on('error', (error) => {WriteLogFile(error);});
+queue.on('error', (error) => {WriteLogFile((error.message||error));});
 //queue.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь: ${item.id}`);});
 //queue.on('sent', (item) => {WriteLogFile(`Сообщение отправлено: ${item.id}`);});
 queue.on('failed', (item, error) => 
@@ -5824,7 +5824,7 @@ queue.on('failed', (item, error) =>
  try
  {	WriteLogFile('Ошибка отправки сообщения из очереди ТГ: '+error.message+' ('+(item.chatId||'unknown')+')');
 	// Ошибки, при которых нужно удалить чат/пользователя
-	const errorMessage = error.message || '';
+	const errorMessage = (error.message||error);
 	const chatErrors = [
 		'chat not found',
 		'user not found',
@@ -5875,11 +5875,11 @@ queue.on('failed', (item, error) =>
 });
 //queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 queue.on('connected', () => {WriteLogFile('=> bot TG connected');});
-queue.on('disconnected', (error) => {WriteLogFile(error+'; => bot TG disconnected');});
+queue.on('disconnected', (error) => {WriteLogFile((error.message||error)+'; => bot TG disconnected');});
 //queue.on('processing_started', (item) => {WriteLogFile('processing_started, queue length = '+item);});
 //queue.on('processing_finished', () => {WriteLogFile('processing_finished');});
 //queue.on('cleared', (item) => {WriteLogFile('cleared = '+item);});
-queue.on('error_response', (error) => {WriteLogFile('error_response from queue => '+error||'пусто');});
+queue.on('error_response', (error) => {WriteLogFile('error_response from queue => '+(error.message||error));});
 //====================================================================
 // Обработчики событий очереди Web Max
 if(queueWebMax)
