@@ -5890,7 +5890,7 @@ if(queueWebMax)
 		WriteLogFile(`${type} ${id} успешно отправлен в чат Макс -> ${item.username || item.chatId}`);
 	});
 	queueWebMax.on('failed', (item, error) => 
-	{WriteLogFile('Ошибка отправки сообщения '+(item.id||'number')+' из очереди Макс: '+(error.message||'нераспознанная')+' ('+(item.username || item.chatId)+')');
+	{WriteLogFile('Ошибка отправки сообщения '+(item.id||'number')+' из очереди Web Макс: '+(error.message||'нераспознанная')+' ('+(item.username || item.chatId)+')');
 	});
 	//queueWebMax.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 	queueWebMax.on('connected', () => {WriteLogFile('=> WebMaxClient connected');});
@@ -5909,7 +5909,7 @@ if(queueBotMax)
 	queueBotMax.on('failed', (item, error) => 
 	{if(!!item.bot) delete item.bot;
 	 try
-	 {	WriteLogFile('Ошибка отправки сообщения из очереди Макс: '+error.message+' ('+(item.chatId||'unknown')+')');
+	 {	WriteLogFile('Ошибка отправки сообщения из очереди Bot Макс: '+error.message+' ('+(item.chatId||'unknown')+')');
 		// Ошибки, при которых нужно удалить чат/пользователя
 		const errorMessage = error.message || '';
 		const chatErrors = [
@@ -5959,7 +5959,7 @@ if(queueBotMax)
 			
 			if(flag)
 			{	sortObjectByKeys(chat_news_maxbot);
-				WriteFileJson(currentDir+"/chatId.json",chat_news_maxbot);
+				WriteFileJson(currentDir+"/chatId_maxbot.json",chat_news_maxbot);
 				WriteLogFile('Чат "'+(chat_name||'unknown')+'"('+chatId+') удален из списка чатов Bot Max.');
 			}
 		}		
