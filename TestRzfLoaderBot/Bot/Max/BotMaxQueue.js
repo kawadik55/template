@@ -249,7 +249,7 @@ class BotMaxQueue extends EventEmitter {
 		if (bot == null || bot==='default') bot = this.bot;
 		
 		// Проверяем, что бот доступен
-		if (!bot) {throw new Error('Bot instance is not available');}
+		if (!bot) {throw new Error('Bot instance is not available');}//передаем наверх строку
 		let attempts = 0;
 		const maxAttempts = this.maxRetries || 3;
 		
@@ -265,7 +265,7 @@ class BotMaxQueue extends EventEmitter {
 			case 'sendFile': return await this._sendFile(bot, chatId, data); break;
             case 'sendAlbum': return await this._sendAlbum(bot, chatId, data); break;
 			case 'sendSticker': return await this._sendSticker(bot, chatId, data); break;			
-			default: throw new Error(`Unsupported message type: ${type}`);
+			default: throw new Error(`Unsupported message type: ${type}`);//строка
           }
 		} 
 		catch (error) 
@@ -275,7 +275,7 @@ class BotMaxQueue extends EventEmitter {
             const isRateLimit = errorBody.error_code === 429 || 
 				(errorBody.description || error.message || '').toLowerCase().includes('too many requests') ||
                 (error.statusCode === 429);
-			this.emit('error_response', error.message);
+			this.emit('error_response', error.message);//отдаем строку в эмит
 			if (isRateLimit && attempts < maxAttempts)
 			{
                 const retryAfter = errorBody.parameters?.retry_after || 
@@ -286,11 +286,11 @@ class BotMaxQueue extends EventEmitter {
                 continue;
             }
 			
-			throw error;
+			throw error;//передаем наверх весь объект ошибки
 		}
       }
 	  
-	  throw new Error(`Failed after ${maxAttempts} attempts`);
+	  throw new Error(`Failed after ${maxAttempts} attempts`);//передаем наверх строку
 	}
 	//====================================================================
     /**

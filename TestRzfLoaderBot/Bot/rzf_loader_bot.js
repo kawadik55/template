@@ -5883,7 +5883,7 @@ queue.on('error_response', (error) => {WriteLogFile('error_response from queue =
 //====================================================================
 // Обработчики событий очереди Web Max
 if(queueWebMax)
-{	queueWebMax.on('error', (error) => {WriteLogFile(error);});
+{	queueWebMax.on('error', (error) => {WriteLogFile((error.message||error));});
 	queueWebMax.on('sent', (item) => 
 	{	const type = item.type.replace('send','');
 		const id = item.id ? item.id : '000';
@@ -5892,9 +5892,8 @@ if(queueWebMax)
 	queueWebMax.on('failed', (item, error) => 
 	{WriteLogFile('Ошибка отправки сообщения '+(item.id||'number')+' из очереди Web Макс: '+(error.message||error)+' ('+(item.username || item.chatId)+')');
 	});
-	//queueWebMax.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 	queueWebMax.on('connected', () => {WriteLogFile('=> WebMaxClient connected');});
-	queueWebMax.on('disconnected', (error) => {WriteLogFile('=> WebMaxClient disconnected = '+error);});
+	queueWebMax.on('disconnected', (error) => {WriteLogFile('=> WebMaxClient disconnected = '+(error.message||error));});
 	queueWebMax.on('tokenUpdated', (newToken) => 
 	{	WriteLogFile('=> Получен новый токен от WebMaxClient!', 'вчат');
 		tokenWebMax = newToken;
@@ -5905,13 +5904,13 @@ if(queueWebMax)
 // Обработчики событий очереди Bot Max
 if(queueBotMax)
 {
-	queueBotMax.on('error', (error) => {WriteLogFile(error);});
+	queueBotMax.on('error', (error) => {WriteLogFile((error.message||error));});
 	queueBotMax.on('failed', (item, error) => 
 	{if(!!item.bot) delete item.bot;
 	 try
-	 {	WriteLogFile('Ошибка отправки сообщения из очереди Bot Макс: '+error.message+' ('+(item.chatId||'unknown')+')');
+	 {	WriteLogFile('Ошибка отправки сообщения из очереди Bot Макс: '+(error.message||error)+' ('+(item.chatId||'unknown')+')');
 		// Ошибки, при которых нужно удалить чат/пользователя
-		const errorMessage = error.message || '';
+		const errorMessage = (error.message||error);
 		const chatErrors = [
 			'chat not found',
 			'user not found',
@@ -5966,8 +5965,8 @@ if(queueBotMax)
 	 }catch(err){WriteLogFile('Ошибка в обработке failed из очереди Bot Max: '+err);}
 	});
 	queueBotMax.on('connected', () => {WriteLogFile('=> bot Max connected');});
-	queueBotMax.on('disconnected', (error) => {WriteLogFile(error.message+'; => bot Max disconnected');});
-	queueBotMax.on('error_response', (error) => {WriteLogFile('error_response from queueBotMax => '+(error||'пусто'));});
+	queueBotMax.on('disconnected', (error) => {WriteLogFile((error.message||error)+'; => bot Max disconnected');});
+	queueBotMax.on('error_response', (error) => {WriteLogFile('error_response from queueBotMax => '+(error.message||error));});
 }
 //====================================================================
 //возвращает таймстамп юзера в формате moment()
