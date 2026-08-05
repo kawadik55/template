@@ -737,8 +737,8 @@ if(fs.existsSync(currentDir+'/queue_bot_max.json') && queueBotMax)
 }
 
 (async () => {   
-	const max = require('./Max/WebMaxModule');
 	try{
+	const max = require('./Max/WebMaxModule');
 	if (config.useWebMax && SESSION_NAME) 
 	{
 		const result = await max.init(tokenWebMax, 'WEB', currentDir, SESSION_NAME);
