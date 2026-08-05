@@ -347,19 +347,19 @@ const onConfigMaxUpdate = (update) => {
         case 'chat_configured':
                 WriteLogFile(`МАКС чат ${update.data.chatTitle} настроен на таймзону ${update.data.timezone}`);
                 sortObjectByKeys(chat_news);
-				WriteFileJson(currentDir+"/chatId.json",chat_news);
+				WriteFileJson(currentDir+"/chatId_maxbot.json",chat_news);
 				break;
                 
         case 'chat_removed':
                 WriteLogFile('МАКС чат '+update.data.chatName+'('+update.data.chatId+') удален из рассылки');
                 sortObjectByKeys(chat_news);
-				WriteFileJson(currentDir+"/chatId.json",chat_news);
+				WriteFileJson(currentDir+"/chatId_maxbot.json",chat_news);
 				break;
                 
         case 'cleanup_completed':
                 WriteLogFile(`Очищено ${update.data.cleanedCount} несуществующих МАКС чатов`);
                 sortObjectByKeys(chat_news);
-				WriteFileJson(currentDir+"/chatId.json",chat_news);
+				WriteFileJson(currentDir+"/chatId_maxbot.json",chat_news);
 				break;
     
 		case 'error_message':
