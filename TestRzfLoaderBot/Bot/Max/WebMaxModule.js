@@ -135,7 +135,7 @@ async function sendText(obj) {
         
         let res = await client.sendMessage({ chatId, text, elements });
         let status = (res && res.id) ? 'OK' : 'ERROR';
-        return { status: status, data: res };
+        return { status: status, data: res.message||res };
     } catch (err) {
         if (_isNetworkError(err)) throw err;
         return { status: 'ERROR', data: 'Ошибка в sendText(): ' + err.message };
@@ -160,7 +160,7 @@ async function sendPhoto(obj) {
         const attach = await client.uploadPhoto(chatId, path);
         let res = await client.sendMessage({ chatId, attachments: [attach], text, elements });
         let status = (res && res.id) ? 'OK' : 'ERROR';
-        return { status: status, data: res };
+        return { status: status, data: res.message||res };
     } catch (err) {
         if (_isNetworkError(err)) throw err;
         return { status: 'ERROR', data: 'Ошибка в sendPhoto(): ' + err.message };
@@ -185,7 +185,7 @@ async function sendVideo(obj) {
         const attach = await client.uploadVideo(chatId, path);
         let res = await client.sendMessage({ chatId, attachments: [attach], text, elements });
         let status = (res && res.id) ? 'OK' : 'ERROR';
-        return { status: status, data: res };
+        return { status: status, data: res.message||res };
     } catch (err) {
         if (_isNetworkError(err)) throw err;
         return { status: 'ERROR', data: 'Ошибка в sendVideo(): ' + err.message };
@@ -210,7 +210,7 @@ async function sendAudio(obj) {
         const attach = await client.uploadAudio(chatId, path);
         let res = await client.sendMessage({ chatId, attachments: [attach], text, elements });
         let status = (res && res.id) ? 'OK' : 'ERROR';
-        return { status: status, data: res };
+        return { status: status, data: res.message||res };
     } catch (err) {
         if (_isNetworkError(err)) throw err;
         return { status: 'ERROR', data: 'Ошибка в sendAudio(): ' + err.message };
@@ -231,7 +231,7 @@ async function sendFile(obj) {
         const attach = await client.uploadFile(chatId, path);
         let res = await client.sendMessage({ chatId, attachments: [attach], text, elements });
         let status = (res && res.id) ? 'OK' : 'ERROR';
-        return { status: status, data: res };
+        return { status: status, data: res.message||res };
     } catch (err) {
         if (_isNetworkError(err)) throw err;
         return { status: 'ERROR', data: 'Ошибка в sendFile(): ' + err.message };
@@ -268,7 +268,7 @@ async function sendAlbum(obj) {
         
         let res = await client.sendMessage({ chatId, attachments, text, elements });
         let status = (res && res.id) ? 'OK' : 'ERROR';
-        return { status: status, data: res };
+        return { status: status, data: res.message||res };
     } catch (err) {
         if (_isNetworkError(err)) throw err;
         return { status: 'ERROR', data: 'Ошибка в sendAlbum(): ' + err.message };

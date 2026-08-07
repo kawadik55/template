@@ -38,39 +38,23 @@ class WebMaxQueue extends EventEmitter {
     /**
      * Проверка типа ошибки (сетевая или API), возвращает true/false
      */
-    _isNetworkError(error) {
+    _isNetworkError(err) {
         const networkErrors = [
-            'ETIMEDOUT', 'ECONNRESET', 'ENOTFOUND', 
-            'EAI_AGAIN', 'ECONNREFUSED', 'ENETUNREACH'
-        ];
-        
-        // Проверка EFATAL с сетевыми проблемами
-        if (error.code === 'EFATAL') {
-            const errorMessage = (error.message || '').toLowerCase();
-            const networkMessages = [
-                'socket hang up',      // Разрыв соединения
-                'getaddrinfo',         // DNS ошибка
-                'connect e',           // Ошибка подключения
-                'econnreset',          // Сброс соединения
-                'etimedout',           // Таймаут
-                'enotfound',           // Хост не найден
-                'eai_again',           // DNS временная ошибка
-                'econnrefused',        // Соединение отклонено
-                'enetunreach',         // Сеть недоступна
-                'timeout',             // Таймаут
-                'network',             // Сетевая проблема
-                'tls',                 // TLS/SSL ошибка (проблемы с соединением)
-                'certificate'          // Ошибка сертификата (сетевая проблема)
-            ];
-            return networkMessages.some(msg => errorMessage.includes(msg));
-        }
-        
-        return networkErrors.some(netError => 
-            error.code === netError || 
-            error.message?.includes(netError) ||
-            error.toString().includes(netError)
-        );
-    }
+			'ETIMEDOUT', 'ECONNRESET', 'ENOTFOUND', 
+			'EAI_AGAIN', 'ECONNREFUSED', 'ENETUNREACH'
+		];
+		
+		const msg = err.message || String(err);
+		const networkMessages = [
+			'socket hang up', 'getaddrinfo', 'connect e',
+			'econnreset', 'etimedout', 'enotfound',
+			'eai_again', 'econnrefused', 'enetunreach',
+			'timeout', 'network'
+		];
+		
+		return networkErrors.some(code => err.code === code) ||
+			   networkMessages.some(m => msg.toLowerCase().includes(m));
+	}
     
     //====================================================================
     /**
