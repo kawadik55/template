@@ -2,6 +2,7 @@
 const fs = require('fs');
 const XLSX = require('xlsx');
 const {getNextDate} = require('./getNextDate');
+const TelegramBot = require('node-telegram-bot-api');
 
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const wwwDir=currentDir+"/../www";//путь к папке www, на уровень выше
@@ -17,6 +18,7 @@ const FileXlsDir = currentDir+'/../XlsBot/doc/1';//папка
 //const FileZagol = /^ListUfa\.xls+x?$/;//маска файла, xlsx или xls.
 const FileZagol = 'Местность.xls';//маска заголовочного файла местности, xls
 const MaskaXls = /^.+\.xls$/;//маска файлов табличных
+const TokenDir=currentDir+"/Token";//путь к папке с токенами
 
 //проверим наличие папки www, если папки нет, то создадим ее
 if(!fs.existsSync(wwwDir)) {fs.mkdirSync(wwwDir);}
@@ -24,6 +26,31 @@ if(!fs.existsSync(wwwDir)) {fs.mkdirSync(wwwDir);}
 if(!fs.existsSync(RassilkaDir)) {fs.mkdirSync(RassilkaDir);}
 
 let List = {};
+let oldList = {};
+let chat_news = [];
+
+//список чатов ТГ
+try{
+	chat_news = require(currentDir+"/chatId.json");
+}catch(err)
+{	let obj = {};
+	obj.chatId = '';
+	obj.username = '';
+	obj.message_thread_id = '';
+	chat_news.push(obj);
+	WriteFileJson(currentDir+"/chatId.json",chat_news);
+}
+
+if(!fs.existsSync(TokenDir)) {fs.mkdirSync(TokenDir);}//создадим папку, если ее нет
+// выбор токена
+let tokenbot = '', namebot = '';
+try{
+	const tmp = JSON.parse(fs.readFileSync(TokenDir+"/token_bot.json", 'utf8'));
+	tokenbot = tmp.token;
+	namebot = tmp.comment;//юзернейм бота
+}catch(err){console.log(err); WriteFileJson(TokenDir+"/token_bot.json",{"token":"","comment":""});}
+//создаем бот
+const bot = new TelegramBot(tokenbot, {polling: false}) || null;//без поллинга
 
 //====================================================================
 //конвертация одного файла
@@ -820,6 +847,47 @@ function getLitkomDate(
 	  return litkomDate;
 }
 //====================================================================
+function findDifferences(oldList, newList) {
+  const diff = {};
+  const exclude = ['next_data'];
+  const allCities = new Set([...Object.keys(oldList.groups||{}), ...Object.keys(newList.groups||{})]);
+  
+  for (const city of allCities) {
+    const oldGroups = oldList.groups?.[city] || {};
+    const newGroups = newList.groups?.[city] || {};
+    const allGroups = new Set([...Object.keys(oldGroups), ...Object.keys(newGroups)]);
+    
+    for (const name of allGroups) {
+      const old = oldGroups[name] || [];
+      const neu = newGroups[name] || [];
+      const changes = [];
+      
+      for (let i = 0; i < Math.max(old.length, neu.length); i++) {
+        if (i >= old.length) { changes.push({ old: null, new: neu[i] }); continue; }
+        if (i >= neu.length) { changes.push({ old: old[i], new: null }); continue; }
+        
+        const diffFields = Object.fromEntries(
+          Object.entries(neu[i])
+            .filter(([k,v]) => !exclude.includes(k) && JSON.stringify(old[i][k]) !== JSON.stringify(v))
+        );
+        if (Object.keys(diffFields).length) changes.push({ old: old[i], new: diffFields });
+      }
+      
+      if (changes.length) diff[`${city}. «${name}»`] = changes;
+    }
+  }
+  return Object.keys(diff).length ? diff : null;
+}
+//====================================================================
+//запись в файл объекта, массива
+function WriteFileJson(path,arr)
+{
+try{let res;
+	if(typeof arr === 'object') res = fs.writeFileSync(path, JSON.stringify(arr,null,2));
+    else res = fs.writeFileSync(path, arr);
+}catch(err){console.log(err.message+'\nfrom WriteFileJson()');}
+}
+//====================================================================
 //запускаем функции
 (async () => 
 {
@@ -831,6 +899,14 @@ function getLitkomDate(
 	if(!list.length) return;//если файлов нет
 	//оставляем только нужные файлы
 	for(let i=list.length-1;i>=0;i--) {if(list[i].search(MaskaXls)<0) list.splice(i,1);}
+	
+	//перед конвертацией файлов прочитаем имеющуюся базу для сравнения потом
+	if(fs.existsSync(currentDir+'/groups.json'))
+	{
+		try{oldList = JSON.parse(fs.readFileSync(currentDir+'/groups.json', 'utf8').replace(/^\uFEFF/, ''));
+		}catch(err){console.log(err.message);}
+	}
+	
 	let index = list.indexOf(FileZagol);//ищем файл заголовка
 	if(index >= 0) 
 	{	await Convert(FileXlsDir+'/'+FileZagol);//конвертируем заголовок первым
@@ -848,6 +924,85 @@ function getLitkomDate(
 	//setCsvYandex();
 	//save_open_file();
 	//console.log(new Date()+' parserxls - OK!');
+	
+	//теперь узнаем, есть ли изменения
+	const diff = findDifferences(oldList, List);
+	if(diff)
+	{	const now = new Date();
+		const pad = n => String(n).padStart(2, '0');
+		const time = `${pad(now.getDate())}-${pad(now.getMonth() + 1)}-${now.getFullYear()}_${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+		let history = {};
+		const filePath = currentDir + '/groups_diff.json';
+		//если файл уже есть, то добавляем новый ключ
+		if (fs.existsSync(filePath))
+		{try {
+				const content = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
+				history = JSON.parse(content);
+			} catch (err) {console.log('Ошибка чтения groups_diff.json:', err.message);}
+		}
+		history[time] = diff;
+		const err = WriteFileJson(currentDir+'/groups_diff.json', history);
+		if(!!err) {console.log(err);}
+		//теперь передадим в чаты сообщения об изменениях
+		if(bot)
+		{
+			let str = '🔹*Изменения в расписаниях*🔹\n\n';
+			
+			//пройдемся по группам
+			let gr = Object.keys(diff);//группы с изменением
+			for(let i in gr)
+			{	str += '*'+gr[i]+':*\n';
+				let list = diff[gr[i]];//массив объектов группы
+				for(let j in list)
+				{	str += '\n';
+					str += '*было:*\n';
+					let old = list[j].old;
+					if(old)
+					{	if(old.day) str += old.day+'\n';//день
+						if(old.time) str += old.time+'\n';//время
+						if(old.format) str += old.format+'\n';//формат
+						if(old.longtime) str += 'Длительность: '+old.longtime+'\n';//длительность
+						if(old.tema) str += 'Тема: '+old.tema+'\n';//тема
+						if(old.type) str += 'Периодичность: '+old.type+'\n';//тип периодичности
+						if(old.period) str += '['+[].concat(old.period).join(', ')+']'+'\n';//недели месяца или период недель
+						if(old.ref_data) str += 'Начало отсчета: '+old.ref_data+'\n';//длительность
+						if(old.address) str += old.address+'\n';//адрес
+						if(old.address_add) str += old.address_add+'\n';
+						if(old.map2gis) str += 'Карты можно ли: '+old.map2gis+'\n';
+					}
+					else str += 'Отсутствовала\n';
+					
+					str += '*стало:*\n';
+					let neu = list[j].new;
+					if(old)
+					{	if(neu.day) str += neu.day+'\n';//день
+						if(neu.time) str += neu.time+'\n';//время
+						if(neu.format) str += neu.format+'\n';//формат
+						if(neu.longtime) str += 'Длительность: '+neu.longtime+'\n';//длительность
+						if(neu.tema) str += 'Тема: '+neu.tema+'\n';//тема
+						if(neu.type) str += 'Периодичность: '+neu.type+'\n';//тип периодичности
+						if(neu.period) str += '['+[].concat(neu.period).join(', ')+']'+'\n';//недели месяца или период недель
+						if(neu.ref_data) str += 'Начало отсчета: '+neu.ref_data+'\n';//длительность
+						if(neu.address) str += neu.address+'\n';//адрес
+						if(neu.address_add) str += neu.address_add+'\n';
+						if(neu.map2gis) str += 'Карты можно ли: '+neu.map2gis+'\n';
+					}
+					else str += 'Удалена\n';
+					str += '\n';
+				}
+			}
+			
+			if(str) 
+			{
+				for(let num in chat_news)
+					try{
+						let options = {parse_mode: 'markdown' };
+						if(chat_news[num].message_thread_id) options.message_thread_id = chat_news[num].message_thread_id;
+						await bot.sendMessage(chat_news[num].chatId, str, options);
+					}catch(err){console.log(err.message);}
+			}
+		}
+	}
   }
 })();
 //====================================================================
