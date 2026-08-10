@@ -974,7 +974,7 @@ try{let res;
 					
 					str += '*стало:*\n';
 					let neu = list[j].new;
-					if(old)
+					if(neu)
 					{	if(neu.day) str += neu.day+'\n';//день
 						if(neu.time) str += neu.time+'\n';//время
 						if(neu.format) str += neu.format+'\n';//формат
