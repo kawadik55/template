@@ -995,11 +995,13 @@ try{let res;
 			if(str) 
 			{
 				for(let num in chat_news)
-					try{
+				{	try{
 						let options = {parse_mode: 'markdown' };
 						if(chat_news[num].message_thread_id) options.message_thread_id = chat_news[num].message_thread_id;
 						await bot.sendMessage(chat_news[num].chatId, str, options);
+						console.log('Отправлено сообщение в чат '+chat_news[num].username);
 					}catch(err){console.log(err.message);}
+				}
 			}
 		}
 	}
