@@ -999,7 +999,7 @@ try{let res;
 						let options = {parse_mode: 'markdown' };
 						if(chat_news[num].message_thread_id) options.message_thread_id = chat_news[num].message_thread_id;
 						await bot.sendMessage(chat_news[num].chatId, str, options);
-						console.log('Отправлено сообщение в чат '+chat_news[num].username);
+						console.log('Отправлено сообщение в чат '+(chat_news[num].username||chat_news[num].chatId));
 					}catch(err){console.log(err.message);}
 				}
 			}
