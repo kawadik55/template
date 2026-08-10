@@ -849,7 +849,7 @@ function getLitkomDate(
 //====================================================================
 function findDifferences(oldList, newList) {
   const diff = {};
-  const exclude = ['next_data'];
+  const exclude = ['next_data','comment'];
   const allCities = new Set([...Object.keys(oldList.groups||{}), ...Object.keys(newList.groups||{})]);
   
   for (const city of allCities) {
