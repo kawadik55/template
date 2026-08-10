@@ -849,8 +849,8 @@ function getLitkomDate(
 //====================================================================
 function findDifferences(oldList, newList) {
   const diff = {};
-  const exclude = ['next_data','comment'];
-  const allCities = new Set([...Object.keys(oldList.groups||{}), ...Object.keys(newList.groups||{})]);
+  const exclude = ['next_data', 'comment'];
+  const allCities = new Set([...Object.keys(oldList.groups || {}), ...Object.keys(newList.groups || {})]);
   
   for (const city of allCities) {
     const oldGroups = oldList.groups?.[city] || {};
@@ -858,22 +858,74 @@ function findDifferences(oldList, newList) {
     const allGroups = new Set([...Object.keys(oldGroups), ...Object.keys(newGroups)]);
     
     for (const name of allGroups) {
-      const old = oldGroups[name] || [];
-      const neu = newGroups[name] || [];
+      const oldMeetings = oldGroups[name] || [];
+      const newMeetings = newGroups[name] || [];
+      
+      // Клонируем, чтобы не портить исходные массивы
+      const newCopy = [...newMeetings];
       const changes = [];
       
-      for (let i = 0; i < Math.max(old.length, neu.length); i++) {
-        if (i >= old.length) { changes.push({ old: null, new: neu[i] }); continue; }
-        if (i >= neu.length) { changes.push({ old: old[i], new: null }); continue; }
+      // 1. Ищем по ДНЮ + ВРЕМЯ (основные идентификаторы)
+      for (let old of oldMeetings) {
+        // Ищем в новом собрание с таким же днем и временем
+        const foundIdx = newCopy.findIndex(n => n.day === old.day && n.time === old.time);
         
-        const diffFields = Object.fromEntries(
-          Object.entries(neu[i])
-            .filter(([k,v]) => !exclude.includes(k) && JSON.stringify(old[i][k]) !== JSON.stringify(v))
-        );
-        if (Object.keys(diffFields).length) changes.push({ old: old[i], new: diffFields });
+        if (foundIdx === -1) {
+          // Не найдено по дню+времени — возможно время изменилось
+          // Ищем по дню (если день совпадает, а время нет — значит время изменилось)
+          const sameDayIdx = newCopy.findIndex(n => n.day === old.day);
+          
+          if (sameDayIdx !== -1) {
+            // Нашли по дню — значит изменилось время (и возможно что-то еще)
+            const neu = newCopy[sameDayIdx];
+            const diffFields = {};
+            let hasChanges = false;
+            
+            for (let key of Object.keys(neu)) {
+              if (exclude.includes(key)) continue;
+              if (JSON.stringify(old[key]) !== JSON.stringify(neu[key])) {
+                diffFields[key] = neu[key];
+                hasChanges = true;
+              }
+            }
+            
+            if (hasChanges) {
+              changes.push({ old: old, new: diffFields });
+            }
+            newCopy.splice(sameDayIdx, 1); // убираем обработанное
+          } else {
+            // Не найдено по дню — значит собрание удалено
+            changes.push({ old: old, new: null });
+          }
+        } else {
+          // Нашли точное совпадение по дню+времени
+          const neu = newCopy[foundIdx];
+          const diffFields = {};
+          let hasChanges = false;
+          
+          for (let key of Object.keys(neu)) {
+            if (exclude.includes(key)) continue;
+            if (JSON.stringify(old[key]) !== JSON.stringify(neu[key])) {
+              diffFields[key] = neu[key];
+              hasChanges = true;
+            }
+          }
+          
+          if (hasChanges) {
+            changes.push({ old: old, new: diffFields });
+          }
+          newCopy.splice(foundIdx, 1); // убираем обработанное
+        }
       }
       
-      if (changes.length) diff[`${city}. «${name}»`] = changes;
+      // 2. Что осталось в newCopy — это новые собрания (которых не было в старом)
+      for (let neu of newCopy) {
+        changes.push({ old: null, new: neu });
+      }
+      
+      if (changes.length) {
+        diff[`${city}. «${name}»`] = changes;
+      }
     }
   }
   return Object.keys(diff).length ? diff : null;
@@ -970,7 +1022,7 @@ try{let res;
 						if(old.address_add) str += old.address_add+'\n';
 						if(old.map2gis) str += 'Карты можно ли: '+old.map2gis+'\n';
 					}
-					else str += 'Отсутствовала\n';
+					else str += 'Отсутствовало\n';
 					
 					str += '*стало:*\n';
 					let neu = list[j].new;
@@ -987,7 +1039,7 @@ try{let res;
 						if(neu.address_add) str += neu.address_add+'\n';
 						if(neu.map2gis) str += 'Карты можно ли: '+neu.map2gis+'\n';
 					}
-					else str += 'Удалена\n';
+					else str += 'Удалено\n';
 					str += '\n';
 				}
 			}
