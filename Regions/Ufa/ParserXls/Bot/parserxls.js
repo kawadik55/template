@@ -1,6 +1,7 @@
 ﻿process.env["NTBA_FIX_350"] = 1;
 const fs = require('fs');
 const XLSX = require('xlsx');
+//const XLSX = require('xlsx-js-style');
 const {getNextDate} = require('./getNextDate');
 const TelegramBot = require('node-telegram-bot-api');
 
@@ -28,6 +29,7 @@ if(!fs.existsSync(RassilkaDir)) {fs.mkdirSync(RassilkaDir);}
 let List = {};
 let oldList = {};
 let chat_news = [];
+let allFiles = {};
 
 //список чатов ТГ
 try{
@@ -69,6 +71,8 @@ try{
 		{	sheets[sourse.SheetNames[i]] = [];
 			sheets[sourse.SheetNames[i]] = XLSX.utils.sheet_to_json(sourse.Sheets[sourse.SheetNames[i]], {raw: false});
 		}
+		const fileName = Path.split('/').pop();
+		allFiles[fileName] = sourse; // сохраняем весь объект целиком
 	}
 	if(Object.keys(sheets).length>0)//запишем файл
 	{	//let err = fs.writeFileSync(currentDir+'/sheets.json', "\ufeff" + JSON.stringify(sheets,null,4));
@@ -931,13 +935,124 @@ function findDifferences(oldList, newList) {
   return Object.keys(diff).length ? diff : null;
 }
 //====================================================================
-//запись в файл объекта, массива
-function WriteFileJson(path,arr)
-{
-try{let res;
-	if(typeof arr === 'object') res = fs.writeFileSync(path, JSON.stringify(arr,null,2));
-    else res = fs.writeFileSync(path, arr);
-}catch(err){console.log(err.message+'\nfrom WriteFileJson()');}
+//сохраняем общий файл ListUfa.xls со всеми группами
+function save_excel_file() {
+    try {
+        const wb = XLSX.utils.book_new();
+        const allRows = [];
+        
+        for (const fileName of Object.keys(allFiles)) {
+            const sourse = allFiles[fileName];
+			// Лист "Локация" — оттуда город и группа
+            const locationSheet = sourse.Sheets['Локация'];
+            if (locationSheet) {
+                const locationData = XLSX.utils.sheet_to_json(locationSheet, { header: 1, raw: false });
+                if (locationData.length > 0) {
+                    let group = locationData[1][2] || ''; // колонка C - Группа
+					if (group.includes('Комитет')) continue;
+					group = locationData[1][1] || ''; // колонка B - Группа
+					if (group.includes('Комитет')) continue;
+                    
+                    // Весь лист "Локация" (все строки)
+					for (const row of locationData) {
+						if (row.length === 0) continue;//пропускаем пустые строки
+						if (row.every(cell => cell === '' || cell === undefined || cell === null)) continue;
+						allRows.push({ row: row, isBold: false });
+					}
+					//allRows.push({ row: '', isBold: false });//пустой разделитель
+                    
+                    // Лист "Все собрания" целиком
+                    const meetingSheet = sourse.Sheets['Все собрания'];
+                    if (meetingSheet) {
+                        const meetingData = XLSX.utils.sheet_to_json(meetingSheet, { header: 1 });
+                        // Ищем индекс колонки "Локация"
+						let locationIdx = -1;
+						if (meetingData.length > 0 && meetingData[0]) {
+							locationIdx = meetingData[0].indexOf('Локация');
+						}
+						//ищем наличие Комитет
+						if(meetingData.length > 0 && meetingData[0] && meetingData[0].indexOf('Комитет')>-1) continue;
+						
+						for (let i = 0; i < meetingData.length; i++) {
+                            const row = meetingData[i];
+							if (row.length === 0) continue;//пропускаем пустые строки
+							if (row.includes('Комитет')) continue;//"Комитет" пропускаем
+							if (row.every(cell => cell === '' || cell === undefined || cell === null)) continue;
+							if (locationIdx !== -1 && !row[locationIdx]) continue;// Проверка на пустую Локацию
+                            //console.log('Нашли '+row[locationIdx]);
+							const isHeaderRow = row.length > 0 && row[0] === 'День';
+                            allRows.push({ row: row, isBold: true });
+                        }
+                    }
+                    
+                    // Разделитель после группы
+					const separatorRow = [];
+					for (let i = 0; i < 18; i++) {
+						separatorRow.push('=====');
+					}
+					allRows.push({ row: separatorRow, isBold: false });
+					allRows.push({ row: '', isBold: false });
+                }
+            }
+        }
+        
+        if (allRows.length === 0) {
+            console.log('Нет данных для записи в Excel');
+            return;
+        }
+        
+        // Создаем worksheet
+        const wsData = allRows.map(item => item.row);
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        
+        // Стили
+        const centerStyle = { alignment: { horizontal: 'center', vertical: 'center' } };
+        const boldCenterStyle = { 
+            font: { bold: true },
+            alignment: { horizontal: 'center', vertical: 'center' }
+        };
+        
+        // Применяем стили ко всем ячейкам
+        for (let i = 0; i < allRows.length; i++) {
+            const row = allRows[i].row;
+            for (let c = 0; c < row.length; c++) {
+                const cellRef = XLSX.utils.encode_cell({ r: i, c: c });
+                if (!ws[cellRef]) {
+                    ws[cellRef] = { v: '' };
+                }
+                if (allRows[i].isBold) {
+                    ws[cellRef].s = boldCenterStyle;
+                } else {
+                    ws[cellRef].s = centerStyle;
+                }
+            }
+        }
+        
+        // Форматируем колонку с временем (колонка B, индекс 1)
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        if (range) {
+            for (let r = range.s.r; r <= range.e.r; r++) {
+                const cellRef = XLSX.utils.encode_cell({ r: r, c: 1 });
+                if (ws[cellRef] && typeof ws[cellRef].v === 'number') {
+                    //ws[cellRef].z = 'hh:mm';
+					const hours24 = Math.floor(ws[cellRef].v * 24);
+					const minutes60 = Math.floor((ws[cellRef].v * 24 - hours24) * 60);
+					ws[cellRef].v = `${String(hours24).padStart(2, '0')}:${String(minutes60).padStart(2, '0')}`;
+					ws[cellRef].t = 's';
+					delete ws[cellRef].z;
+                }
+            }
+        }
+		
+        // Добавляем лист в книгу
+        XLSX.utils.book_append_sheet(wb, ws, 'Все собрания');
+        
+        // Сохраняем
+        XLSX.writeFile(wb, wwwDir + '/ListUfa.xls', {cellStyles: true});
+        
+    } catch (err) {
+        console.log('Ошибка в save_excel_file():', err.message);
+    }
 }
 //====================================================================
 //запускаем функции
@@ -976,6 +1091,7 @@ try{let res;
 	//setCsvYandex();
 	//save_open_file();
 	//console.log(new Date()+' parserxls - OK!');
+	save_excel_file();
 	
 	//теперь узнаем, есть ли изменения
 	const diff = findDifferences(oldList, List);
