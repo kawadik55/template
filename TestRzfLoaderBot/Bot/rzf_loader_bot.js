@@ -320,7 +320,7 @@ const onConfigTgUpdate = (update) => {
 				break;
     
 		case 'common_message':
-                WriteLogFile('from SlaveBot: '+update.data.message});
+                WriteLogFile('from SlaveBot: '+update.data.message);
 				break;
 		case 'find_town':
                 const { requestId, data } = update.data;

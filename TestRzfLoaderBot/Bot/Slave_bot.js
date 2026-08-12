@@ -1885,7 +1885,7 @@ class SlaveBot {
                 if (validChats.length > 0) this.chat_news[timezoneKey] = validChats;
             }
             
-            if (cleaned > 0) {this.saveConfig('cleanup_completed', {cleanedCount: cleaned, timestamp: Date.now()});
+            if (cleaned > 0) this.saveConfig('cleanup_completed', {cleanedCount: cleaned, timestamp: Date.now()});
             
             console.log('✅ Очистка завершена: удалено '+cleaned+' несуществующих чатов');
             
