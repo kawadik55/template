@@ -79,7 +79,7 @@ class SlaveBot {
 				this.botUsername = botInfo.username || '';
 				console.log(`Имя бота установлено: ${this.botName}`);
 			} catch (err) {
-				this.sendErrorMessage('Ошибка получения имени бота: ' + err);
+				this.sendErrorMessage('Ошибка получения имени бота: ' + (err.message||err));
 			}
 	}
 	
@@ -131,7 +131,7 @@ class SlaveBot {
                 
                 await this.startConfigProcess(chatId, chatTitle, messageThreadId);
             } catch (err) {
-                this.sendErrorMessage('Ошибка в /config: ' + err);
+                this.sendErrorMessage('Ошибка в /config: ' + (err.message||err));
             }
         });
         
@@ -203,7 +203,7 @@ class SlaveBot {
 				if (!botCanDelete) {await this.checkBotPerm(chatId, messageThreadId); return;}
 				await this.startConfigProcess(chatId, chatTitle, messageThreadId);
             } catch (err) {
-                this.sendErrorMessage('Ошибка в /start: ' + err);
+                this.sendErrorMessage('Ошибка в /start: ' + (err.message||err));
             }
         });
 
@@ -241,7 +241,7 @@ class SlaveBot {
                     }
                 );
             } catch (err) {
-                this.sendErrorMessage('Ошибка в /info: ' + err);
+                this.sendErrorMessage('Ошибка в /info: ' + (err.message||err));
             }
         });
 
@@ -310,7 +310,7 @@ class SlaveBot {
                     }
                 );
             } catch (err) {
-                this.sendErrorMessage('Ошибка в /help: ' + err);
+                this.sendErrorMessage('Ошибка в /help: ' + (err.message||err));
             }
         });
 
@@ -323,7 +323,7 @@ class SlaveBot {
                     await this.removeChatFromConfig(chatId);
                 }
             } catch (err) {
-                this.sendErrorMessage('Ошибка в left_chat_member: ' + err);
+                this.sendErrorMessage('Ошибка в left_chat_member: ' + (err.message||err));
             }
         });
         
@@ -396,7 +396,7 @@ class SlaveBot {
                     }, 1500);
                 }
             } catch (err) {
-                this.sendErrorMessage('Ошибка в my_chat_member: ' + err);
+                this.sendErrorMessage('Ошибка в my_chat_member: ' + (err.message||err));
             }
         });
 
@@ -684,7 +684,7 @@ class SlaveBot {
                 }
                 
             } catch (err) {
-                this.sendErrorMessage('Ошибка в callback_query: ' + err);
+                this.sendErrorMessage('Ошибка в callback_query: ' + (err.message||err));
                 try {
                     await this.bot.answerCallbackQuery(msg.id, {
                         text: '❌ Произошла ошибка',
@@ -884,7 +884,7 @@ class SlaveBot {
 			if(this.recoveryTimer) return;
 			
 			if (error.message.includes('502') || error.message.includes('Bad Gateway'))
-			{	this.sendErrorMessage('Polling error in SlaveBot: ' + error.message);
+			{	this.sendErrorMessage('Polling error in SlaveBot: ' + (err.message||err));
 				const checkConnection = (delay) => 
 				{
 					this.recoveryTimer = setTimeout(() => {
@@ -901,7 +901,7 @@ class SlaveBot {
 		});
 
 		this.bot.on('webhook_error', (error) => {
-			this.sendErrorMessage('Webhook error in SlaveBot: ' + error.message);
+			this.sendErrorMessage('Webhook error in SlaveBot: ' + (err.message||err));
 		});
 
 		this.bot.on('error', (error) => {
@@ -921,7 +921,7 @@ class SlaveBot {
                     await this.showChannelSelection(userId);
                 }
             } catch (err) {
-                this.sendErrorMessage('Ошибка в /config_channel: ' + err);
+                this.sendErrorMessage('Ошибка в /config_channel: ' + (err.message||err));
             }
         });
         
@@ -943,7 +943,7 @@ class SlaveBot {
                     { parse_mode: 'HTML' }
                 );
             } catch (err) {
-                this.sendErrorMessage('Ошибка в /setup_channel: ' + err);
+                this.sendErrorMessage('Ошибка в /setup_channel: ' + (err.message||err));
             }
         });
     }
@@ -964,7 +964,7 @@ class SlaveBot {
                 { parse_mode: 'HTML' }
             );
         } catch (err) {
-            this.sendErrorMessage('Ошибка showPrivateChatHelp: ' + err);
+            this.sendErrorMessage('Ошибка showPrivateChatHelp: ' + (err.message||err));
         }
     }
 
@@ -1041,7 +1041,7 @@ class SlaveBot {
             });
             
         } catch (err) {
-            this.sendErrorMessage('Ошибка showChannelSelection: ' + err);
+            this.sendErrorMessage('Ошибка showChannelSelection: ' + (err.message||err));
         }
     }
 
@@ -1053,7 +1053,7 @@ class SlaveBot {
             const chatMember = await this.bot.getChatMember(chatId, userId);
             return ['administrator', 'creator'].includes(chatMember.status);
         } catch (err) {
-            this.sendErrorMessage('Ошибка проверки прав: ' + err);
+            this.sendErrorMessage('Ошибка проверки прав: ' + (err.message||err));
             return false;
         }
     }
@@ -1154,7 +1154,7 @@ class SlaveBot {
             this.pendingConfigs.set(chatId, pendingData);
 
         } catch (err) {
-            this.sendErrorMessage('Ошибка startConfigProcess: ' + err);
+            this.sendErrorMessage('Ошибка startConfigProcess: ' + (err.message||err));
             await this.bot.sendMessage(chatId, '❌ Произошла ошибка при настройке.', {
                 message_thread_id: messageThreadId || undefined
             });
@@ -1262,7 +1262,7 @@ class SlaveBot {
             await this.showContentSelection(chatId);
 
         } catch (err) {
-            this.sendErrorMessage('Ошибка handleTimezoneSelection: ' + err);
+            this.sendErrorMessage('Ошибка handleTimezoneSelection: ' + (err.message||err));
             const pending = this.pendingConfigs.get(chatId);
             await this.bot.sendMessage(chatId, '❌ Произошла ошибка при выборе часового пояса.', {
                 message_thread_id: pending ? pending.message_thread_id || undefined : undefined
@@ -1305,7 +1305,7 @@ class SlaveBot {
             this.pendingConfigs.set(chatId, pending);
 
         } catch (err) {
-            this.sendErrorMessage('Ошибка showContentSelection: ' + err);
+            this.sendErrorMessage('Ошибка showContentSelection: ' + (err.message||err));
             const pending = this.pendingConfigs.get(chatId);
             await this.bot.sendMessage(chatId, '❌ Произошла ошибка при настройке контента.', {
                 message_thread_id: pending ? pending.message_thread_id || undefined : undefined
@@ -1401,7 +1401,7 @@ class SlaveBot {
             }
 
         } catch (err) {
-            this.sendErrorMessage('Ошибка handleContentSelection: ' + err);
+            this.sendErrorMessage('Ошибка handleContentSelection: ' + (err.message||err));
             try {
                 const pending = this.pendingConfigs.get(chatId);
                 await this.bot.sendMessage(chatId, '❌ Произошла ошибка при выборе контента.', {
@@ -1592,7 +1592,7 @@ class SlaveBot {
             this.pendingConfigs.delete(chatId);
 
         } catch (err) {
-            this.sendErrorMessage('Ошибка finishConfig: ' + err);
+            this.sendErrorMessage('Ошибка finishConfig: ' + (err.message||err));
             // Пытаемся определить userId для отправки сообщения об ошибке
             let targetUserId = chatId;
             let messageThreadId = undefined;
@@ -1714,7 +1714,7 @@ class SlaveBot {
             return removed;
 
         } catch (err) {
-            this.sendErrorMessage('Ошибка removeChatFromConfig: ' + err);
+            this.sendErrorMessage('Ошибка removeChatFromConfig: ' + (err.message||err));
             if (showConfirm) {
                 try {
                     const existing = this.findChatInConfig(chatId);
@@ -1783,7 +1783,7 @@ class SlaveBot {
         const CHAT_CLEANUP_INTERVAL = 6 * 60 * 60 * 1000; // 6 часов
 		let nextChatCleanup = Date.now() + CHAT_CLEANUP_INTERVAL;
 		
-		// Очистка старых pending конфигураций каждые 10 минут
+		// Очистка старых pending сессий каждые timeout минут
         this.cleanupTimer = setInterval(() => {
             const now = Date.now();
             const timeout = 20 * 60 * 1000; // 20 минут
@@ -1823,47 +1823,40 @@ class SlaveBot {
                 nextChatCleanup = now + CHAT_CLEANUP_INTERVAL;
 				this.cleanupDeadChats();
             }
-        }, 10 * 60 * 1000);
+        }, 10 * 60 * 1000);//10мин
     }
     
     async cleanupDeadChats() {
         try {
-            console.log('Начинаем очистку несуществующих чатов...');
-            let cleaned = 0;
+            sendErrorMessage('Начинаем очистку несуществующих чатов...');
+			let cleaned = 0;
 			
 			try {	await this.bot.getMe();
-			} catch (err) {	console.log('⏳ Нет соединения с Telegram, очистка отложена');
+			} catch (err) {	sendErrorMessage('Нет соединения с Telegram, очистка отложена');
 							return; // Прерываем очистку при отсутствии связи
 			}
             
-            if (!this.chat_news || typeof this.chat_news !== 'object') {
-                return;
-            }
+            if (!this.chat_news || typeof this.chat_news !== 'object') return;
             
-            for (const [timezoneKey, chats] of Object.entries(this.chat_news)) {
-                if (!Array.isArray(chats)) {
-                    continue;
-                }
+            for (const [timezoneKey, chats] of Object.entries(this.chat_news)) 
+			{
+                if (!Array.isArray(chats)) continue;
                 
                 const validChats = [];
                 for (const chat of chats) {
                     let chatId = null;
                     // Ищем chatId в объекте
-                    for (const [key, value] of Object.entries(chat)) {
-                        if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && key !== 'Raspis') {
-                            chatId = value;
+                    for (const [key, value] of Object.entries(chat))
+					{	if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && key !== 'Raspis') 
+						{	chatId = value;
                             break;
                         }
                     }
-                    
-                    if (!chatId) {
-                        continue;
-                    }
+                    if (!chatId) continue;
                     
                     // Проверяем, существует ли чат и бот в нем
                     try {
-                        //const chatInfo = await this.bot.getChat(chatId);
-						// Устанавливаем таймаут на запрос, чтобы не висеть слишком долго
+                        // Устанавливаем таймаут на запрос, чтобы не висеть слишком долго
 						const chatInfo = await Promise.race([
 							this.bot.getChat(chatId),
 							new Promise((_, reject) => 
@@ -1871,7 +1864,7 @@ class SlaveBot {
 							)
 						]);
                         // Если дошли сюда - чат существует и бот в нем
-                        validChats.push(chat);
+                        validChats.push(chat);//добавляем существующий чат
                     } catch (err) {
                         if(err.message === 'Timeout' || 
 							err.message.includes('502') || 
@@ -1879,45 +1872,32 @@ class SlaveBot {
 							err.message.includes('ETIMEDOUT') ||
 							err.message.includes('ECONNRESET')) 
 						{	// Это ошибка сети - прерываем очистку
-							console.log('⏳ Обнаружена проблема с сетью, очистка прервана');
+							sendErrorMessage('Обнаружена проблема со связью, очистка прервана');
 							return;
 						}
 						// Ошибка означает что чат не существует или бот не в нем
-                        console.log(`Чат ${chatId} не существует или бот удален, удаляем из конфига`);
+                        console.log('Чат '+chatId+' не существует или бот удален, удаляем из конфига');
                         cleaned++;
                     }
                 }
                 
                 // Обновляем массив чатов
-                this.chat_news[timezoneKey] = validChats;
-                
-                // Удаляем пустые таймзоны
-                if (this.chat_news[timezoneKey].length === 0) {
-                    delete this.chat_news[timezoneKey];
-                }
+                if (validChats.length > 0) this.chat_news[timezoneKey] = validChats;
             }
             
-            if (cleaned > 0) {
-                this.saveConfig('cleanup_completed', {
-                    cleanedCount: cleaned,
-                    timestamp: Date.now()
-                });
-            }
+            if (cleaned > 0) {this.saveConfig('cleanup_completed', {cleanedCount: cleaned, timestamp: Date.now()});
             
-            console.log(`✅ Очистка завершена: удалено ${cleaned} несуществующих чатов`);
+            console.log('✅ Очистка завершена: удалено '+cleaned+' несуществующих чатов');
             
         } catch (err) {
             // Если произошла общая ошибка, проверяем - может это сеть?
-			if (err.message && (
-				err.message.includes('502') || 
-				err.message.includes('Bad Gateway') ||
-				err.message.includes('ETIMEDOUT') ||
-				err.message.includes('ECONNRESET')
-			)) {
-				console.log('⏳ Ошибка связи при очистке, операция отложена');
+			if (err.message && (err.message.includes('502') || err.message.includes('Bad Gateway') ||
+				err.message.includes('ETIMEDOUT') || err.message.includes('ECONNRESET')
+			)) 
+			{	sendErrorMessage('Ошибка связи при очистке, операция отложена');
 				return;
 			}
-			this.sendErrorMessage('Ошибка при очистке несуществующих чатов: ' + err);
+			this.sendErrorMessage('Ошибка при очистке несуществующих чатов: ' + (err.message||err));
         }
     }
 
@@ -1946,7 +1926,7 @@ class SlaveBot {
 				}
                 
             } catch (err) {
-                this.sendErrorMessage('Ошибка остановки SlaveBot: ' + err);
+                this.sendErrorMessage('Ошибка остановки SlaveBot: ' + (err.message||err));
             }
             resolve();
         });
@@ -2012,7 +1992,7 @@ class SlaveBot {
             };
             
         } catch (err) {
-            this.sendErrorMessage('Ошибка requestChannelId: ' + err);
+            this.sendErrorMessage('Ошибка requestChannelId: ' + (err.message||err));
         }
     }
 
@@ -2055,7 +2035,7 @@ class SlaveBot {
                 this.pendingConfigs.set(userId, pending);
             }
         } catch (err) {
-            this.sendErrorMessage('Ошибка showChannelHelp: ' + err);
+            this.sendErrorMessage('Ошибка showChannelHelp: ' + (err.message||err));
         }
     }
 
@@ -2200,7 +2180,7 @@ class SlaveBot {
             }
             
         } catch (err) {
-            this.sendErrorMessage('Ошибка processChannelInput: ' + err);
+            this.sendErrorMessage('Ошибка processChannelInput: ' + (err.message||err));
             await this.bot.sendMessage(userId,
                 `❌ <b>Ошибка при обработке данных канала.</b>\n` +
                 `Попробуйте еще раз или обратитесь к администратору.`,
@@ -2410,7 +2390,7 @@ class SlaveBot {
             this.pendingConfigs.set(userId, pendingData);
             
         } catch (err) {
-            this.sendErrorMessage('Ошибка startChannelConfig: ' + err);
+            this.sendErrorMessage('Ошибка startChannelConfig: ' + (err.message||err));
             const sentMessage = await this.bot.sendMessage(userId,
                 `❌ <b>Произошла ошибка при настройке канала.</b>\n` +
                 `<b>Проверьте, что:</b>\n` +
@@ -2559,7 +2539,7 @@ class SlaveBot {
             this.pendingConfigs.set(userId, pendingData);
             
         } catch (err) {
-            this.sendErrorMessage('Ошибка startChannelEdit: ' + err);
+            this.sendErrorMessage('Ошибка startChannelEdit: ' + (err.message||err));
             const sentMessage = await this.bot.sendMessage(userId,
                 `❌ <b>Произошла ошибка при редактировании настроек.</b>`,
                 {
@@ -2640,7 +2620,7 @@ class SlaveBot {
             });
             
         } catch (err) {
-            this.sendErrorMessage('Ошибка removeChannelFromConfig: ' + err);
+            this.sendErrorMessage('Ошибка removeChannelFromConfig: ' + (err.message||err));
             const sentMessage = await this.bot.sendMessage(userId,
                 `❌ <b>Произошла ошибка при удалении канала.</b>`,
                 {
@@ -2669,7 +2649,7 @@ class SlaveBot {
             const chatMember = await this.bot.getChatMember(channelId, userId);
             return ['administrator', 'creator'].includes(chatMember.status);
         } catch (err) {
-            this.sendErrorMessage('Ошибка проверки прав в канале: ' + err);
+            this.sendErrorMessage('Ошибка проверки прав в канале: ' + (err.message||err));
             return false;
         }
     }
@@ -2687,14 +2667,14 @@ class SlaveBot {
 			if (checkDeletePermission) return botMember.can_delete_messages === true;
 			return true;
 		} catch (err) {
-			this.sendErrorMessage('Ошибка проверки прав бота: ' + err);
+			this.sendErrorMessage('Ошибка проверки прав бота: ' + (err.message||err));
 			return false; // При ошибке считаем, что не админ
 		}
 	}
 	
 	sendErrorMessage(message) {
 		console.error(message);
-		this.saveConfig('error_message', {message: message, timestamp: Date.now()});
+		this.saveConfig('common_message', {message: message, timestamp: Date.now()});
 	}
 	
 	async getTownSlug(chatId) {
@@ -2763,7 +2743,7 @@ class SlaveBot {
 
         //console.log(`Запрошен город для chatId ${chatId}`);
 
-      } catch (err) {this.sendErrorMessage('Ошибка в getTownSlug: ' + err);}
+      } catch (err) {this.sendErrorMessage('Ошибка в getTownSlug: ' + (err.message||err));}
 	}
 	
 	// Проверка прав бота в группе и информирование пользователя
@@ -2788,7 +2768,7 @@ class SlaveBot {
 			
 			return true;
 		} catch (err) {
-			this.sendErrorMessage('Ошибка проверки прав бота: ' + err);
+			this.sendErrorMessage('Ошибка проверки прав бота: ' + (err.message||err));
 			return false;
 		}
 	}
