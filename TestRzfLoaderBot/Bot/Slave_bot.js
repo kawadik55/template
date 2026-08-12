@@ -1830,6 +1830,11 @@ class SlaveBot {
         try {
             console.log('Начинаем очистку несуществующих чатов...');
             let cleaned = 0;
+			
+			try {	await this.bot.getMe();
+			} catch (err) {	console.log('⏳ Нет соединения с Telegram, очистка отложена');
+							return; // Прерываем очистку при отсутствии связи
+			}
             
             if (!this.chat_news || typeof this.chat_news !== 'object') {
                 return;
@@ -1857,11 +1862,27 @@ class SlaveBot {
                     
                     // Проверяем, существует ли чат и бот в нем
                     try {
-                        const chatInfo = await this.bot.getChat(chatId);
+                        //const chatInfo = await this.bot.getChat(chatId);
+						// Устанавливаем таймаут на запрос, чтобы не висеть слишком долго
+						const chatInfo = await Promise.race([
+							this.bot.getChat(chatId),
+							new Promise((_, reject) => 
+								setTimeout(() => reject(new Error('Timeout')), 10000)
+							)
+						]);
                         // Если дошли сюда - чат существует и бот в нем
                         validChats.push(chat);
                     } catch (err) {
-                        // Ошибка означает что чат не существует или бот не в нем
+                        if(err.message === 'Timeout' || 
+							err.message.includes('502') || 
+							err.message.includes('Bad Gateway') ||
+							err.message.includes('ETIMEDOUT') ||
+							err.message.includes('ECONNRESET')) 
+						{	// Это ошибка сети - прерываем очистку
+							console.log('⏳ Обнаружена проблема с сетью, очистка прервана');
+							return;
+						}
+						// Ошибка означает что чат не существует или бот не в нем
                         console.log(`Чат ${chatId} не существует или бот удален, удаляем из конфига`);
                         cleaned++;
                     }
@@ -1886,7 +1907,17 @@ class SlaveBot {
             console.log(`✅ Очистка завершена: удалено ${cleaned} несуществующих чатов`);
             
         } catch (err) {
-            this.sendErrorMessage('Ошибка при очистке несуществующих чатов: ' + err);
+            // Если произошла общая ошибка, проверяем - может это сеть?
+			if (err.message && (
+				err.message.includes('502') || 
+				err.message.includes('Bad Gateway') ||
+				err.message.includes('ETIMEDOUT') ||
+				err.message.includes('ECONNRESET')
+			)) {
+				console.log('⏳ Ошибка связи при очистке, операция отложена');
+				return;
+			}
+			this.sendErrorMessage('Ошибка при очистке несуществующих чатов: ' + err);
         }
     }
 
