@@ -269,7 +269,7 @@ const onConfigUpdate = (update) => {
     //console.log('Конфиг обновлен в SlaveBot!');
     switch(update.event) {
         case 'chat_configured':
-                WriteLogFile(`Чат ${update.data.chatTitle} настроен на таймзону ${update.data.timezone}`);
+                WriteLogFile('ТГ чат '+update.data.chatTitle+' настроен на таймзону '+update.data.timezone);
                 sortObjectByKeys(chat_news);
 				WriteFileJson(currentDir+"/chatId.json",chat_news);
 				break;
@@ -281,13 +281,13 @@ const onConfigUpdate = (update) => {
 				break;
                 
         case 'cleanup_completed':
-                WriteLogFile(`Очищено ${update.data.cleanedCount} несуществующих чатов`);
+                WriteLogFile('Очищено '+update.data.cleanedCount+' несуществующих ТГ чатов');
                 sortObjectByKeys(chat_news);
 				WriteFileJson(currentDir+"/chatId.json",chat_news);
 				break;
     
-		case 'error_message':
-                WriteLogFile(`from SlaveBot: ${update.data.message}`);
+		case 'common_message':
+                WriteLogFile('from SlaveBot: '+update.data.message);
 				break;
 		case 'find_town':
                 const { requestId, data } = update.data;
