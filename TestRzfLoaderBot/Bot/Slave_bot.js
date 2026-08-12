@@ -1883,6 +1883,8 @@ class SlaveBot {
                 
                 // Обновляем массив чатов
                 if (validChats.length > 0) this.chat_news[timezoneKey] = validChats;
+				// Удаляем пустые зоны
+				if (this.chat_news[timezoneKey].length === 0) delete this.chat_news[timezoneKey];
             }
             
             if (cleaned > 0) this.saveConfig('cleanup_completed', {cleanedCount: cleaned, timestamp: Date.now()});
