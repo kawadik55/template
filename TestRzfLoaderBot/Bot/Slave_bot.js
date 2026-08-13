@@ -884,7 +884,7 @@ class SlaveBot {
 			if(this.recoveryTimer) return;
 			
 			if (error.message.includes('502') || error.message.includes('Bad Gateway'))
-			{	this.sendErrorMessage('Polling error in SlaveBot: ' + (err.message||err));
+			{	this.sendErrorMessage('Polling error in SlaveBot: ' + (error.message||error));
 				const checkConnection = (delay) => 
 				{
 					this.recoveryTimer = setTimeout(() => {
@@ -900,12 +900,12 @@ class SlaveBot {
 			}
 		});
 
-		this.bot.on('webhook_error', (error) => {
+		this.bot.on('webhook_error', (err) => {
 			this.sendErrorMessage('Webhook error in SlaveBot: ' + (err.message||err));
 		});
 
 		this.bot.on('error', (error) => {
-			this.sendErrorMessage('General error in SlaveBot: ' + error.message);
+			this.sendErrorMessage('General error in SlaveBot: ' + error.message||error);
 		});
 	}
 
@@ -1715,16 +1715,6 @@ class SlaveBot {
 
         } catch (err) {
             this.sendErrorMessage('Ошибка removeChatFromConfig: ' + (err.message||err));
-            if (showConfirm) {
-                try {
-                    const existing = this.findChatInConfig(chatId);
-                    await this.bot.sendMessage(chatId, '❌ Ошибка при удалении чата.', {
-                        message_thread_id: existing && existing.threadId ? existing.threadId : undefined
-                    });
-                } catch (e) {
-                    // Игнорируем, бот может быть уже удален
-                }
-            }
             return false;
         }
     }
@@ -1828,11 +1818,11 @@ class SlaveBot {
     
     async cleanupDeadChats() {
         try {
-            sendErrorMessage('Начинаем очистку несуществующих чатов...');
+            this.sendErrorMessage('Начинаем очистку несуществующих чатов...');
 			let cleaned = 0;
 			
 			try {	await this.bot.getMe();
-			} catch (err) {	sendErrorMessage('Нет соединения с Telegram, очистка отложена');
+			} catch (err) {	this.sendErrorMessage('Нет соединения с Telegram, очистка отложена');
 							return; // Прерываем очистку при отсутствии связи
 			}
             
@@ -1872,7 +1862,7 @@ class SlaveBot {
 							err.message.includes('ETIMEDOUT') ||
 							err.message.includes('ECONNRESET')) 
 						{	// Это ошибка сети - прерываем очистку
-							sendErrorMessage('Обнаружена проблема со связью, очистка прервана');
+							this.sendErrorMessage('Обнаружена проблема со связью, очистка прервана');
 							return;
 						}
 						// Ошибка означает что чат не существует или бот не в нем
@@ -1888,15 +1878,14 @@ class SlaveBot {
             }
             
             if (cleaned > 0) this.saveConfig('cleanup_completed', {cleanedCount: cleaned, timestamp: Date.now()});
-            
-            console.log('✅ Очистка завершена: удалено '+cleaned+' несуществующих чатов');
+			else this.sendErrorMessage('Очистка завершена: удалено '+cleaned+' несуществующих чатов');
             
         } catch (err) {
             // Если произошла общая ошибка, проверяем - может это сеть?
 			if (err.message && (err.message.includes('502') || err.message.includes('Bad Gateway') ||
 				err.message.includes('ETIMEDOUT') || err.message.includes('ECONNRESET')
 			)) 
-			{	sendErrorMessage('Ошибка связи при очистке, операция отложена');
+			{	this.sendErrorMessage('Ошибка связи при очистке, операция отложена');
 				return;
 			}
 			this.sendErrorMessage('Ошибка при очистке несуществующих чатов: ' + (err.message||err));
