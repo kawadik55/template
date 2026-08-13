@@ -900,12 +900,12 @@ class SlaveBot {
 			}
 		});
 
-		this.bot.on('webhook_error', (err) => {
-			this.sendErrorMessage('Webhook error in SlaveBot: ' + (err.message||err));
+		this.bot.on('webhook_error', (error) => {
+			this.sendErrorMessage('Webhook error in SlaveBot: ' + (error.message||error));
 		});
 
 		this.bot.on('error', (error) => {
-			this.sendErrorMessage('General error in SlaveBot: ' + error.message||error);
+			this.sendErrorMessage('General error in SlaveBot: ' + error.message);
 		});
 	}
 
