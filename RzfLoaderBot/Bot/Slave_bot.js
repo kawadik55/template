@@ -1816,81 +1816,108 @@ class SlaveBot {
         }, 10 * 60 * 1000);//10мин
     }
     
-    async cleanupDeadChats() {
-        try {
-            this.sendErrorMessage('Начинаем очистку несуществующих чатов...');
+	async cleanupDeadChats() 
+	{
+		try {
+			this.sendErrorMessage('Начинаем очистку несуществующих чатов...');
 			let cleaned = 0;
 			
-			try {	await this.bot.getMe();
-			} catch (err) {	this.sendErrorMessage('Нет соединения с Telegram, очистка отложена');
-							return; // Прерываем очистку при отсутствии связи
+			try {
+				await this.bot.getMe();
+			} catch (err) {
+				this.sendErrorMessage('Нет соединения с Telegram, очистка отложена');
+				return; // Прерываем очистку при отсутствии связи
 			}
-            
-            if (!this.chat_news || typeof this.chat_news !== 'object') return;
-            
-            for (const [timezoneKey, chats] of Object.entries(this.chat_news)) 
-			{
-                if (!Array.isArray(chats)) continue;
-                
-                const validChats = [];
-                for (const chat of chats) {
-                    let chatId = null;
-                    // Ищем chatId в объекте
-                    for (const [key, value] of Object.entries(chat))
-					{	if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && key !== 'Raspis') 
-						{	chatId = value;
-                            break;
-                        }
-                    }
-                    if (!chatId) continue;
-                    
-                    // Проверяем, существует ли чат и бот в нем
-                    try {
-                        // Устанавливаем таймаут на запрос, чтобы не висеть слишком долго
-						const chatInfo = await Promise.race([
+			
+			if (!this.chat_news || typeof this.chat_news !== 'object') return;
+			
+			// Проходим по каждой таймзоне
+			for (const [timezoneKey, chats] of Object.entries(this.chat_news)) 
+			{	if (!Array.isArray(chats)) continue;
+				
+				// Собираем ID всех чатов в этой таймзоне
+				const chatIds = [];
+				for (const chat of chats) {
+					let chatId = null;
+					// Ищем chatId в объекте (исключая служебные поля)
+					for (const [key, value] of Object.entries(chat)) {
+						if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && key !== 'Raspis') {
+							chatId = value;
+							break;
+						}
+					}
+					if (chatId) chatIds.push(chatId);
+				}
+				
+				if (chatIds.length === 0) continue;
+				
+				// Проверяем каждый чат и собираем ID мертвых
+				const deadIds = [];
+				for (const chatId of chatIds) {
+					try {
+						// Проверяем существование чата с таймаутом
+						await Promise.race([
 							this.bot.getChat(chatId),
 							new Promise((_, reject) => 
 								setTimeout(() => reject(new Error('Timeout')), 10000)
 							)
 						]);
-                        // Если дошли сюда - чат существует и бот в нем
-                        validChats.push(chat);//добавляем существующий чат
-                    } catch (err) {
-                        if(err.message === 'Timeout' || 
-							err.message.includes('502') || 
-							err.message.includes('Bad Gateway') ||
-							err.message.includes('ETIMEDOUT') ||
+						// Чат существует - ничего не делаем
+					} catch (err) {
+						// Проверяем, не ошибка ли это сети
+						if (err.message === 'Timeout' || err.message.includes('502') || 
+							err.message.includes('Bad Gateway') || err.message.includes('ETIMEDOUT') ||
 							err.message.includes('ECONNRESET')) 
-						{	// Это ошибка сети - прерываем очистку
+						{
+							// Это ошибка сети - прерываем очистку
 							this.sendErrorMessage('Обнаружена проблема со связью, очистка прервана');
 							return;
 						}
 						// Ошибка означает что чат не существует или бот не в нем
-                        console.log('Чат '+chatId+' не существует или бот удален, удаляем из конфига');
-                        cleaned++;
-                    }
-                }
-                
-                // Обновляем массив чатов
-                if (validChats.length > 0) this.chat_news[timezoneKey] = validChats;
-				// Удаляем пустые зоны
-				if (this.chat_news[timezoneKey].length === 0) delete this.chat_news[timezoneKey];
-            }
-            
-            if (cleaned > 0) this.saveConfig('cleanup_completed', {cleanedCount: cleaned, timestamp: Date.now()});
-			else this.sendErrorMessage('Очистка завершена: удалено '+cleaned+' несуществующих чатов');
-            
-        } catch (err) {
-            // Если произошла общая ошибка, проверяем - может это сеть?
+						console.log('Чат ' + chatId + ' не существует или бот удален, удаляем из конфига');
+						deadIds.push(chatId.toString());
+						cleaned++;
+					}
+				}
+				
+				// Удаляем все мертвые чаты в этой зоне
+				if (deadIds.length > 0) 
+				{	for (let i = chats.length - 1; i >= 0; i--) 
+					{
+						const chat = chats[i];
+						let chatId = null;
+						for (const [key, value] of Object.entries(chat)) 
+						{	if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && key !== 'Raspis') {
+								chatId = value;
+								break;
+							}
+						}
+						// удаляем тут
+						if (deadIds.includes(chatId ? chatId.toString() : '')) {chats.splice(i, 1);}
+					}
+					// Если зона опустела - удаляем её
+					if (chats.length === 0) {delete this.chat_news[timezoneKey];}
+				}
+			}
+			
+			if (cleaned > 0) 
+			{	this.saveConfig('cleanup_completed', {cleanedCount: cleaned, timestamp: Date.now()});
+			} 
+			else
+			{	this.sendErrorMessage('Очистка завершена: нет удаленных чатов');
+			}
+			
+		} catch (err) 
+		{	// Если произошла общая ошибка, проверяем - может это сеть?
 			if (err.message && (err.message.includes('502') || err.message.includes('Bad Gateway') ||
-				err.message.includes('ETIMEDOUT') || err.message.includes('ECONNRESET')
-			)) 
-			{	this.sendErrorMessage('Ошибка связи при очистке, операция отложена');
+				err.message.includes('ETIMEDOUT') || err.message.includes('ECONNRESET'))) 
+			{
+				this.sendErrorMessage('Ошибка связи при очистке, операция отложена');
 				return;
 			}
-			this.sendErrorMessage('Ошибка при очистке несуществующих чатов: ' + (err.message||err));
-        }
-    }
+			this.sendErrorMessage('Ошибка при очистке несуществующих чатов: ' + (err.message || err));
+		}
+	}
 
     stop() {
         return new Promise((resolve) => {
