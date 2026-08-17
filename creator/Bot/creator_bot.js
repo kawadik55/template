@@ -659,12 +659,18 @@ try
 //finally {delete activeUsers[userId];}//ВСЕГДА разблокируем пользователя
 });
 //====================================================================
+let count_polling_error = 0;
+let resetTimer = null;
+
 Bot.on('polling_error', async (error) => 
 {	WriteLogFile((error.message||error)+' => from Bot.on("polling_error")');
 	if(error.code === 'EFATAL' || error.message.includes('502'))
 	{	if(!Bot.isPolling) return;
 		Bot.isPolling = false;
-		await pauseBot(5000);
+		count_polling_error++;
+		let sec = 10000 * count_polling_error;
+		if(sec > 60000) sec = 60000;
+		await pauseBot(sec);
 	}
 });
 
@@ -689,6 +695,8 @@ async function resumeBot()
         await Bot.startPolling();
         Bot.isPolling = true;
         WriteLogFile('Polling resumed, bot connected');
+		if(resetTimer) {clearTimeout(resetTimer); resetTimer = null;}
+		resetTimer = setTimeout(() => {count_polling_error = 0; resetTimer = null;}, 30*60000);
     } catch (error) {
         WriteLogFile('Error resuming polling: '+error);
         Bot.isPolling = false;
