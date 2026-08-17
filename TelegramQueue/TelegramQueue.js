@@ -49,10 +49,11 @@ class TelegramQueue extends EventEmitter {
             this.consecutiveErrors++;
             console.error(`Polling error (${this.consecutiveErrors}):`, error.message);
             
-            if (error.code === 'EFATAL' || this._isNetworkError(error)) 
+			if (error.code === 'EFATAL' || this._isNetworkError(error)) 
 			{	this.isConnected = false;
-                error.message = error.message ? ('(queue polling_error)=> '+error.message) : 'queue polling_error';
-				this.emit('disconnected', error);
+                const myError = new Error('(queue polling_error)=> ' + (error.message || 'queue polling_error'));
+				myError.code = error.code;
+				this.emit('disconnected', myError);
             }
             
             this._scheduleReconnection();

@@ -660,7 +660,7 @@ try
 });
 //====================================================================
 Bot.on('polling_error', async (error) => 
-{	WriteLogFile(error+' => from Bot.on("polling_error")');
+{	WriteLogFile((error.message||error)+' => from Bot.on("polling_error")');
 	if(error.code === 'EFATAL' || error.message.includes('502'))
 	{	if(!Bot.isPolling) return;
 		Bot.isPolling = false;
@@ -697,10 +697,10 @@ async function resumeBot()
     }
 }
 
-Bot.on('error', (error) => {WriteLogFile(error+' => from Bot.on("error"','вчат'); });
+Bot.on('error', (error) => {WriteLogFile((error.message||error)+' => from Bot.on("error"','вчат'); });
 //====================================================================
 // Обработчики событий очереди
-//queue.on('error', (error) => {WriteLogFile(error);});
+//queue.on('error', (error) => {WriteLogFile(error.message||error);});
 //queue.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь: ${item.id}`);});
 //queue.on('sent', (item) => {WriteLogFile(`Сообщение отправлено: ${item.id}`);});
 queue.on('failed', (item, error) => 
@@ -713,7 +713,7 @@ queue.on('failed', (item, error) =>
 });
 //queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 queue.on('connected', () => {WriteLogFile('=> bot connected (по callback_query)');});
-queue.on('disconnected', (error) => {WriteLogFile(error+'; => bot disconnected');});
+queue.on('disconnected', (error) => {WriteLogFile((error.message||error)+'; => bot disconnected');});
 //queue.on('processing_started', (item) => {WriteLogFile('processing_started, queue length = '+item);});
 //queue.on('processing_finished', () => {WriteLogFile('processing_finished');});
 //queue.on('cleared', (item) => {WriteLogFile('cleared = '+item);});
