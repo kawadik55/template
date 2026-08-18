@@ -77,9 +77,9 @@ class SlaveBot {
 				const botInfo = await this.bot.getMe();
 				this.botName = botInfo.first_name || '';
 				this.botUsername = botInfo.username || '';
-				console.log(`Имя бота установлено: ${this.botName}`);
+				this.sendErrorMessage('Имя слэйв-бота установлено: '+this.botName);
 			} catch (err) {
-				this.sendErrorMessage('Ошибка получения имени бота: ' + (err.message||err));
+				this.sendErrorMessage('Ошибка получения имени слэйв-бота: ' + (err.message||err));
 			}
 	}
 	
