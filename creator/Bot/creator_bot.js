@@ -721,7 +721,7 @@ queue.on('failed', (item, error) =>
 });
 //queue.on('retry', (item, error, attempt) => {WriteLogFile('Повторная попытка '+attempt+' для '+item.id+': '+error.message);});
 queue.on('connected', () => {WriteLogFile('=> bot connected (по callback_query)');});
-queue.on('disconnected', (error) => {WriteLogFile((error.message||error)+'; => bot disconnected');});
+queue.on('disconnected', (error) => {WriteLogFile((error.message||error)+' => bot disconnected');});
 //queue.on('processing_started', (item) => {WriteLogFile('processing_started, queue length = '+item);});
 //queue.on('processing_finished', () => {WriteLogFile('processing_finished');});
 //queue.on('cleared', (item) => {WriteLogFile('cleared = '+item);});

@@ -38,8 +38,10 @@ class TelegramQueue extends EventEmitter {
             
             if (this.consecutiveErrors >= this.maxConsecutiveErrors || this._isNetworkError(error)) 
 			{	this.isConnected = false;
-                error.message = error.message ? (error.message+' => queue error') : 'queue error';
-				this.emit('disconnected', error);
+                const newError = new Error((error.message||error)+' => queue error');
+				newError.code = error.code;
+				Object.assign(newError, error);
+				this.emit('disconnected', newError);
             }
             
             this._scheduleReconnection();
@@ -51,8 +53,10 @@ class TelegramQueue extends EventEmitter {
             
             if (error.code === 'EFATAL' || this._isNetworkError(error)) 
 			{	this.isConnected = false;
-                error.message = error.message ? (error.message+' => queue polling_error') : 'queue polling_error';
-				this.emit('disconnected', error);
+                const newError = new Error((error.message||error)+' => queue polling_error');
+				newError.code = error.code;
+				Object.assign(newError, error);
+				this.emit('disconnected', newError);
             }
             
             this._scheduleReconnection();
