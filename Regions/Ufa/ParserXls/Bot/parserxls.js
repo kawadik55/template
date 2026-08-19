@@ -1055,6 +1055,15 @@ function save_excel_file() {
     }
 }
 //====================================================================
+//запись в файл объекта, массива
+async function WriteFileJson(path,arr)
+{
+try{let res;
+	if(typeof arr === 'object') res = fs.writeFileSync(path, JSON.stringify(arr,null,2));
+    else res = fs.writeFileSync(path, arr);
+}catch(err){console.log(err.message+'\nfrom WriteFileJson()');}
+}
+//====================================================================
 //запускаем функции
 (async () => 
 {
