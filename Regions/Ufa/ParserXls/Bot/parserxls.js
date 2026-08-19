@@ -1118,8 +1118,7 @@ try{let res;
 			} catch (err) {console.log('Ошибка чтения groups_diff.json:', err.message);}
 		}
 		history[time] = diff;
-		const err = WriteFileJson(currentDir+'/groups_diff.json', history);
-		if(!!err) {console.log(err);}
+		await WriteFileJson(currentDir+'/groups_diff.json', history);
 		//теперь передадим в чаты сообщения об изменениях
 		if(bot)
 		{
