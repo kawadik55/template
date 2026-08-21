@@ -899,55 +899,12 @@ function findDifferences(oldList, newList) {
         }
       }
       
-      // ШАГ 2: Работаем с оставшимися
-      for (let i = oldCopy.length - 1; i >= 0; i--) {
-        const old = oldCopy[i];
-        const foundIdx = newCopy.findIndex(n => n.day === old.day && n.time === old.time);
-        
-        if (foundIdx === -1) {
-          const sameDayIdx = newCopy.findIndex(n => n.day === old.day);
-          
-          if (sameDayIdx !== -1) {
-            const neu = newCopy[sameDayIdx];
-            const diffFields = {};
-            let hasChanges = false;
-            
-            for (const key of Object.keys(neu)) {
-              if (exclude.includes(key)) continue;
-              if (JSON.stringify(old[key]) !== JSON.stringify(neu[key])) {
-                diffFields[key] = neu[key];
-                hasChanges = true;
-              }
-            }
-            
-            if (hasChanges) {
-              changes.push({ old: old, new: diffFields });
-            }
-            newCopy.splice(sameDayIdx, 1);
-          } else {
-            changes.push({ old: old, new: null });
-          }
-        } else {
-          const neu = newCopy[foundIdx];
-          const diffFields = {};
-          let hasChanges = false;
-          
-          for (const key of Object.keys(neu)) {
-            if (exclude.includes(key)) continue;
-            if (JSON.stringify(old[key]) !== JSON.stringify(neu[key])) {
-              diffFields[key] = neu[key];
-              hasChanges = true;
-            }
-          }
-          
-          if (hasChanges) {
-            changes.push({ old: old, new: diffFields });
-          }
-          newCopy.splice(foundIdx, 1);
-        }
+      // ШАГ 2: Остатки в oldCopy — удаленные
+      for (const old of oldCopy) {
+        changes.push({ old: old, new: null });
       }
       
-      // ШАГ 3: Новые собрания
+      // ШАГ 3: Остатки в newCopy — новые
       for (const neu of newCopy) {
         changes.push({ old: null, new: neu });
       }
