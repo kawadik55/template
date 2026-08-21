@@ -865,27 +865,54 @@ function findDifferences(oldList, newList) {
       const oldMeetings = oldGroups[name] || [];
       const newMeetings = newGroups[name] || [];
       
-      // Клонируем, чтобы не портить исходные массивы
-      const newCopy = [...newMeetings];
+      const oldCopy = oldMeetings.map(m => ({ ...m }));
+      const newCopy = newMeetings.map(m => ({ ...m }));
       const changes = [];
       
-      // 1. Ищем по ДНЮ + ВРЕМЯ (основные идентификаторы)
-      for (let old of oldMeetings) {
-        // Ищем в новом собрание с таким же днем и временем
+      // ШАГ 1: Удаляем точные совпадения
+      for (let i = oldCopy.length - 1; i >= 0; i--) {
+        const old = oldCopy[i];
+        let foundIdx = -1;
+        
+        for (let j = 0; j < newCopy.length; j++) {
+          const neu = newCopy[j];
+          const allKeys = new Set([...Object.keys(old), ...Object.keys(neu)]);
+          let isMatch = true;
+          
+          for (const key of allKeys) {
+            if (exclude.includes(key)) continue;
+            if (JSON.stringify(old[key]) !== JSON.stringify(neu[key])) {
+              isMatch = false;
+              break;
+            }
+          }
+          
+          if (isMatch) {
+            foundIdx = j;
+            break;
+          }
+        }
+        
+        if (foundIdx !== -1) {
+          oldCopy.splice(i, 1);
+          newCopy.splice(foundIdx, 1);
+        }
+      }
+      
+      // ШАГ 2: Работаем с оставшимися
+      for (let i = oldCopy.length - 1; i >= 0; i--) {
+        const old = oldCopy[i];
         const foundIdx = newCopy.findIndex(n => n.day === old.day && n.time === old.time);
         
         if (foundIdx === -1) {
-          // Не найдено по дню+времени — возможно время изменилось
-          // Ищем по дню (если день совпадает, а время нет — значит время изменилось)
           const sameDayIdx = newCopy.findIndex(n => n.day === old.day);
           
           if (sameDayIdx !== -1) {
-            // Нашли по дню — значит изменилось время (и возможно что-то еще)
             const neu = newCopy[sameDayIdx];
             const diffFields = {};
             let hasChanges = false;
             
-            for (let key of Object.keys(neu)) {
+            for (const key of Object.keys(neu)) {
               if (exclude.includes(key)) continue;
               if (JSON.stringify(old[key]) !== JSON.stringify(neu[key])) {
                 diffFields[key] = neu[key];
@@ -896,18 +923,16 @@ function findDifferences(oldList, newList) {
             if (hasChanges) {
               changes.push({ old: old, new: diffFields });
             }
-            newCopy.splice(sameDayIdx, 1); // убираем обработанное
+            newCopy.splice(sameDayIdx, 1);
           } else {
-            // Не найдено по дню — значит собрание удалено
             changes.push({ old: old, new: null });
           }
         } else {
-          // Нашли точное совпадение по дню+времени
           const neu = newCopy[foundIdx];
           const diffFields = {};
           let hasChanges = false;
           
-          for (let key of Object.keys(neu)) {
+          for (const key of Object.keys(neu)) {
             if (exclude.includes(key)) continue;
             if (JSON.stringify(old[key]) !== JSON.stringify(neu[key])) {
               diffFields[key] = neu[key];
@@ -918,12 +943,12 @@ function findDifferences(oldList, newList) {
           if (hasChanges) {
             changes.push({ old: old, new: diffFields });
           }
-          newCopy.splice(foundIdx, 1); // убираем обработанное
+          newCopy.splice(foundIdx, 1);
         }
       }
       
-      // 2. Что осталось в newCopy — это новые собрания (которых не было в старом)
-      for (let neu of newCopy) {
+      // ШАГ 3: Новые собрания
+      for (const neu of newCopy) {
         changes.push({ old: null, new: neu });
       }
       
