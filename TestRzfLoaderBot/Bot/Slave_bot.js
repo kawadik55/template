@@ -1864,9 +1864,12 @@ class SlaveBot {
 						// Чат существует - ничего не делаем
 					} catch (err) {
 						// Проверяем, не ошибка ли это сети
-						if (err.message === 'Timeout' || err.message.includes('502') || 
-							err.message.includes('Bad Gateway') || err.message.includes('ETIMEDOUT') ||
-							err.message.includes('ECONNRESET')) 
+						const errors = ['timeout', '502', 'bad gateway', 'etimedout', 'econnreset', 
+										'econnrefused', 'enotfound', 'eai_again', 'ehostunreach', 
+										'enetunreach', 'epipe', 'econnaborted', 'socket hang up',
+										'503', 'service unavailable'];
+						const msg = (err.message || err.response?.message || '').toLowerCase();
+						if (errors.some(e => msg.includes(e)))
 						{
 							// Это ошибка сети - прерываем очистку
 							this.sendErrorMessage('Обнаружена проблема со связью, очистка прервана');

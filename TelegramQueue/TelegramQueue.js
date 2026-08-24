@@ -94,33 +94,20 @@ class TelegramQueue extends EventEmitter {
             'ETIMEDOUT', 'ECONNRESET', 'ENOTFOUND', 
             'EAI_AGAIN', 'ECONNREFUSED', 'ENETUNREACH'
         ];
+		if (networkErrors.some(netError => error.code === netError)) {
+			return true;
+		}
         
         // Проверка EFATAL с сетевыми проблемами
-        if (error.code === 'EFATAL') {
-            const errorMessage = (error.message || '').toLowerCase();
-            const networkMessages = [
-				'socket hang up',      // Разрыв соединения
-				'getaddrinfo',         // DNS ошибка
-				'connect e',           // Ошибка подключения
-				'econnreset',          // Сброс соединения
-				'etimedout',           // Таймаут
-				'enotfound',           // Хост не найден
-				'eai_again',           // DNS временная ошибка
-				'econnrefused',        // Соединение отклонено
-				'enetunreach',         // Сеть недоступна
-				'timeout',             // Таймаут
-				'network',             // Сетевая проблема
-				'tls',                 // TLS/SSL ошибка (проблемы с соединением)
-				'certificate'          // Ошибка сертификата (сетевая проблема)
-            ];
-            return networkMessages.some(msg => errorMessage.includes(msg));
-        }
-        
-        return networkErrors.some(netError => 
-            error.code === netError || 
-            error.message?.includes(netError) ||
-            error.toString().includes(netError)
-        );
+        const errorMessage = (error.message || error.toString() || '').toLowerCase();
+		const networkMessages = [
+			'socket hang up', 'getaddrinfo', 'connect e',
+			'econnreset', 'etimedout', 'enotfound', 'eai_again',
+			'econnrefused', 'enetunreach', 'timeout', 'network',
+			'tls', 'certificate', 'bad gateway', '502', '503', 'gateway'
+		];
+		
+		return networkMessages.some(msg => errorMessage.includes(msg));
     }
 	//====================================================================
     /**
