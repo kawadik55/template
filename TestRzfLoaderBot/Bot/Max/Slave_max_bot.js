@@ -719,6 +719,7 @@ class SlaveMaxBot {
 		
 		this.bot.on('bot_removed', async (ctx) => {
 			try {
+				console.log('bot_removed = '+JSON.stringify(ctx,null,2));
 				const chatId = ctx.update?.chat_id;
 				if (!chatId) return;
 				
