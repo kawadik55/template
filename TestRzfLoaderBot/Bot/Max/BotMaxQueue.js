@@ -1,6 +1,7 @@
 // очередь для сообщений в Макс
 // под библиотеку @maxhub/max-bot-api
 const { EventEmitter } = require('events');
+const fs = require('fs');
 
 class BotMaxQueue extends EventEmitter {
     constructor(bot, options = {}) {
@@ -130,11 +131,11 @@ class BotMaxQueue extends EventEmitter {
 	//====================================================================
     /**
      * Проверка соединения
-     * Для max-bot-api используем getMe() — он доступен
+     * Для max-bot-api используем getMyInfo() — он доступен
      */
     async _checkConnection() {
         try {
-            await this.bot.getMe();
+            await this.bot.getMyInfo();
             if (!this.isConnected) {
                 this.isConnected = true;
                 this.consecutiveErrors = 0;
@@ -272,14 +273,13 @@ class BotMaxQueue extends EventEmitter {
 		catch (error) 
 		{	attempts++;
             // В max-bot-api ошибки могут быть в разных форматах
-            const errorBody = error.response?.body || error.body || {};
-            const isRateLimit = errorBody.error_code === 429 || 
-				(errorBody.description || error.message || '').toLowerCase().includes('too many requests') ||
-                (error.statusCode === 429);
+            const errorBody = error.message || '';
+            const isRateLimit = errorBody.includes('too many requests') || errorBody.includes('rate limit') || 
+								errorBody.includes('429');
 			this.emit('error_response', error.message);//отдаем строку в эмит
 			if (isRateLimit && attempts < maxAttempts)
 			{
-                const retryAfter = errorBody.parameters?.retry_after || error.parameters?.retry_after || 5;
+                const retryAfter = 5;
                 console.log(`429. Ждем ${retryAfter}с (${attempts}/${maxAttempts})`);
 				await this._delay(retryAfter * 1000);
                 continue;
@@ -350,8 +350,8 @@ class BotMaxQueue extends EventEmitter {
 			new Promise(resolve => setTimeout(()=>{clearInterval(checkInterval); resolve();}, 10000)) // Таймаут 10 сек
 		]);
 		// Снимаем все обработчики с бота
-        this.bot.removeAllListeners('error');
-        this.bot.removeAllListeners('message_callback');
+        //this.bot.removeAllListeners('error');
+        //this.bot.removeAllListeners('message_callback');
 		this.removeAllListeners();
 		clearTimeout(this.connectTimer);
 		resolve();
@@ -403,8 +403,7 @@ class BotMaxQueue extends EventEmitter {
 	//====================================================================
 	async _sendText(bot, chatId, data, username)
 	{	if (bot == null || bot==='default') bot = this.bot;
-		if(Number(chatId) > 0) return await bot.api.sendMessageToUser(chatId, data.text, {elements: data.elements || [] });
-		else return await bot.api.sendMessageToChat(chatId, data.text, {elements: data.elements || [] });
+		return await bot.api.sendMessageToChat(chatId, data.text, {elements: data.elements || [] });
 	}
 	//====================================================================
 	async _sendPhoto(bot, chatId, data, username)
@@ -412,9 +411,8 @@ class BotMaxQueue extends EventEmitter {
 		if (username == null || username==='undefined') username = chatId;
 		if (!data.path || !fs.existsSync(data.path)) throw new Error('Файл для '+username+' не найден: ' + data.path);
 		const attach = await bot.api.uploadImage({ source: data.path });//загружаем файл
-		const obj = {text: data.text || '', attachments: [attach.toJson()], elements: data.elements || []};
-		if (Number(chatId) > 0) return await bot.api.sendMessageToUser(chatId, obj);
-		else return await bot.api.sendMessageToChat(chatId, obj);
+		const obj = {attachments: [attach.toJson()], elements: data.elements || []};
+		return await bot.api.sendMessageToChat(chatId, data.text || '', obj);
 	}
 	//====================================================================
 	async _sendVideo(bot, chatId, data, username)
@@ -422,9 +420,8 @@ class BotMaxQueue extends EventEmitter {
 		if (username == null || username==='undefined') username = chatId;
 		if (!data.path || !fs.existsSync(data.path)) throw new Error('Файл для '+username+' не найден: ' + data.path);
 		const attach = await bot.api.uploadVideo({ source: data.path });//загружаем файл
-		const obj = {text: data.text || '', attachments: [attach.toJson()], elements: data.elements || []};
-		if (Number(chatId) > 0) return await bot.api.sendMessageToUser(chatId, obj);
-		else return await bot.api.sendMessageToChat(chatId, obj);
+		const obj = {attachments: [attach.toJson()], elements: data.elements || []};
+		return await bot.api.sendMessageToChat(chatId, data.text || '', obj);
 	}
 	//====================================================================
 	async _sendAudio(bot, chatId, data, username)
@@ -432,9 +429,8 @@ class BotMaxQueue extends EventEmitter {
 		if (username == null || username==='undefined') username = chatId;
 		if (!data.path || !fs.existsSync(data.path)) throw new Error('Файл для '+username+' не найден: ' + data.path);
 		const attach = await bot.api.uploadAudio({ source: data.path });//загружаем файл
-		const obj = {text: data.text || '', attachments: [attach.toJson()], elements: data.elements || []};
-		if (Number(chatId) > 0) return await bot.api.sendMessageToUser(chatId, obj);
-		else return await bot.api.sendMessageToChat(chatId, obj);
+		const obj = {attachments: [attach.toJson()], elements: data.elements || []};
+		return await bot.api.sendMessageToChat(chatId, data.text || '', obj);
 	}
 	//====================================================================
 	async _sendFile(bot, chatId, data, username)
@@ -442,9 +438,8 @@ class BotMaxQueue extends EventEmitter {
 		if (username == null || username==='undefined') username = chatId;
 		if (!data.path || !fs.existsSync(data.path)) throw new Error('Файл для '+username+' не найден: ' + data.path);
 		const attach = await bot.api.uploadFile({ source: data.path });//загружаем файл
-		const obj = {text: data.text || '', attachments: [attach.toJson()], elements: data.elements || []};
-		if (Number(chatId) > 0) return await bot.api.sendMessageToUser(chatId, obj);
-		else return await bot.api.sendMessageToChat(chatId, obj);
+		const obj = {attachments: [attach.toJson()], elements: data.elements || []};
+		return await bot.api.sendMessageToChat(chatId, data.text || '', obj);
 	}
 	//====================================================================
 	async _sendAlbum(bot, chatId, data, username)
@@ -465,18 +460,16 @@ class BotMaxQueue extends EventEmitter {
 			}
 		}
 		if (attachments.length === 0) throw new Error('Нет валидных файлов альбома для '+username);
-		const obj = {text: data.text || '', attachments: attachments, elements: data.elements || []};
-		if (Number(chatId) > 0) return await bot.api.sendMessageToUser(chatId, obj);
-		else return await bot.api.sendMessageToChat(chatId, obj);
+		const obj = {attachments: attachments, elements: data.elements || []};
+		return await bot.api.sendMessageToChat(chatId, data.text || '', obj);
 	}
 	//====================================================================
 	async _sendSticker(bot, chatId, data, username)
 	{	if (bot == null || bot==='default') bot = this.bot;
 		if (username == null || username==='undefined') username = chatId;
 		if (!data.code) throw new Error('Код стикера для '+username+' не найден: ' + data.code);
-		const obj = {text: '', attachments: [{type: 'sticker', code: data.code}]};
-		if (Number(chatId) > 0) return await bot.api.sendMessageToUser(chatId, obj);
-		else return await bot.api.sendMessageToChat(chatId, obj);
+		const obj = {attachments: [{type: 'sticker', code: data.code}]};
+		return await bot.api.sendMessageToChat(chatId, '', obj);
 	}
 	//====================================================================
 }

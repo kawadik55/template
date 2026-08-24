@@ -1,4 +1,5 @@
-﻿process.env["NTBA_FIX_350"] = 1;
+﻿process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+process.env["NTBA_FIX_350"] = 1;
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment-timezone');
@@ -8,7 +9,7 @@ const TelegramQueue = require('./TelegramQueue');
 const SlaveBot = require('./Slave_bot');
 const utils = require('./Max/utils');
 const WebMaxQueue = require('./Max/WebMaxQueue');
-const { MaxBot } = require('@maxhub/max-bot-api');
+const { Bot } = require('@maxhub/max-bot-api');
 const BotMaxQueue = require('./Max/BotMaxQueue');
 const SlaveMaxBot = require('./Max/Slave_max_bot');
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
@@ -75,7 +76,7 @@ area = config.area; timePablic = config.timePablic; utcOffset = Number(config.ut
 const QUEUELIMIT = config.queuelimit ? Number(config.queuelimit) : 200;//ограничение макс размера очереди
 if(!config.queuelimit) {config.queuelimit = QUEUELIMIT; WriteFileJson(currentDir+"/config.json",config);}
 if(!Object.hasOwn(config,'slavebot')) {config.slavebot = false; WriteFileJson(currentDir+"/config.json",config);}
-if(!Object.hasOwn(config,'slavemaxbot')) {config.slavemaxbot = false; WriteFileJson(currentDir+"/config.json",config);}
+//if(!Object.hasOwn(config,'slavemaxbot')) {config.slavemaxbot = false; WriteFileJson(currentDir+"/config.json",config);}
 if(!!config.hostingImg) hostingImg = config.hostingImg;
 if(!!config.pathHostingImg) PathToHostImg = currentDir+config.pathHostingImg;
 if(!!config.hostname) hostname = config.hostname;
@@ -233,14 +234,15 @@ const queue = new TelegramQueue(NewsBot, {	//'default' бот
     messagesPerSecond: 15,
 	maxConsecutiveErrors: 5
 });
+
 //создадим очередь Web Max
 let queueWebMax = null;
 if(config.useWebMax) queueWebMax = new WebMaxQueue(tokenWebMax, currentDir, SESSION_NAME);
+
 //создадим очередь Bot Max
 let queueBotMax = null;
-let MaxNewsBot = null;
-if(config.useBotMax && tokenBotMax)
-{	MaxNewsBot = new MaxBot(tokenBotMax);//этот без поллинга
+if(config.useBotMax===true && tokenBotMax)
+{	const MaxNewsBot = new Bot(tokenBotMax);//этот без поллинга
 	queueBotMax = new BotMaxQueue(MaxNewsBot, {	//'default' бот
 		maxRetries: 5,
 		retryDelay: 10000,
@@ -248,6 +250,7 @@ if(config.useBotMax && tokenBotMax)
 		maxConsecutiveErrors: 5
 	});
 }
+
 //---------------------------------------------------
 let UserList=new Object();//массив допущенных
 let BlackList=new Object();//массив забаненных
@@ -342,28 +345,29 @@ try{slaveBot = (config.slavebot===true) ? new SlaveBot(
 }catch(err) {WriteLogFile('Ошибка создания slaveBot: '+err);}
 //====================================================================
 //Функция-колбэк для уведомлений об изменениях из Макс слэйв бота
+let slaveMaxBot = null;
 const onConfigMaxUpdate = (update) => {
     switch(update.event) {
         case 'chat_configured':
                 WriteLogFile(`МАКС чат ${update.data.chatTitle} настроен на таймзону ${update.data.timezone}`);
-                sortObjectByKeys(chat_news);
-				WriteFileJson(currentDir+"/chatId_maxbot.json",chat_news);
+                sortObjectByKeys(chat_news_maxbot);
+				WriteFileJson(currentDir+"/chatId_maxbot.json",chat_news_maxbot);
 				break;
                 
         case 'chat_removed':
                 WriteLogFile('МАКС чат '+update.data.chatName+'('+update.data.chatId+') удален из рассылки');
-                sortObjectByKeys(chat_news);
-				WriteFileJson(currentDir+"/chatId_maxbot.json",chat_news);
+                sortObjectByKeys(chat_news_maxbot);
+				WriteFileJson(currentDir+"/chatId_maxbot.json",chat_news_maxbot);
 				break;
                 
         case 'cleanup_completed':
                 WriteLogFile(`Очищено ${update.data.cleanedCount} несуществующих МАКС чатов`);
-                sortObjectByKeys(chat_news);
-				WriteFileJson(currentDir+"/chatId_maxbot.json",chat_news);
+                sortObjectByKeys(chat_news_maxbot);
+				WriteFileJson(currentDir+"/chatId_maxbot.json",chat_news_maxbot);
 				break;
     
-		case 'error_message':
-                WriteLogFile(`from SlaveMaxBot: ${update.data.message}`);
+		case 'common_message':
+                WriteLogFile('from SlaveMaxBot: '+update.data.message);
 				break;
 		case 'find_town':
                 const { requestId, data } = update.data;
@@ -374,15 +378,16 @@ const onConfigMaxUpdate = (update) => {
 };
 
 //Создаем экземпляр SlaveMaxBot, если разрешено
-let slaveMaxBot;
-try{slaveMaxBot = (config.slavemaxbot===true) ? new SlaveMaxBot(
-		tokenBotMax, 			// Токен макс слэйв бота
-		onConfigMaxUpdate,      // Колбэк для уведомлений
-		chat_news_maxbot,       // Ссылка на список чатов
-		config.area,			// Название местности
-		config.fromES			// Делать ли настройку на город
-	) : null;
-}catch(err) {WriteLogFile('Ошибка создания slaveMaxBot: '+err);}
+if(config.useBotMax===true && tokenBotMax)
+{	try{slaveMaxBot = new SlaveMaxBot(
+			tokenBotMax, 			// Токен макс слэйв бота
+			onConfigMaxUpdate,      // Колбэк для уведомлений
+			chat_news_maxbot,       // Ссылка на список чатов
+			config.area,			// Название местности
+			config.fromES			// Делать ли настройку на город
+		);
+	}catch(err) {WriteLogFile('Ошибка создания slaveMaxBot: '+(err.message||err));}
+}
 //====================================================================
 if(!timeCron)//всегда выполняется
 {	if(moment(timePablic,'HH:mm:ss').isValid()==false)
@@ -399,14 +404,6 @@ var Cron1 = cron.schedule(timeCron, async function()
 {	if(rassilka)//если рассылка включена
 	{	cronIsRunning = true;
 	  try{
-		//WriteLogFile('Начинаем стандартную Рассылку:');
-		
-		//обновим список чатов ТГ
-		/*try{
-			const newData = require(currentDir+"/chatId.json");
-			Object.keys(chat_news).forEach(key => delete chat_news[key]);
-			Object.keys(newData).forEach(key => { chat_news[key] = newData[key]; });
-		}catch(e){}*/
 		if(typeof chat_news === 'object')
 		{	let num = Object.keys(chat_news);
 			if(num.length>0)
@@ -419,12 +416,7 @@ var Cron1 = cron.schedule(timeCron, async function()
 				}
 			}
 		}
-		//обновим список чатов Web Max
-		/*try{
-			const newData = require(currentDir+"/chatId_max.json");
-			Object.keys(chat_news_maxweb).forEach(key => delete chat_news_maxweb[key]);
-			Object.keys(newData).forEach(key => { chat_news_maxweb[key] = newData[key]; });
-		}catch(e){}*/
+		//список чатов Web Max
 		if(typeof chat_news_maxweb === 'object')
 		{	let num = Object.keys(chat_news_maxweb);
 			if(num.length>0)
@@ -3296,9 +3288,10 @@ catch(err){
 //====================================================================
 //подписка на выход из скрипта
 [`SIGINT`, `uncaughtException`, `SIGTERM`].forEach((event) => 
-{	process.on(event, async ()=>
+{	process.on(event, async (...args)=>
 	{	fs.writeFileSync(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2));
 		clearInterval(timer);
+		if(event==='uncaughtException') console.error('Ошибка:', args[0]);
 		//сохраняем ТГ чаты
 		sortObjectByKeys(chat_news);
 		WriteFileJson(currentDir+"/chatId.json", chat_news);
@@ -3866,7 +3859,7 @@ try{
 		data.elements = utils.EntitiesToMax(obj.entities || []);
 		//соберем все чаты в новый массив
 		let count_chats = 0;
-		const chats = structuredClone(chatList[offset]) || [];	
+		const chats = structuredClone(chatList[offset]) || [];
 		for(let i=0;i<chats.length;i++)
 		{
 			if(!chats[i].News) continue;//не выбран News в доставке
@@ -3875,6 +3868,7 @@ try{
 			if(!chatId) continue;//пропускаем цикл, если нет chatId
 			//отправляем в очередь
 			if(data && data.text && data.text !== '') await addToQueueMax('sendText',chatId,name,data,napr);
+			count_chats++;
 		}
 		await WriteLogFile('Всего чатов '+napr+' Макс = '+count_chats+' = ОК');
 	}
@@ -4130,6 +4124,7 @@ try{
 			//отправляем в очередь
 			if(data && (data.path || (data.paths && data.paths.length > 0))) {
 				await addToQueueMax(maxtype, chatId, name, data, napr);
+				count_chats++;
 			}
 		}
 		await WriteLogFile('Всего чатов '+napr+' Макс = '+count_chats);
@@ -5967,6 +5962,7 @@ if(queueBotMax)
 	queueBotMax.on('connected', () => {WriteLogFile('=> bot Max connected');});
 	queueBotMax.on('disconnected', (error) => {WriteLogFile((error.message||error)+'; => bot Max disconnected');});
 	queueBotMax.on('error_response', (error) => {WriteLogFile('error_response from queueBotMax => '+(error.message||error));});
+	//queueBotMax.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь Max: ${item.id}`);});
 }
 //====================================================================
 //возвращает таймстамп юзера в формате moment()
@@ -6092,7 +6088,7 @@ try {
 			data: data
 		});
 		const typestr = type.replace('send','');
-		await WriteLogFile(typestr+' '+res+' поставили в Web очередь для чата Макс: '+name);
+		//await WriteLogFile(typestr+' '+res+' поставили в Web очередь для чата Макс: '+name);
 	}
 	else if(queueBotMax && que==='bot')
 	{	let res = await queueBotMax.addToQueue(
@@ -6103,7 +6099,7 @@ try {
 			bot: bot
 		});
 		const typestr = type.replace('send','');
-		await WriteLogFile(typestr+' '+res+' поставили в Bot очередь для чата Макс: '+name);
+		//await WriteLogFile(typestr+' '+res+' поставили в Bot очередь для чата Макс: '+name);
 	}
 } catch (err) {await WriteLogFile('Ошибка постановки  '+type+' для '+chatId+' в очередь чата Макс: '+name+': '+err);}
 }

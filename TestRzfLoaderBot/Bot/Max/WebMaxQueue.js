@@ -234,7 +234,7 @@ class WebMaxQueue extends EventEmitter {
     destroy() {
         return new Promise(async (resolve) => {
             this.isActive = false;
-            console.log('Выполняем destroy очереди...');
+            console.log('Выполняем destroy WebMax очереди...');
             // Ждём завершения текущей обработки
             while (this.isProcessing) {
                 await this._delay(50);

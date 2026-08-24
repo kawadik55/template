@@ -1,5 +1,4 @@
 const TelegramBot = require('node-telegram-bot-api');
-const moment = require('moment-timezone');
 
 class SlaveBot {
     constructor(token, onConfigUpdate, mainChatNewsRef, mainArea, needTown) {
@@ -77,7 +76,7 @@ class SlaveBot {
 				const botInfo = await this.bot.getMe();
 				this.botName = botInfo.first_name || '';
 				this.botUsername = botInfo.username || '';
-				this.sendErrorMessage('Имя слэйв-бота установлено: '+this.botName);
+				this.sendErrorMessage('Имя слэйв-бота ТГ установлено: '+this.botName);
 			} catch (err) {
 				this.sendErrorMessage('Ошибка получения имени слэйв-бота: ' + (err.message||err));
 			}
