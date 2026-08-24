@@ -2192,7 +2192,7 @@ try{
 						}
 					}
 					sortObjectByKeys(obj);//сортируем по смещениям
-					str += '*Кол-во подписчиков МАКС* = '+allMembers+'\n';
+					str += '*Кол-во подписчиков МАКС web* = '+allMembers+'\n';
 					if(allchannels>0) str += '*Каналы МАКС*  = '+allchannels+' ('+allchannelsMembers+')\n';
 					if(allgroups>0)   str += '*Группы МАКС*  = '+allgroups+' ('+allgroupsMembers+')\n';
 					if(allusers>0)   str +=  '*Приватные чаты МАКС* = '+allusers+'\n';
@@ -2208,7 +2208,66 @@ try{
 				}
 				//для Bot Макса
 				if(offsetMAXbot.length > 0 && queueBotMax)
-				{	
+				{	const bot = new Bot(tokenBotMax);//без поллинга
+					const botInfo = await bot.api.getMyInfo();//возвращает объект
+					str += '\n';
+					str += '🔷*'+(botInfo.first_name||'MaxBot')+'*🔷\n\n';
+					str += 'Статистика на сегодня:\n';
+					let obj = {};
+					let allgroups = 0, allMembers = 0, allchannels = 0, allusers = 0;
+					let allchannelsMembers = 0, allgroupsMembers = 0, unknownchats = 0;
+					let offset = offsetMAXbot;
+					for(let i=0;i<offset.length;i++)
+					{	let chats = chat_news_maxbot[offset[i]];
+						obj[offset[i]] = {}; obj[offset[i]].groups = 0; obj[offset[i]].users = 0;
+						obj[offset[i]].groupMembers = 0; obj[offset[i]].channels = 0; obj[offset[i]].channelMembers = 0;
+						for(let j=0;j<chats.length;j++)
+						{	let chatId = chats[j].chatId.toString();
+							if(chatId.startsWith('-'))
+							{	let chatInfo;
+								let membersCount;
+								try{while(!getMessageCount()) await sleep(10);//получаем разрешение.
+									chatInfo = await bot.api.getChat(chatId);
+									membersCount = chatInfo.participants_count;
+								}catch(err){console.log(err);}
+								
+								if(chatInfo && chatInfo.type==='channel')
+								{	obj[offset[i]].channels++;
+									allchannels++;
+									if(membersCount>0)
+									{	obj[offset[i]].channelMembers += membersCount;
+										allMembers += membersCount;
+										allchannelsMembers += membersCount;
+									}
+								}
+								else if(chatInfo && chatInfo.type==='chat')
+								{	allgroups++;
+									obj[offset[i]].groups++;
+									if(membersCount>0)
+									{	obj[offset[i]].groupMembers += membersCount;
+										allMembers += membersCount;
+										allgroupsMembers += membersCount;
+									}
+								}
+								else unknownchats++;
+							}
+							else {allMembers++; allusers++; obj[offset[i]].users++;}//это приватные чаты
+						}
+					}
+					sortObjectByKeys(obj);//сортируем по смещениям
+					str += '*Кол-во подписчиков МАКС бота* = '+allMembers+'\n';
+					if(allchannels>0) str += '*Каналы МАКС*  = '+allchannels+' ('+allchannelsMembers+')\n';
+					if(allgroups>0)   str += '*Группы МАКС*  = '+allgroups+' ('+allgroupsMembers+')\n';
+					if(allusers>0)   str +=  '*Приватные чаты МАКС* = '+allusers+'\n';
+					if(unknownchats>0) str +=  '*unknown МАКС* = '+unknownchats+'\n';
+					str += '\n';
+					for(const key in obj)
+					{	const zoneName = 'Зона '+(zones[key] || `UTC+${parseInt(key)/60}`);
+						str += '*'+zoneName+':*\n';
+						if(obj[key].channels>0) str += '• Каналы = *'+obj[key].channels+' ('+obj[key].channelMembers+')*\n';
+						if(obj[key].groups>0)   str += '• Группы = *'+obj[key].groups+' ('+obj[key].groupMembers+')*\n';
+						if(obj[key].users>0)    str += '• Приватные чаты = *'+obj[key].users+'*\n';
+					}
 				}
                 
 				if(offsetTG.length==0 && offsetMAX.length==0) str += '*Упс... На сегодня ничего нет!*\n';
