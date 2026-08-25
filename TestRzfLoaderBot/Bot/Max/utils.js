@@ -52,11 +52,11 @@ function parseMarkdownToElements(text)
                 length: content.length
             };
             
-            if (type === 'LINK' && url) {
+            if ((type==='LINK' || type==='link') && url) {
                 element.attributes = { url: url };
             }
 			
-			if (type === 'USER_MENTION' && userId) {
+			if ((type==='USER_MENTION' || type==='user_mention') && userId) {
 				element.entityId = userId;
 			}
             
@@ -107,6 +107,18 @@ function parseHtmlToMarkdown(htmlText)
 	text = removeHtmlTags(text);
     
     return text;
+}
+//====================================================================
+function parseMarkdownToHtml(text) {
+    let html = text;
+    
+   // 1. Преобразуем Markdown в HTML
+    html = html.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+    html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+    //html = html.replace(/\n/g, '<br>');
+    
+    return html;
 }
 //====================================================================
 function removeHtmlTags(text) {
@@ -165,6 +177,66 @@ function EntitiesToMax(entities) {
     }
     
     return elements;
+}
+//====================================================================
+function EntitiesToHtml(text, entities) {
+    if (!entities || entities.length === 0) return text;
+    
+    // Сортируем сущности по позиции от конца к началу (чтобы не сбивать индексы)
+    const sorted = [...entities].sort((a, b) => b.offset - a.offset);
+    let htmlText = text;
+    
+    for (const entity of sorted) {
+        const from = entity.offset;
+        const to = from + entity.length;
+        
+        // Извлекаем фрагмент текста
+        const fragment = htmlText.substring(from, to);
+        
+        // Определяем HTML-тег для MAX
+        let openTag = '';
+        let closeTag = '';
+        
+        switch (entity.type) {
+            case 'bold':
+                openTag = '<strong>';
+                closeTag = '</strong>';
+                break;
+            case 'italic':
+                openTag = '<em>';
+                closeTag = '</em>';
+                break;
+            case 'strikethrough':
+                openTag = '<s>';
+                closeTag = '</s>';
+                break;
+            case 'underline':
+                openTag = '<u>';
+                closeTag = '</u>';
+                break;
+            case 'text_link':
+                openTag = `<a href="${entity.url}">`;
+                closeTag = '</a>';
+                break;
+            case 'code':
+                openTag = '<code>';
+                closeTag = '</code>';
+                break;
+            case 'pre':
+                openTag = '<pre>';
+                closeTag = '</pre>';
+                break;
+            default:
+                continue;
+        }
+        
+        const replacement = openTag + fragment + closeTag;
+        
+        // Заменяем фрагмент на отформатированный
+        htmlText = htmlText.substring(0, from) + replacement + htmlText.substring(to);
+    }
+    
+    return htmlText;
 }
 //====================================================================
 //   для MAX
@@ -249,8 +321,10 @@ function get_srok(date, COMMUNITY_TEXT = 'Чистого Времени')
 module.exports = {
     parseMarkdownToElements,
 	parseHtmlToMarkdown,
+	parseMarkdownToHtml,
 	removeHtmlTags,
 	EntitiesToMax,
+	EntitiesToHtml,
 	mentionUser,
 	get_srok
 };

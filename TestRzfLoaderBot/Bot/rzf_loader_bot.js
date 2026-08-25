@@ -3914,8 +3914,14 @@ try{
 		WriteLogFile('text "Сегодня" в зону '+offset+' '+napr+' Макс => день='+day+'; дата='+date+timestr);
 		//готовим текст
 		let data = {};
-		data.text = obj.text;
-		data.elements = utils.EntitiesToMax(obj.entities || []);
+		if(napr==='web') 
+		{	data.text = obj.text;
+			data.elements = utils.EntitiesToMax(obj.entities || []);
+		}
+		else
+		{	data.text = EntitiesToHtml(obj.text, obj.entities || []);
+			data.format = 'html';
+		}
 		//соберем все чаты в новый массив
 		let count_chats = 0;
 		const chats = structuredClone(chatList[offset]) || [];
@@ -4159,9 +4165,13 @@ try{
 		{	let ent = obj.caption_entities;
 			let par;
 			try{par = JSON.parse(ent);}catch(err){par = [];}
-			data.elements = utils.EntitiesToMax(par || []);//форматирование
+			if(napr==='web') data.elements = utils.EntitiesToMax(par || []);//форматирование
+			else
+			{	data.text = EntitiesToHtml(obj.text, obj.entities || []);
+				data.format = 'html';
+			}
 		}
-		else data.elements = [];
+		else if(napr==='web') data.elements = [];
 		let maxtype;
 		if(type == 'image') maxtype = 'sendPhoto';
 		else if(type == 'video') maxtype = 'sendVideo';
@@ -4941,7 +4951,12 @@ async function send_Eg_max(time)
 			if(fs.existsSync(tomorrowPath)) {refpath = tomorrowPath; refdate = '<tomorrow>';}
 		}		
 		let eg = (await fs.readFileSync(refpath)).toString();//получаем "сегодняшний" для юзера Ежик
-		let data = utils.parseMarkdownToElements(eg);//преобразуем markdown в elements
+		let data = {};
+		if(napr==='web') data = utils.parseMarkdownToElements(eg);//преобразуем markdown в elements
+		else
+		{	data.text = utils.parseMarkdownToHtml(eg);//преобразуем markdown в html
+			data.format = 'html';
+		}
 		
 		const hasTrue = chat.some(item => item.Eg === true);//есть ли разрешенные вообще
 		if(hasTrue) await WriteLogFile('Рассылка *Ежика* '+refdate+' подписчикам '+napr+' Макс '+groffset+':');
@@ -4994,15 +5009,6 @@ async function send_Raspis_standart_max(time)
 		}
 		else return;
 		
-		//преобразуем для Макса
-		let data = {};
-		if(mode==='HTML' && raspis) 
-		{	let tmp = utils.parseHtmlToMarkdown(raspis);//преобразуем html в markdown
-			data = utils.parseMarkdownToElements(tmp);//преобразуем markdown в elements
-		}
-		else if(mode==='markdown') data = utils.parseMarkdownToElements(raspis);//преобразуем markdown в elements
-		else return;
-		
 		//сначала в Web
 		if(queueWebMax)
 		{	let now = moment(time || undefined);
@@ -5028,6 +5034,26 @@ async function send_Raspis_standart_max(time)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		const hasTrue = chat.some(item => item.Raspis === true);//есть ли разрешенные вообще
+		//преобразуем для Макса
+		let data = {};
+		if(mode==='HTML' && raspis) 
+		{	if(napr==='web')
+			{	let tmp = utils.parseHtmlToMarkdown(raspis);//преобразуем html в markdown
+				data = utils.parseMarkdownToElements(tmp);//преобразуем markdown в elements
+			}
+			else
+			{	data.text = raspis;//в прямом виде html
+				data.format = 'html';
+			}
+		}
+		else if(mode==='markdown')
+		{	if(napr==='web') data = utils.parseMarkdownToElements(raspis);//преобразуем markdown в elements
+			else
+			{	data.text = utils.parseMarkdownToHtml(raspis);//преобразуем markdown в html
+				data.format = 'html';
+			}
+		}
+		else return;
 		if(hasTrue) await WriteLogFile('Рассылка *Расписания* подписчикам '+napr+' Макс '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
@@ -5114,10 +5140,22 @@ async function send_Raspis_ES_max(time)
 			//преобразуем для Макса
 			let data = {};
 			if(mode==='HTML' && raspis) 
-			{	let tmp = utils.parseHtmlToMarkdown(raspis);//преобразуем html в markdown
-				data = utils.parseMarkdownToElements(tmp);//преобразуем markdown в elements
+			{	if(napr==='web')
+				{	let tmp = utils.parseHtmlToMarkdown(raspis);//преобразуем html в markdown
+					data = utils.parseMarkdownToElements(tmp);//преобразуем markdown в elements
+				}
+				else
+				{	data.text = raspis;//в прямом виде html
+					data.format = 'html';
+				}
 			}
-			else if(mode==='markdown') data = utils.parseMarkdownToElements(raspis);//преобразуем markdown в elements
+			else if(mode==='markdown')
+			{	if(napr==='web') data = utils.parseMarkdownToElements(raspis);//преобразуем markdown в elements
+				else
+				{	data.text = utils.parseMarkdownToHtml(raspis);//преобразуем markdown в html
+					data.format = 'html';
+				}
+			}
 			else continue;
 			//let opt = getButtonUrl(mode,true);//прилепим кнопку с ботом с отключенным превью ссылок
 			//отправляем в очередь
@@ -5524,9 +5562,13 @@ async function send_Images_max(now,offset,chatList,napr)
 			{	let ent = ImagesList[key].caption_entities;
 				let par;
 				try{par = JSON.parse(ent);}catch(err){par = [];}
-				data.elements = utils.EntitiesToMax(par || []);//форматирование
+				if(napr==='web') data.elements = utils.EntitiesToMax(par || []);//форматирование
+				else
+				{	data.text = EntitiesToHtml(data.text, ImagesList[key].caption_entities || []);
+					data.format = 'html';
+				}
 			}
-			else data.elements = [];
+			else if(napr==='web') data.elements = [];
 			let maxtype;
 			if(type == 'image') maxtype = 'sendPhoto';
 			else if(type == 'video') maxtype = 'sendVideo';
@@ -5788,8 +5830,14 @@ async function send_Text_max(now,offset,chatList,napr)
 			WriteLogFile('text "'+key+'"'+' в зону '+offset+' '+napr+' Макс => день='+day+'; дата='+date+timestr);
 			//готовим текст
 			let data = {};
-			data.text = TextList[key].text;
-			data.elements = utils.EntitiesToMax(TextList[key].entities || []);
+			if(napr==='web')
+			{	data.text = TextList[key].text;
+				data.elements = utils.EntitiesToMax(TextList[key].entities || []);
+			}
+			else
+			{	data.text = EntitiesToHtml(TextList[key].text, TextList[key].entities || []);
+				data.format = 'html';
+			}
 			let count_chats = 0;
 			//по массиву чатов зоны
 			const chats = structuredClone(chatList[offset]) || [];
@@ -5964,24 +6012,8 @@ if(queueBotMax)
 	 try
 	 {	WriteLogFile('Ошибка отправки сообщения из очереди Bot Макс: '+(error.message||error)+' ('+(item.chatId||'unknown')+')');
 		// Ошибки, при которых нужно удалить чат/пользователя
-		const errorMessage = (error.message||error);
-		const chatErrors = [
-			'chat not found',
-			'user not found',
-			'bot was kicked',
-			'bot was banned',
-			'user is deactivated',
-			'bot is not a member',
-			"bot can't send messages to bots",
-			"bot can't initiate conversation",
-			'chat was deleted',
-			'not enough rights',
-			'insufficient permissions',
-			'access denied',
-			'forbidden',
-			'dialog.not.found',
-			'chat.not.found'
-		];
+		const errorMessage = (error.message||error).toLowerCase();
+		const chatErrors = ['forbidden','403','404','not found'];
 		
 		const shouldRemoveChat = chatErrors.some(err => errorMessage.toLowerCase().includes(err.toLowerCase()));
 		
@@ -6020,7 +6052,10 @@ if(queueBotMax)
 	});
 	queueBotMax.on('connected', () => {WriteLogFile('=> bot Max connected');});
 	queueBotMax.on('disconnected', (error) => {WriteLogFile((error.message||error)+'; => bot Max disconnected');});
-	queueBotMax.on('error_response', (error) => {WriteLogFile('error_response from queueBotMax => '+(error.message||error));});
+	queueBotMax.on('error_response', (error) => 
+	{	if (error && error.includes('Can\'t deserialize body')) return;
+		WriteLogFile('error_response from queueBotMax => '+(error.message||error));
+	});
 	//queueBotMax.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь Max: ${item.id}`);});
 }
 //====================================================================

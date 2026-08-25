@@ -717,10 +717,10 @@ class SlaveMaxBot {
 			}
 		});
 		
+		// Удаление из чатов и каналов и личек
 		this.bot.on('bot_removed', async (ctx) => {
 			try {
-				console.log('bot_removed = '+JSON.stringify(ctx,null,2));
-				const chatId = ctx.update?.chat_id;
+				const chatId = ctx.update?.dialog_id || ctx.update?.chat_id;
 				if (!chatId) return;
 				
 				await this.removeChatFromConfig(chatId, false);
@@ -728,6 +728,30 @@ class SlaveMaxBot {
 				
 			} catch(err) {
 				this.sendErrorMessage('Ошибка в bot_removed: ' + (err.message||err));
+			}
+		});
+		this.bot.on('dialog_removed', async (ctx) => {
+			try {
+				const chatId = ctx.update?.dialog_id || ctx.update?.chat_id;
+				if (!chatId) return;
+				
+				await this.removeChatFromConfig(chatId, false);
+				console.log(`Бот удален из диалога ${chatId}, конфиг очищен`);
+				
+			} catch(err) {
+				this.sendErrorMessage('Ошибка в dialog_removed: ' + (err.message||err));
+			}
+		});
+		this.bot.on('bot_stopped', async (ctx) => {
+			try {
+				const chatId = ctx.update?.dialog_id || ctx.update?.chat_id;
+				if (!chatId) return;
+				
+				await this.removeChatFromConfig(chatId, false);
+				console.log(`Бот остановлен ${chatId}, конфиг очищен`);
+				
+			} catch(err) {
+				this.sendErrorMessage('Ошибка в bot_stopped: ' + (err.message||err));
 			}
 		});
 

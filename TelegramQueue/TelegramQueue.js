@@ -89,25 +89,73 @@ class TelegramQueue extends EventEmitter {
     /**
      * Проверка типа ошибки (сетевая или API), возвращает true/false
      */
-    _isNetworkError(error) {
-        const networkErrors = [
-            'ETIMEDOUT', 'ECONNRESET', 'ENOTFOUND', 
-            'EAI_AGAIN', 'ECONNREFUSED', 'ENETUNREACH'
-        ];
-		if (networkErrors.some(netError => error.code === netError)) {
-			return true;
-		}
+	_isNetworkError(error) 
+	{
+        // Проверяем error.cause.code (основной источник в Node.js 18)
+        if (error.cause && error.cause.code) {
+            const code = error.cause.code;
+            if (typeof code === 'string' && code.startsWith('UND_ERR_')) {
+                return true;
+            }
+            const netCodes = ['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN', 'ENETUNREACH'];
+            if (netCodes.includes(code)) {
+                return true;
+            }
+			const httpCodes = ['429', '500', '503', '504'];
+			if (httpCodes.includes(String(code))) {
+				return true;
+			}
+        }
         
-        // Проверка EFATAL с сетевыми проблемами
-        const errorMessage = (error.message || error.toString() || '').toLowerCase();
-		const networkMessages = [
-			'socket hang up', 'getaddrinfo', 'connect e',
-			'econnreset', 'etimedout', 'enotfound', 'eai_again',
-			'econnrefused', 'enetunreach', 'timeout', 'network',
-			'tls', 'certificate', 'bad gateway', '502', '503', 'gateway'
-		];
-		
-		return networkMessages.some(msg => errorMessage.includes(msg));
+        // Проверяем error.code (если ошибка пришла напрямую)
+        if (error.code) {
+            const code = error.code;
+            if (typeof code === 'string' && code.startsWith('UND_ERR_')) {
+                return true;
+            }
+            const netCodes = ['ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN', 'ENETUNREACH'];
+            if (netCodes.includes(code)) {
+                return true;
+            }
+			const httpCodes = ['429', '500', '503', '504'];
+			if (httpCodes.includes(String(code))) {
+				return true;
+			}
+        }
+        
+        // Проверка сообщения на сетевые проблемы
+        const errorMessage = (error.message || '').toLowerCase();
+        const networkMessages = [
+			'socket hang up',      // Разрыв соединения
+			'getaddrinfo',         // DNS ошибка
+			'connect e',           // Ошибка подключения
+			'econnreset',          // Сброс соединения
+			'etimedout',           // Таймаут
+			'enotfound',           // Хост не найден
+			'eai_again',           // DNS временная ошибка
+			'econnrefused',        // Соединение отклонено
+			'enetunreach',         // Сеть недоступна
+			'timeout',             // Таймаут
+			'network',             // Сетевая проблема
+			'tls',                 // TLS/SSL ошибка
+			'certificate',         // Ошибка сертификата
+			'fetch failed',        // max-bot-api
+			'request failed',      // max-bot-api
+			'429',                 // Too Many Requests
+			'500',                 // Internal Server Error
+			'503',                 // Service Unavailable
+			'504',                 // Gateway Timeout
+			'rate limit',          // Rate limiting
+			'too many requests',   // Too Many Requests
+			'service unavailable',
+			'internal server error',
+			'gateway timeout'
+        ];
+        if (networkMessages.some(msg => errorMessage.includes(msg))) {
+            return true;
+        }
+        
+        return false;
     }
 	//====================================================================
     /**
