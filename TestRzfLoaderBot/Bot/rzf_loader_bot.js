@@ -1365,7 +1365,7 @@ try{
 		}
 		
 		//проверяем текст
-		if(!msg.text && msg.text.length > 4050)
+		if(!msg.text && msg.text.length > 4000)
 		{	sendMessage(chatId, '🤷‍♂️Сожалею, но длина текста не может превышать 4000 символов!🤷‍♂️', klava(keyboard['3']));
 			clearTempWait(chatId);
 			return;
