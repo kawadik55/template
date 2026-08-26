@@ -421,7 +421,13 @@ class BotMaxQueue extends EventEmitter {
 	//====================================================================
 	async _sendText(bot, chatId, data, username)
 	{	if (bot == null || bot==='default') bot = this.bot;
-		return await bot.api.sendMessageToChat(chatId, data.text, {format: data.format || '' });
+		let obj = {};
+		if(data.format) obj.format = data.format;
+		if (data.text.length > 4000) 
+		{	delete obj.format;
+			data.text = data.text.substring(0, 4000);
+		}
+		return await bot.api.sendMessageToChat(chatId, data.text, obj);
 	}
 	//====================================================================
 	async _sendPhoto(bot, chatId, data, username)
@@ -429,7 +435,12 @@ class BotMaxQueue extends EventEmitter {
 		if (username == null || username==='undefined') username = chatId;
 		if (!data.path || !fs.existsSync(data.path)) throw new Error('Файл для '+username+' не найден: ' + data.path);
 		const attach = await bot.api.uploadImage({ source: data.path });//загружаем файл
-		const obj = {attachments: [attach.toJson()], format: data.format || ''};
+		let obj = {attachments: [attach.toJson()]};
+		if(data.format) obj.format = data.format;
+		if (data.text.length > 4000) 
+		{	delete obj.format;
+			data.text = data.text.substring(0, 4000);
+		}
 		return await bot.api.sendMessageToChat(chatId, data.text || '', obj);
 	}
 	//====================================================================
@@ -438,7 +449,12 @@ class BotMaxQueue extends EventEmitter {
 		if (username == null || username==='undefined') username = chatId;
 		if (!data.path || !fs.existsSync(data.path)) throw new Error('Файл для '+username+' не найден: ' + data.path);
 		const attach = await bot.api.uploadVideo({ source: data.path });//загружаем файл
-		const obj = {attachments: [attach.toJson()], format: data.format || ''};
+		let obj = {attachments: [attach.toJson()]};
+		if(data.format) obj.format = data.format;
+		if (data.text.length > 4000) 
+		{	delete obj.format;
+			data.text = data.text.substring(0, 4000);
+		}
 		return await bot.api.sendMessageToChat(chatId, data.text || '', obj);
 	}
 	//====================================================================
@@ -447,7 +463,12 @@ class BotMaxQueue extends EventEmitter {
 		if (username == null || username==='undefined') username = chatId;
 		if (!data.path || !fs.existsSync(data.path)) throw new Error('Файл для '+username+' не найден: ' + data.path);
 		const attach = await bot.api.uploadAudio({ source: data.path });//загружаем файл
-		const obj = {attachments: [attach.toJson()], format: data.format || ''};
+		let obj = {attachments: [attach.toJson()]};
+		if(data.format) obj.format = data.format;
+		if (data.text.length > 4000) 
+		{	delete obj.format;
+			data.text = data.text.substring(0, 4000);
+		}
 		return await bot.api.sendMessageToChat(chatId, data.text || '', obj);
 	}
 	//====================================================================
@@ -456,7 +477,12 @@ class BotMaxQueue extends EventEmitter {
 		if (username == null || username==='undefined') username = chatId;
 		if (!data.path || !fs.existsSync(data.path)) throw new Error('Файл для '+username+' не найден: ' + data.path);
 		const attach = await bot.api.uploadFile({ source: data.path });//загружаем файл
-		const obj = {attachments: [attach.toJson()], format: data.format || ''};
+		let obj = {attachments: [attach.toJson()]};
+		if(data.format) obj.format = data.format;
+		if (data.text.length > 4000) 
+		{	delete obj.format;
+			data.text = data.text.substring(0, 4000);
+		}
 		return await bot.api.sendMessageToChat(chatId, data.text || '', obj);
 	}
 	//====================================================================
@@ -478,7 +504,12 @@ class BotMaxQueue extends EventEmitter {
 			}
 		}
 		if (attachments.length === 0) throw new Error('Нет валидных файлов альбома для '+username);
-		const obj = {attachments: attachments, format: data.format || ''};
+		let obj = {attachments: attachments};
+		if(data.format) obj.format = data.format;
+		if (data.text.length > 4000) 
+		{	delete obj.format;
+			data.text = data.text.substring(0, 4000);
+		}
 		return await bot.api.sendMessageToChat(chatId, data.text || '', obj);
 	}
 	//====================================================================

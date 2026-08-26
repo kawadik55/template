@@ -81,7 +81,7 @@ function parseMarkdownToElements(text)
 	return { text: processedText, elements: elements };
 }
 //====================================================================
-function parseHtmlToMarkdown(htmlText) 
+function parseHtmlToMarkdown(htmlText, napr='web') 
 {
     let text = htmlText;
     
@@ -90,8 +90,14 @@ function parseHtmlToMarkdown(htmlText)
     text = text.replace(/_/g, '\\_');
     
     // 2. Жирный текст: <strong>текст</strong> → *текст*
-    text = text.replace(/<strong>(.*?)<\/strong>/g, '*$1*');
-    text = text.replace(/<b>(.*?)<\/b>/g, '*$1*');
+    if(napr==='web')
+	{	text = text.replace(/<strong>(.*?)<\/strong>/g, '*$1*');
+		text = text.replace(/<b>(.*?)<\/b>/g, '*$1*');
+	}
+	else
+	{	text = text.replace(/<strong>(.*?)<\/strong>/g, '**$1**');
+		text = text.replace(/<b>(.*?)<\/b>/g, '**$1**');
+	}
     
     // 3. Курсив: <em>текст</em> → _текст_
     text = text.replace(/<em>(.*?)<\/em>/g, '_$1_');
@@ -181,6 +187,7 @@ function EntitiesToMax(entities) {
 //====================================================================
 function EntitiesToHtml(text, entities) {
     if (!entities || entities.length === 0) return text;
+	if (!text || text.length === 0) return '';
     
     // Сортируем сущности по позиции от конца к началу (чтобы не сбивать индексы)
     const sorted = [...entities].sort((a, b) => b.offset - a.offset);
@@ -237,6 +244,68 @@ function EntitiesToHtml(text, entities) {
     }
     
     return htmlText;
+}
+//====================================================================
+function EntitiesToMarkdown(text, entities, napr='web') 
+{
+    if (!entities || entities.length === 0) return text;
+    if (!text || text.length === 0) return '';
+    
+    // Сортируем сущности по позиции от конца к началу (чтобы не сбивать индексы)
+    const sorted = [...entities].sort((a, b) => b.offset - a.offset);
+    let markdownText = text;
+    
+    for (const entity of sorted) {
+        const from = entity.offset;
+        const to = from + entity.length;
+        
+        // Извлекаем фрагмент текста
+        const fragment = markdownText.substring(from, to);
+        
+        // Определяем Markdown-разметку для MAX
+        let replacement = '';
+        
+        switch (entity.type) {
+            case 'bold':
+                if(napr==='web') replacement = `*${fragment}*`;
+				else replacement = `**${fragment}**`;
+                break;
+            case 'italic':
+                replacement = `_${fragment}_`;
+                break;
+            case 'strikethrough':
+                replacement = `~${fragment}~`;
+                break;
+            case 'underline':
+                replacement = `++${fragment}++`;
+                break;
+            case 'text_link':
+                replacement = `[${fragment}](${entity.url})`;
+                break;
+            case 'code':
+                replacement = `\`${fragment}\``;
+                break;
+            case 'pre':
+                replacement = `\`\`\`\n${fragment}\n\`\`\``;
+                break;
+            default:
+                continue;
+        }
+        
+        // Заменяем фрагмент на отформатированный
+        markdownText = markdownText.substring(0, from) + replacement + markdownText.substring(to);
+    }
+    
+    return markdownText;
+}
+//====================================================================
+function fixMarkdownForMaxBot(text) 
+{
+    if (!text) return '';
+    let fixed = text;
+    // 1. Жирный: *текст* → **текст**
+    fixed = fixed.replace(/(?<!\\)\*(.*?)(?<!\\)\*/g, '**$1**');
+    return fixed;
 }
 //====================================================================
 //   для MAX
@@ -325,6 +394,8 @@ module.exports = {
 	removeHtmlTags,
 	EntitiesToMax,
 	EntitiesToHtml,
+	EntitiesToMarkdown,
+	fixMarkdownForMaxBot,
 	mentionUser,
 	get_srok
 };

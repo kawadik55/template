@@ -3919,8 +3919,8 @@ try{
 			data.elements = utils.EntitiesToMax(obj.entities || []);
 		}
 		else
-		{	data.text = EntitiesToHtml(obj.text, obj.entities || []);
-			data.format = 'html';
+		{	data.text = utils.EntitiesToMarkdown(obj.text, obj.entities || [], napr);
+			data.format = 'markdown';
 		}
 		//соберем все чаты в новый массив
 		let count_chats = 0;
@@ -4167,8 +4167,8 @@ try{
 			try{par = JSON.parse(ent);}catch(err){par = [];}
 			if(napr==='web') data.elements = utils.EntitiesToMax(par || []);//форматирование
 			else
-			{	data.text = EntitiesToHtml(obj.text, obj.entities || []);
-				data.format = 'html';
+			{	data.text = utils.EntitiesToMarkdown(obj.text, obj.entities || [], napr);
+				data.format = 'markdown';
 			}
 		}
 		else if(napr==='web') data.elements = [];
@@ -4954,8 +4954,8 @@ async function send_Eg_max(time)
 		let data = {};
 		if(napr==='web') data = utils.parseMarkdownToElements(eg);//преобразуем markdown в elements
 		else
-		{	data.text = utils.parseMarkdownToHtml(eg);//преобразуем markdown в html
-			data.format = 'html';
+		{	data.text = utils.fixMarkdownForMaxBot(eg);//исправляем для бота
+			data.format = 'markdown';
 		}
 		
 		const hasTrue = chat.some(item => item.Eg === true);//есть ли разрешенные вообще
@@ -5042,15 +5042,15 @@ async function send_Raspis_standart_max(time)
 				data = utils.parseMarkdownToElements(tmp);//преобразуем markdown в elements
 			}
 			else
-			{	data.text = raspis;//в прямом виде html
-				data.format = 'html';
+			{	data.text = utils.parseHtmlToMarkdown(raspis, napr);//преобразуем html в markdown
+				data.format = 'markdown';
 			}
 		}
 		else if(mode==='markdown')
 		{	if(napr==='web') data = utils.parseMarkdownToElements(raspis);//преобразуем markdown в elements
 			else
-			{	data.text = utils.parseMarkdownToHtml(raspis);//преобразуем markdown в html
-				data.format = 'html';
+			{	data.text = utils.fixMarkdownForMaxBot(raspis);//исправляем для макс бота
+				data.format = 'markdown';
 			}
 		}
 		else return;
@@ -5145,8 +5145,8 @@ async function send_Raspis_ES_max(time)
 					data = utils.parseMarkdownToElements(tmp);//преобразуем markdown в elements
 				}
 				else
-				{	data.text = raspis;//в прямом виде html
-					data.format = 'html';
+				{	data.text = parseHtmlToMarkdown(raspis, napr);
+					data.format = 'markdown';
 				}
 			}
 			else if(mode==='markdown')
@@ -5483,6 +5483,7 @@ async function send_Images_max(now,offset,chatList,napr)
 	let nowzone = getUserDateTime(now, offset);
 	let dayzone = nowzone.clone().startOf('day');//текущий день в зоне
 	let timepublic = getTimeForZone(timePablic, offset);//время "Ч" в зоне в текущий день
+	
 	//читаем список
 	for(let key in ImagesList)
 	{	try{  
@@ -5564,8 +5565,8 @@ async function send_Images_max(now,offset,chatList,napr)
 				try{par = JSON.parse(ent);}catch(err){par = [];}
 				if(napr==='web') data.elements = utils.EntitiesToMax(par || []);//форматирование
 				else
-				{	data.text = EntitiesToHtml(data.text, ImagesList[key].caption_entities || []);
-					data.format = 'html';
+				{	data.text = utils.EntitiesToMarkdown(data.text, ImagesList[key].caption_entities || [], napr);
+					data.format = 'markdown';
 				}
 			}
 			else if(napr==='web') data.elements = [];
@@ -5835,8 +5836,8 @@ async function send_Text_max(now,offset,chatList,napr)
 				data.elements = utils.EntitiesToMax(TextList[key].entities || []);
 			}
 			else
-			{	data.text = EntitiesToHtml(TextList[key].text, TextList[key].entities || []);
-				data.format = 'html';
+			{	data.text = utils.EntitiesToMarkdown(TextList[key].text, TextList[key].entities || [], napr);
+				data.format = 'markdown';
 			}
 			let count_chats = 0;
 			//по массиву чатов зоны
