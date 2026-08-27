@@ -5152,8 +5152,8 @@ async function send_Raspis_ES_max(time)
 			else if(mode==='markdown')
 			{	if(napr==='web') data = utils.parseMarkdownToElements(raspis);//преобразуем markdown в elements
 				else
-				{	data.text = utils.parseMarkdownToHtml(raspis);//преобразуем markdown в html
-					data.format = 'html';
+				{	data.text = utils.fixMarkdownForMaxBot(raspis);//изменяем под макс
+					data.format = 'markdown';
 				}
 			}
 			else continue;
