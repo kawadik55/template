@@ -5145,7 +5145,7 @@ async function send_Raspis_ES_max(time)
 					data = utils.parseMarkdownToElements(tmp);//преобразуем markdown в elements
 				}
 				else
-				{	data.text = parseHtmlToMarkdown(raspis, napr);
+				{	data.text = utils.parseHtmlToMarkdown(raspis, napr);
 					data.format = 'markdown';
 				}
 			}
