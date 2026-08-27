@@ -129,13 +129,22 @@ function parseHtmlToMarkdown(htmlText, napr='web')
 function parseMarkdownToHtml(text, napr='bot') {
     let html = text;
     
-   // 1. Преобразуем Markdown в HTML
+    // Замена тегов, если есть
+    html = html.replace(/</g, '<<<');
+    html = html.replace(/>/g, '>>>');
+    
+    // 1. Преобразуем Markdown в HTML
     html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');//ссылка
-	html = html.replace(/_(.*?)_(?![^<]*>)/g, '<em>$1</em>');//курсив вне тегов
-	html = html.replace(/\*(.*?)\*(?![^<]*>)/g, '<b>$1</b>');//жирный вне тегов
-	html = html.replace(/~~(.*?)~~(?![^<]*>)/g, '<s>$1</s>');//зачеркнутый вне тегов
-	html = html.replace(/\+\+(.*?)\+\+(?![^<]*>)/g, '<u>$1</u>');//подчеркнутый вне тегов
+    html = html.replace(/_(.*?)_(?![^<]*>)/g, '<em>$1</em>');//курсив вне тегов
+    html = html.replace(/\*(.*?)\*(?![^<]*>)/g, '<b>$1</b>');//жирный вне тегов
+    html = html.replace(/~~(.*?)~~(?![^<]*>)/g, '<s>$1</s>');//зачеркнутый вне тегов
+    html = html.replace(/\+\+(.*?)\+\+(?![^<]*>)/g, '<u>$1</u>');//подчеркнутый вне тегов
+    
     if(napr==='web') html = html.replace(/\n/g, '<br>');
+    
+    // Возврат
+    html = html.replace(/<<</g, '<');
+    html = html.replace(/>>>/g, '>');
     
     return html;
 }
