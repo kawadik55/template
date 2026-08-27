@@ -103,6 +103,10 @@ try
 				}
 			])
 		);
+		// Сортируем по алфавиту
+		listTowns = Object.fromEntries(
+			Object.entries(listTowns).sort((a, b) => a[0].localeCompare(b[0]))
+		);
 		writeFile('listTowns.json', JSON.stringify(listTowns,null,2));
 		console.log(moment().format('DD-MM-YY HH:mm:ss:ms')+' - Создали файл listTowns.json');
 	}
