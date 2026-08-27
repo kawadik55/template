@@ -86,12 +86,14 @@ try
 	{	throw new Error('Ошибка объекта от getObjectFromES');
 	}
 	//writeFile('listTownsRes.json', JSON.stringify(res.results,null,2));//сохраним респонс
-	if(Array.isArray(res.results.towns))
+	const allTowns = [...res.results.towns, ...res.results.big_towns];//добавляем биг города
+	if(Array.isArray(allTowns))
 	{	// Фильтруем города, исключая те, что в StopListTowns
-		const filteredTowns = res.results.towns.filter(town => 
+		const filteredTowns = allTowns.filter(town => 
 					!PathsList.StopListTowns || !Array.isArray(PathsList.StopListTowns) || 
 					!PathsList.StopListTowns.includes(town.name)
 		);
+		
 		listTowns = Object.fromEntries(		//преобразуем в объект {'Адлер':{'id','slug' и т.д.}}
 			filteredTowns.map(town => [
 				town.name, 
@@ -518,6 +520,17 @@ let mess = 'Парсер Расписаний ЕС не смог отработ�
 async function main() 
 {
   console.log();//пустая строка-разделитель
+  
+	/*let command = getMeetingsInTown;
+	command += '&&town='+10036+'&&exact_date='+moment().format('YYYY-MM-DD');
+	res = await getObjectFromES('https://na-russia.org/'+command);
+			if(res==='NO') //неудача
+			{	console.log('Не удалось получить расписание в городе '+key+'; попытка №'+(attempts+1));
+				attempts++;
+				await sleep(10000*attempts); // пауза перед повтором
+			}
+			else console.log(res.results);*/
+  
   let res = await parser_raspis();
   if(res !== 'OK')//если страница не распарсилась
   {	
