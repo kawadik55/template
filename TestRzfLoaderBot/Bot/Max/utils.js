@@ -85,9 +85,11 @@ function parseHtmlToMarkdown(htmlText, napr='web')
 {
     let text = htmlText;
     
-    // 1. Экранируем * и _, чтобы они не сломали маркдаун
+    // 1. Экранируем имеющиеся символы, чтобы они не сломали маркдаун
     text = text.replace(/\*/g, '\\*');
     text = text.replace(/_/g, '\\_');
+	text = text.replace(/~~/g, '\\~\\~');
+	text = text.replace(/~~/g, '\\+\\+');
     
     // 2. Жирный текст: <strong>текст</strong> → *текст*
     if(napr==='web')
@@ -108,8 +110,17 @@ function parseHtmlToMarkdown(htmlText, napr='web')
     
     // 5. Переход на новую строку: <br> или <br/> → \n
     text = text.replace(/<br\s*\/?>/gi, '\n');
+	
+	// 6. Зачеркнутый: <s>текст</s> → ~~текст~~
+    text = text.replace(/<s>(.*?)<\/s>/g, '~~$1~~');
+    text = text.replace(/<strike>(.*?)<\/strike>/g, '~~$1~~');
+    text = text.replace(/<del>(.*?)<\/del>/g, '~~$1~~');
     
-    // 6. Удаляем все оставшиеся HTML-теги
+    // 7. Подчеркнутый: <u>текст</u> → ++текст++
+    text = text.replace(/<u>(.*?)<\/u>/g, '++$1++');
+    text = text.replace(/<ins>(.*?)<\/ins>/g, '++$1++');
+    
+    // 8. Удаляем все оставшиеся HTML-теги
 	text = removeHtmlTags(text);
     
     return text;
@@ -119,14 +130,12 @@ function parseMarkdownToHtml(text, napr='bot') {
     let html = text;
     
    // 1. Преобразуем Markdown в HTML
-    html = html.replace(/\*(.*?)\*/g, '<b>$1</b>');//жирный
-	html = html.replace(/\*/g, '\\*');//экранируем остатки
-    html = html.replace(/_(.*?)_/g, '<em>$1</em>');//курсив
-	html = html.replace(/_/g, '\\_');//экранируем остатки
     html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');//ссылка
-	if(napr==='web') html = html.replace(/\n/g, '<br>');
-	
-	html = html.replace(/(\*|_|\[|\]|\(|\)|\~|\`|\#|\+|\-|\=)(?![^<]*>)/g, '\\$1');//экранируем остатки
+	html = html.replace(/_(.*?)_(?![^<]*>)/g, '<em>$1</em>');//курсив вне тегов
+	html = html.replace(/\*(.*?)\*(?![^<]*>)/g, '<b>$1</b>');//жирный вне тегов
+	html = html.replace(/~~(.*?)~~(?![^<]*>)/g, '<s>$1</s>');//зачеркнутый вне тегов
+	html = html.replace(/\+\+(.*?)\+\+(?![^<]*>)/g, '<u>$1</u>');//подчеркнутый вне тегов
+    if(napr==='web') html = html.replace(/\n/g, '<br>');
     
     return html;
 }
