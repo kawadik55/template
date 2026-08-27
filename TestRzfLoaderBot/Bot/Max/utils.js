@@ -27,7 +27,7 @@ function parseMarkdownToElements(text)
         } else if (match[3] !== undefined) {
             type = 'STRIKETHROUGH';//зачеркнутый
             content = match[3];
-        } else if (match[4] !== undefined && match[5] !== undefined) {
+        } else if (match[4] !== undefined && match[5] !== undefined) {//ссылка
             const linkUrl = match[5];
 			content = match[4];
 			if (linkUrl.startsWith('user://')) {
@@ -115,14 +115,18 @@ function parseHtmlToMarkdown(htmlText, napr='web')
     return text;
 }
 //====================================================================
-function parseMarkdownToHtml(text) {
+function parseMarkdownToHtml(text, napr='bot') {
     let html = text;
     
    // 1. Преобразуем Markdown в HTML
-    html = html.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
-    html = html.replace(/_(.*?)_/g, '<em>$1</em>');
-    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
-    //html = html.replace(/\n/g, '<br>');
+    html = html.replace(/\*(.*?)\*/g, '<b>$1</b>');//жирный
+	html = html.replace(/\*/g, '\\*');//экранируем остатки
+    html = html.replace(/_(.*?)_/g, '<em>$1</em>');//курсив
+	html = html.replace(/_/g, '\\_');//экранируем остатки
+    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');//ссылка
+	if(napr==='web') html = html.replace(/\n/g, '<br>');
+	
+	html = html.replace(/(\*|_|\[|\]|\(|\)|\~|\`|\#|\+|\-|\=)(?![^<]*>)/g, '\\$1');//экранируем остатки
     
     return html;
 }
