@@ -78,73 +78,104 @@ function parseMarkdownToElements(text)
         regex.lastIndex = 0;
     }
     
-	return { text: processedText, elements: elements };
+	return { text: unescapeMarkdown(processedText), elements: elements };
 }
 //====================================================================
-function parseHtmlToMarkdown(htmlText, napr='web') 
-{
-    let text = htmlText;
+function MarkdownToEntities(text) {
+    if (!text || text.length === 0) return { text: text, entities: [] };
     
-    // 1. Экранируем имеющиеся символы, чтобы они не сломали маркдаун
-    text = text.replace(/\*/g, '\\*');
-    text = text.replace(/_/g, '\\_');
-	text = text.replace(/~~/g, '\\~\\~');
-	text = text.replace(/~~/g, '\\+\\+');
+    const entities = [];
+    let processedText = text;
     
-    // 2. Жирный текст: <strong>текст</strong> → *текст*
-    if(napr==='web')
-	{	text = text.replace(/<strong>(.*?)<\/strong>/g, '*$1*');
-		text = text.replace(/<b>(.*?)<\/b>/g, '*$1*');
-	}
-	else
-	{	text = text.replace(/<strong>(.*?)<\/strong>/g, '**$1**');
-		text = text.replace(/<b>(.*?)<\/b>/g, '**$1**');
-	}
+    // Регулярка для поиска маркдаун-символов: **, *, _, ~~, ++, [](url), `, ```
+    const regex = /\*\*(.*?)\*\*|\*(.*?)\*|_(.*?)_|~~(.*?)~~|\+\+(.*?)\+\+|\[(.*?)\]\((.*?)\)|`(.*?)`|```(.*?)```/g;
+    let match;
     
-    // 3. Курсив: <em>текст</em> → _текст_
-    text = text.replace(/<em>(.*?)<\/em>/g, '_$1_');
-    text = text.replace(/<i>(.*?)<\/i>/g, '_$1_');
+    while ((match = regex.exec(processedText)) !== null) {
+        let type = '';
+        let content = '';
+        let url = '';
+        
+        // Определяем тип и содержимое
+        if (match[1] !== undefined) {
+            // **жирный**
+            type = 'bold';
+            content = match[1];
+        } else if (match[2] !== undefined) {
+            // *жирный*
+            type = 'bold';
+            content = match[2];
+        } else if (match[3] !== undefined) {
+            // _курсив_
+            type = 'italic';
+            content = match[3];
+        } else if (match[4] !== undefined) {
+            // ~~зачеркнутый~~
+            type = 'strikethrough';
+            content = match[4];
+        } else if (match[5] !== undefined) {
+            // ++подчеркнутый++
+            type = 'underline';
+            content = match[5];
+        } else if (match[6] !== undefined && match[7] !== undefined) {
+            // [текст](url)
+            type = 'text_link';
+            content = match[6];
+            url = match[7];
+        } else if (match[8] !== undefined) {
+            // `код`
+            type = 'code';
+            content = match[8];
+        } else if (match[9] !== undefined) {
+            // ```блок кода```
+            type = 'pre';
+            content = match[9];
+        }
+        
+        // Создаем сущность
+        const entity = {
+            offset: match.index,
+            length: content.length,
+            type: type
+        };
+        
+        if (url) {
+            entity.url = url;
+        }
+        
+        entities.push(entity);
+        
+        // Удаляем символы форматирования из текста
+        const before = processedText.slice(0, match.index);
+        const after = processedText.slice(match.index + match[0].length);
+        processedText = before + content + after;
+        
+        // Сбрасываем lastIndex для продолжения
+        regex.lastIndex = 0;
+    }
     
-    // 4. Ссылки: <a href="url">текст</a> → [текст](url)
-    text = text.replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"(?:\s+[^>]*?)?>(.*?)<\/a>/gi, '[$2]($1)');
+    return { text: unescapeMarkdown(processedText), entities: entities };
+}
+//====================================================================
+function parseHtmlToMarkdown(htmlText, napr = 'web') {
+    // 1. HTML → Entities
+    const result = HtmlToEntities(htmlText);
     
-    // 5. Переход на новую строку: <br> или <br/> → \n
-    text = text.replace(/<br\s*\/?>/gi, '\n');
-	
-	// 6. Зачеркнутый: <s>текст</s> → ~~текст~~
-    text = text.replace(/<s>(.*?)<\/s>/g, '~~$1~~');
-    text = text.replace(/<strike>(.*?)<\/strike>/g, '~~$1~~');
-    text = text.replace(/<del>(.*?)<\/del>/g, '~~$1~~');
-    
-    // 7. Подчеркнутый: <u>текст</u> → ++текст++
-    text = text.replace(/<u>(.*?)<\/u>/g, '++$1++');
-    text = text.replace(/<ins>(.*?)<\/ins>/g, '++$1++');
-    
-    // 8. Удаляем все оставшиеся HTML-теги
-	text = removeHtmlTags(text);
-    
-    return text;
+    // 2. Entities → Markdown
+    return EntitiesToMarkdown(result.text, result.entities, napr);
 }
 //====================================================================
 function parseMarkdownToHtml(text, napr='bot') {
-    let html = text;
+    // 1. Markdown → Entities
+    const parsed = MarkdownToEntities(text);
     
-    // Замена тегов, если есть
-    html = html.replace(/</g, '<<<');
-    html = html.replace(/>/g, '>>>');
+    // 2. Entities → HTML
+    const html = EntitiesToHtml(parsed.text, parsed.entities);
     
-    // 1. Преобразуем Markdown в HTML
-    html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');//ссылка
-    html = html.replace(/_(.*?)_(?![^<]*>)/g, '<em>$1</em>');//курсив вне тегов
-    html = html.replace(/\*(.*?)\*(?![^<]*>)/g, '<b>$1</b>');//жирный вне тегов
-    html = html.replace(/~~(.*?)~~(?![^<]*>)/g, '<s>$1</s>');//зачеркнутый вне тегов
-    html = html.replace(/\+\+(.*?)\+\+(?![^<]*>)/g, '<u>$1</u>');//подчеркнутый вне тегов
-    
-    if(napr==='web') html = html.replace(/\n/g, '<br>');
-    
-    // Возврат
-    html = html.replace(/<<</g, '<');
-    html = html.replace(/>>>/g, '>');
+    // 3. Если napr === 'web', заменяем переносы на <br>
+    if (napr === 'web') {
+        return html.replace(/\n/g, '<br>');
+    }
     
     return html;
 }
@@ -167,6 +198,7 @@ function removeHtmlTags(text) {
 //====================================================================
 function EntitiesToMax(entities) {
     if (!entities || entities.length === 0) return [];
+	if (typeof entities === 'string') {try { entities = JSON.parse(entities); } catch (e) { entities = []; }}
     
     const elements = [];
     
@@ -210,6 +242,7 @@ function EntitiesToMax(entities) {
 function EntitiesToHtml(text, entities) {
     if (!entities || entities.length === 0) return text;
 	if (!text || text.length === 0) return '';
+	if (typeof entities === 'string') {try { entities = JSON.parse(entities); } catch (e) { entities = []; }}
     
     // Сортируем сущности по позиции от конца к началу (чтобы не сбивать индексы)
     const sorted = [...entities].sort((a, b) => b.offset - a.offset);
@@ -270,33 +303,38 @@ function EntitiesToHtml(text, entities) {
 //====================================================================
 function EntitiesToMarkdown(text, entities, napr='web') 
 {
-    if (!entities || entities.length === 0) return text;
+    if (!entities || entities.length === 0) return escapeMarkdown(text);
     if (!text || text.length === 0) return '';
+	if (typeof entities === 'string') {try { entities = JSON.parse(entities); } catch (e) { entities = []; }}
     
-    // Сортируем сущности по позиции от конца к началу (чтобы не сбивать индексы)
     const sorted = [...entities].sort((a, b) => b.offset - a.offset);
-    let markdownText = text;
+    let result = '';
+    let lastPos = 0;
     
+    // Собираем строку по частям
     for (const entity of sorted) {
         const from = entity.offset;
         const to = from + entity.length;
         
-        // Извлекаем фрагмент текста
-        const fragment = markdownText.substring(from, to);
+        // Чистый текст до сущности — экранируем
+        const plainText = text.substring(lastPos, from);
+        result += escapeMarkdown(plainText);
         
-        // Определяем Markdown-разметку для MAX
+        // Фрагмент сущности — экранируем содержимое
+        let fragment = text.substring(from, to);
+        fragment = escapeMarkdown(fragment);
+        
+        // Оборачиваем в теги
         let replacement = '';
-        
         switch (entity.type) {
             case 'bold':
-                if(napr==='web') replacement = `*${fragment}*`;
-				else replacement = `**${fragment}**`;
+                replacement = (napr === 'web') ? `*${fragment}*` : `**${fragment}**`;
                 break;
             case 'italic':
                 replacement = `_${fragment}_`;
                 break;
             case 'strikethrough':
-                replacement = `~${fragment}~`;
+                replacement = `~~${fragment}~~`;
                 break;
             case 'underline':
                 replacement = `++${fragment}++`;
@@ -314,11 +352,82 @@ function EntitiesToMarkdown(text, entities, napr='web')
                 continue;
         }
         
-        // Заменяем фрагмент на отформатированный
-        markdownText = markdownText.substring(0, from) + replacement + markdownText.substring(to);
+        result += replacement;
+        lastPos = to;
     }
     
-    return markdownText;
+    // Остаток текста после последней сущности — экранируем
+    result += escapeMarkdown(text.substring(lastPos));
+    
+    return result;
+}
+//====================================================================
+function HtmlToEntities(htmlText) {
+    if (!htmlText || htmlText.length === 0) return { text: '', entities: [] };
+    
+    let text = htmlText;
+    const entities = [];
+    
+    // Маппинг тегов → типы сущностей
+    const tagMap = {
+        'strong': 'bold', 'b': 'bold',
+        'em': 'italic', 'i': 'italic',
+        's': 'strikethrough', 'strike': 'strikethrough', 'del': 'strikethrough',
+        'u': 'underline', 'ins': 'underline',
+        'code': 'code',
+        'pre': 'pre'
+    };
+    
+    // Обработка тегов с содержимым
+    for (const [tag, type] of Object.entries(tagMap)) {
+        const regex = new RegExp(`<${tag}>(.*?)<\\/${tag}>`, 'g');
+        text = text.replace(regex, (match, content, offset) => {
+            entities.push({
+                offset: offset,
+                length: content.length,
+                type: type
+            });
+            return content;
+        });
+    }
+    
+    // Ссылки
+    text = text.replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"(?:\s+[^>]*?)?>(.*?)<\/a>/gi, (match, url, content, offset) => {
+        entities.push({
+            offset: offset,
+            length: content.length,
+            type: 'text_link',
+            url: url
+        });
+        return content;
+    });
+    
+    // Переносы
+    text = text.replace(/<br\s*\/?>/gi, '\n');
+    
+    // Удаляем оставшиеся HTML-теги
+    text = removeHtmlTags(text);
+    
+    // Сортируем по offset
+    entities.sort((a, b) => a.offset - b.offset);
+    
+    return { text: text, entities: entities };
+}
+//====================================================================
+function escapeMarkdown(text) {
+    if (!text) return '';
+    
+    // Экранируем только те символы, которые используются
+    // * _ ~ + [ ] ( ) `
+    return text.replace(/([*_~+[\]()`])/g, '\\$1');
+}
+//====================================================================
+function unescapeMarkdown(text) {
+    if (!text) return '';
+    
+    // Убираем обратные слеши перед спецсимволами
+    // * _ ~ + [ ] ( ) `
+    return text.replace(/\\([*_~+[\]()`])/g, '$1');
 }
 //====================================================================
 function fixMarkdownForMaxBot(text) 
@@ -417,7 +526,11 @@ module.exports = {
 	EntitiesToMax,
 	EntitiesToHtml,
 	EntitiesToMarkdown,
+	MarkdownToEntities,
+	HtmlToEntities,
 	fixMarkdownForMaxBot,
 	mentionUser,
-	get_srok
+	get_srok,
+	escapeMarkdown,
+	unescapeMarkdown
 };

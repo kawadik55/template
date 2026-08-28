@@ -2396,9 +2396,9 @@ try{
 						for(let i=0;i<offset.length;i++) await publicImage(ImagesList[len], offset[i]);
 						//публикуем альбом сразу в Макс первый раз, если по условиям совпадает
 						offset = chat_news_maxweb ? Object.keys(chat_news_maxweb) : [];
-						for(let i=0;i<offset.length;i++) await publicImage_max_web(ImagesList[len], offset[i]);
+						for(let i=0;i<offset.length;i++) await publicImage_max(ImagesList[len], offset[i], chat_news_maxweb, 'web');
 						offset = chat_news_maxbot ? Object.keys(chat_news_maxbot) : [];
-						for(let i=0;i<offset.length;i++) await publicImage_max_bot(ImagesList[len], offset[i]);
+						for(let i=0;i<offset.length;i++) await publicImage_max(ImagesList[len], offset[i], chat_news_maxbot, 'bot');
 					}
 					delete ModerImagesList[key];//теперь удалим эту запись из списка
 					
@@ -4162,12 +4162,9 @@ try{
 		let data = {};
 		data.text = obj.caption || '';//подпись
 		if(obj.caption_entities)
-		{	let ent = obj.caption_entities;
-			let par;
-			try{par = JSON.parse(ent);}catch(err){par = [];}
-			if(napr==='web') data.elements = utils.EntitiesToMax(par || []);//форматирование
+		{	if(napr==='web') data.elements = utils.EntitiesToMax(obj.caption_entities || []);//форматирование
 			else
-			{	data.text = utils.EntitiesToMarkdown(obj.text, obj.entities || [], napr);
+			{	data.text = utils.EntitiesToMarkdown(data.text, obj.caption_entities || [], napr);
 				data.format = 'markdown';
 			}
 		}
@@ -5560,10 +5557,7 @@ async function send_Images_max(now,offset,chatList,napr)
 			let data = {};
 			data.text = ImagesList[key].caption || '';//подпись
 			if(ImagesList[key].caption_entities)
-			{	let ent = ImagesList[key].caption_entities;
-				let par;
-				try{par = JSON.parse(ent);}catch(err){par = [];}
-				if(napr==='web') data.elements = utils.EntitiesToMax(par || []);//форматирование
+			{	if(napr==='web') data.elements = utils.EntitiesToMax(ImagesList[key].caption_entities || []);//форматирование
 				else
 				{	data.text = utils.EntitiesToMarkdown(data.text, ImagesList[key].caption_entities || [], napr);
 					data.format = 'markdown';
