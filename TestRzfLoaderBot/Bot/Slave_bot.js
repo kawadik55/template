@@ -1497,6 +1497,7 @@ class SlaveBot {
             chatEntry.Eg = Boolean(contentSettings.Eg);
             chatEntry.News = Boolean(contentSettings.News);
 			chatEntry.Raspis = Boolean(contentSettings.Raspis);
+			chatEntry.timeAt = new Date().toISOString();
 			
 			//добавляем настройки на город
 			if (pending.townData) {
