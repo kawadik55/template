@@ -3916,7 +3916,7 @@ try{
 		const data = {};
 		if(napr==='web') 
 		{	data.text = obj.text;
-			data.elements = utils.EntitiesToMax(obj.entities || []);
+			data.elements = utils.EntitiesToElements(obj.entities || []);
 		}
 		else
 		{	data.text = utils.EntitiesToMarkdown(obj.text, obj.entities || [], napr);
@@ -4163,7 +4163,7 @@ try{
 		if(obj.caption_entities)
 		{	if(napr==='web') 
 			{	data.text = obj.caption || '';//подпись
-				data.elements = utils.EntitiesToMax(obj.caption_entities || []);//форматирование
+				data.elements = utils.EntitiesToElements(obj.caption_entities || []);//форматирование
 			}
 			else
 			{	data.text = utils.EntitiesToMarkdown(obj.caption || '', obj.caption_entities || [], napr);
@@ -4951,7 +4951,7 @@ async function send_Eg_max(time)
 		}		
 		let eg = (await fs.readFileSync(refpath)).toString();//получаем "сегодняшний" для юзера Ежик
 		let data = {};
-		if(napr==='web') data = utils.parseMarkdownToElements(eg);//преобразуем markdown в elements
+		if(napr==='web') data = utils.MarkdownToElements(eg);//преобразуем markdown в elements
 		else
 		{	data.text = utils.fixMarkdownForMaxBot(eg);//исправляем для бота
 			data.format = 'markdown';
@@ -5037,16 +5037,15 @@ async function send_Raspis_standart_max(time)
 		let data = {};
 		if(mode==='HTML' && raspis) 
 		{	if(napr==='web')
-			{	let tmp = utils.parseHtmlToMarkdown(raspis);//преобразуем html в markdown
-				data = utils.parseMarkdownToElements(tmp);//преобразуем markdown в elements
+			{	data = utils.HtmlToElements(raspis);//преобразуем html в elements
 			}
 			else
-			{	data.text = utils.parseHtmlToMarkdown(raspis, napr);//преобразуем html в markdown
+			{	data.text = utils.HtmlToMarkdown(raspis, napr);//преобразуем html в markdown
 				data.format = 'markdown';
 			}
 		}
 		else if(mode==='markdown')
-		{	if(napr==='web') data = utils.parseMarkdownToElements(raspis);//преобразуем markdown в elements
+		{	if(napr==='web') data = utils.MarkdownToElements(raspis);//преобразуем markdown в elements
 			else
 			{	data.text = utils.fixMarkdownForMaxBot(raspis);//исправляем для макс бота
 				data.format = 'markdown';
@@ -5140,16 +5139,15 @@ async function send_Raspis_ES_max(time)
 			let data = {};
 			if(mode==='HTML' && raspis) 
 			{	if(napr==='web')
-				{	let tmp = utils.parseHtmlToMarkdown(raspis);//преобразуем html в markdown
-					data = utils.parseMarkdownToElements(tmp);//преобразуем markdown в elements
+				{	data = utils.HtmlToElements(raspis);//преобразуем html в elements
 				}
 				else
-				{	data.text = utils.parseHtmlToMarkdown(raspis, napr);
+				{	data.text = utils.HtmlToMarkdown(raspis, napr);
 					data.format = 'markdown';
 				}
 			}
 			else if(mode==='markdown')
-			{	if(napr==='web') data = utils.parseMarkdownToElements(raspis);//преобразуем markdown в elements
+			{	if(napr==='web') data = utils.MarkdownToElements(raspis);//преобразуем markdown в elements
 				else
 				{	data.text = utils.fixMarkdownForMaxBot(raspis);//изменяем под макс
 					data.format = 'markdown';
@@ -5561,7 +5559,7 @@ async function send_Images_max(now,offset,chatList,napr)
 			if(ImagesList[key].caption_entities)
 			{	if(napr==='web') 
 				{	data.text = ImagesList[key].caption || '';//подпись
-					data.elements = utils.EntitiesToMax(ImagesList[key].caption_entities || []);//форматирование
+					data.elements = utils.EntitiesToElements(ImagesList[key].caption_entities || []);//форматирование
 				}
 				else
 				{	data.text = utils.EntitiesToMarkdown(ImagesList[key].caption || '', ImagesList[key].caption_entities || [], napr);
@@ -5832,7 +5830,7 @@ async function send_Text_max(now,offset,chatList,napr)
 			const data = {};
 			if(napr==='web')
 			{	data.text = TextList[key].text;
-				data.elements = utils.EntitiesToMax(TextList[key].entities || []);
+				data.elements = utils.EntitiesToElements(TextList[key].entities || []);
 			}
 			else
 			{	data.text = utils.EntitiesToMarkdown(TextList[key].text, TextList[key].entities || [], napr);
