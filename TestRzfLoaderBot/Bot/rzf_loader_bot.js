@@ -3911,7 +3911,7 @@ try{
 	{	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
 		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
 		let date = !!obj.date?obj.date:'';//запись даты
-		WriteLogFile('text "Сегодня" в зону '+offset+' '+napr+' Макс => день='+day+'; дата='+date+timestr);
+		WriteLogFile('text Макс "Сегодня" в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 		//готовим текст
 		let data = {};
 		if(napr==='web') 
@@ -3935,7 +3935,7 @@ try{
 			if(data && data.text && data.text !== '') await addToQueueMax('sendText',chatId,name,data,napr);
 			count_chats++;
 		}
-		await WriteLogFile('Всего чатов '+napr+' Макс = '+count_chats+' = ОК');
+		await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats+' = ОК');
 	}
 }catch(err){WriteLogFile(err+'\nfrom publicText_max()','вчат');}
 }
@@ -4084,7 +4084,7 @@ try{//проверяем разрешение на публикацию неме
     {	let timestr = obj?.time || '';//запись времени
 		let day = obj?.dayOfWeek || '';//запись дня
 		let date = obj?.date || '';//запись даты
-		WriteLogFile(obj.type+' "Сегодня" в зону '+offset+' ТГ => день='+day+'; дата='+date+timestr);
+		WriteLogFile(obj.type+' ТГ "Сегодня" в зону '+offset+' => день='+day+'; дата='+date+timestr);
 	 //соберем все чаты в новый массив
 	 let count_chats = 0;
 	 let all_chats = chat_news[offset] ? chat_news[offset] : [];
@@ -4156,7 +4156,7 @@ try{
     {	let timestr = obj?.time || '';//запись времени
 		let day = obj?.dayOfWeek || '';//запись дня
 		let date = obj?.date || '';//запись даты
-		WriteLogFile(obj.type+' "Сегодня" в зону '+offset+' '+napr+' Макс => день='+day+'; дата='+date+timestr);
+		WriteLogFile(obj.type+' Макс "Сегодня" в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 		let type = obj?.type ? obj.type : 'unknown_type';
 		//готовим объект data: { text, path, paths[], elements[] }
 		let data = {};
@@ -4193,7 +4193,7 @@ try{
 				count_chats++;
 			}
 		}
-		await WriteLogFile('Всего чатов '+napr+' Макс = '+count_chats);
+		await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats);
 	}
 }catch(err){WriteLogFile(err+'\nfrom publicImage_max()','вчат');}
 }
@@ -4788,7 +4788,7 @@ async function send_Eg(time)
 		let eg = (await fs.readFileSync(refpath)).toString();//получаем "сегодняшний" для юзера Ежик
 		
 		const hasTrue = chat.some(item => item.Eg === true);//есть ли разрешенные вообще
-		if(hasTrue) WriteLogFile('Рассылка *Ежика* '+refdate+' подписчикам ТГ '+groffset+':');
+		if(hasTrue) WriteLogFile('ТГ Рассылка *Ежика* '+refdate+' подписчикам '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
@@ -4821,7 +4821,7 @@ async function send_Eg(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Eg()=>for()','вчат');}
 		}
-		if(hasTrue) await WriteLogFile('Всего чатов ТГ = '+count_chats);
+		if(hasTrue) await WriteLogFile('ТГ Всего чатов = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Eg()','вчат');
@@ -4865,7 +4865,7 @@ async function send_Raspis_standart(time)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		const hasTrue = chat.some(item => item.Raspis === true);//есть ли разрешенные вообще
-		if(hasTrue) await WriteLogFile('Рассылка *Расписания* подписчикам ТГ '+groffset+':');
+		if(hasTrue) await WriteLogFile('ТГ Рассылка *Расписания* подписчикам '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{
@@ -4897,7 +4897,7 @@ async function send_Raspis_standart(time)
 
 		  }catch(err){WriteLogFile(err+'\n from send_Raspis_standart()=>for()','вчат');}
 		}
-		if(hasTrue) await WriteLogFile('Всего чатов ТГ = '+count_chats);
+		if(hasTrue) await WriteLogFile('ТГ Всего чатов = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Raspis_standart()','вчат');
@@ -4956,7 +4956,7 @@ async function send_Eg_max(time)
 		}
 		
 		const hasTrue = chat.some(item => item.Eg === true);//есть ли разрешенные вообще
-		if(hasTrue) await WriteLogFile('Рассылка *Ежика* '+refdate+' подписчикам '+napr+' Макс '+groffset+':');
+		if(hasTrue) await WriteLogFile('Макс Рассылка *Ежика* '+refdate+' подписчикам '+napr+' '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
@@ -4973,7 +4973,7 @@ async function send_Eg_max(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Eg_max()=>for()','вчат');}
 		}
-		if(hasTrue) await WriteLogFile('Всего чатов '+napr+' Макс = '+count_chats);
+		if(hasTrue) await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Eg_max()','вчат');
@@ -5051,7 +5051,7 @@ async function send_Raspis_standart_max(time)
 			}
 		}
 		else return;
-		if(hasTrue) await WriteLogFile('Рассылка *Расписания* подписчикам '+napr+' Макс '+groffset+':');
+		if(hasTrue) await WriteLogFile('Макс Рассылка *Расписания* подписчикам '+napr+' '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
@@ -5068,7 +5068,7 @@ async function send_Raspis_standart_max(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis_standart_max()=>for()','вчат');}
 		}
-		if(hasTrue) await WriteLogFile('Всего чатов '+napr+' Макс = '+count_chats);
+		if(hasTrue) await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Raspis_standart_max()','вчат');
@@ -5116,7 +5116,7 @@ async function send_Raspis_ES_max(time)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		const hasTrue = chat.some(item => item.Raspis === true);//есть ли разрешенные вообще
-		if(hasTrue) await WriteLogFile('Рассылка *Расписания* подписчикам '+napr+' Макс '+groffset+':');
+		if(hasTrue) await WriteLogFile('Макс Рассылка *Расписания* подписчикам '+napr+' '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{
@@ -5159,6 +5159,7 @@ async function send_Raspis_ES_max(time)
 			if(data && data.text && data.text !== '') 
 			{
 				await addToQueueMax('sendText', chatId, name, data, napr);
+				await WriteLogFile('город = '+town);
 				count_chats++;
 			}
 
@@ -5201,7 +5202,7 @@ async function send_Raspis_ES(time)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		const hasTrue = chat.some(item => item.Raspis === true);//есть ли разрешенные вообще
-		if(hasTrue) await WriteLogFile('Рассылка *Расписания* подписчикам ТГ '+groffset+':');
+		if(hasTrue) await WriteLogFile('ТГ Рассылка *Расписания* подписчикам '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{
@@ -5254,7 +5255,7 @@ async function send_Raspis_ES(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis_ES()=>for()','вчат');}
 		}
-		if(hasTrue) await WriteLogFile('Всего чатов ТГ = '+count_chats);
+		if(hasTrue) await WriteLogFile('ТГ Всего чатов = '+count_chats);
 	}
 	
   } catch (err) 
@@ -5412,7 +5413,7 @@ async function send_Images(now,offset)
           if(flag) 
           { let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
 			let type = ImagesList[key]?.type ? ImagesList[key].type : 'unknown_type';
-			WriteLogFile(type+' "'+key+'"'+' в зону '+offset+' ТГ => день='+day+'; дата='+date+timestr);
+			WriteLogFile(type+' ТГ "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);
 			//выделим массив по смещению
 			let all_chats = chat_news[offset] ? chat_news[offset] : [];
 			let count_chats = 0;
@@ -5552,7 +5553,7 @@ async function send_Images_max(now,offset,chatList,napr)
           if(flag) 
           { let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
 			let type = ImagesList[key]?.type ? ImagesList[key].type : 'unknown_type';
-			WriteLogFile(type+' "'+key+'"'+' в зону '+offset+' '+napr+' Макс => день='+day+'; дата='+date+timestr);
+			WriteLogFile(type+' Макс "'+key+'"'+' в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 			//готовим объект data: { text, path, paths[], elements[] }
 			let data = {};
 			data.text = ImagesList[key].caption || '';//подпись
@@ -5586,7 +5587,7 @@ async function send_Images_max(now,offset,chatList,napr)
 					count_chats++;
 				}
 			}
-			await WriteLogFile('Всего чатов '+napr+' Макс = '+count_chats);
+			await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats);
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Images_max()=>for()','вчат');}
 	}
@@ -5694,7 +5695,7 @@ async function send_Text(now,offset)
           //публикуем текст
 		  if(flag)
           { let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
-			WriteLogFile('text "'+key+'"'+' в зону '+offset+' ТГ => день='+day+'; дата='+date+timestr);
+			WriteLogFile('text ТГ "'+key+'"'+' в зону '+offset+' => день='+day+'; дата='+date+timestr);
 			//соберем все чаты в новый массив
 			let all_chats = chat_news[offset] ? chat_news[offset] : [];
 			let count_chats = 0;
@@ -5734,7 +5735,7 @@ async function send_Text(now,offset)
 					count_chats++;
 				}
 			}
-			await WriteLogFile('Всего чатов ТГ = '+count_chats);
+			await WriteLogFile('ТГ Всего чатов = '+count_chats);
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Text()=>for()','вчат');}
 	}
@@ -5822,7 +5823,7 @@ async function send_Text_max(now,offset,chatList,napr)
           //публикуем текст
 		  if(flag)
           { let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
-			WriteLogFile('text "'+key+'"'+' в зону '+offset+' '+napr+' Макс => день='+day+'; дата='+date+timestr);
+			WriteLogFile('text Макс "'+key+'"'+' в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 			//готовим текст
 			let data = {};
 			if(napr==='web')
@@ -5849,7 +5850,7 @@ async function send_Text_max(now,offset,chatList,napr)
 					count_chats++;
 				}
 			}
-			await WriteLogFile('Всего чатов '+napr+' Макс = '+count_chats);
+			await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats);
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Text()=>for()','вчат');}
 	}
