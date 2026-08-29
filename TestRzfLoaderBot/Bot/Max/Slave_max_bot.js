@@ -1164,7 +1164,8 @@ class SlaveMaxBot {
 				chatId: targetChatId.toString(),
 				Eg: Boolean(contentSettings.Eg),
 				News: Boolean(contentSettings.News),
-				Raspis: Boolean(contentSettings.Raspis)
+				Raspis: Boolean(contentSettings.Raspis),
+				timeAt: new Date().toISOString()
 			};
 
 			if (pending.townData) {
