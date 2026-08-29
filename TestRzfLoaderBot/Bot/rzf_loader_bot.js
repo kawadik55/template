@@ -3913,7 +3913,7 @@ try{
 		let date = !!obj.date?obj.date:'';//запись даты
 		WriteLogFile('text Макс "Сегодня" в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 		//готовим текст
-		let data = {};
+		const data = {};
 		if(napr==='web') 
 		{	data.text = obj.text;
 			data.elements = utils.EntitiesToMax(obj.entities || []);
@@ -4159,12 +4159,14 @@ try{
 		WriteLogFile(obj.type+' Макс "Сегодня" в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 		let type = obj?.type ? obj.type : 'unknown_type';
 		//готовим объект data: { text, path, paths[], elements[] }
-		let data = {};
-		data.text = obj.caption || '';//подпись
+		const data = {};
 		if(obj.caption_entities)
-		{	if(napr==='web') data.elements = utils.EntitiesToMax(obj.caption_entities || []);//форматирование
+		{	if(napr==='web') 
+			{	data.text = obj.caption || '';//подпись
+				data.elements = utils.EntitiesToMax(obj.caption_entities || []);//форматирование
+			}
 			else
-			{	data.text = utils.EntitiesToMarkdown(data.text, obj.caption_entities || [], napr);
+			{	data.text = utils.EntitiesToMarkdown(obj.caption || '', obj.caption_entities || [], napr);
 				data.format = 'markdown';
 			}
 		}
@@ -5555,12 +5557,14 @@ async function send_Images_max(now,offset,chatList,napr)
 			let type = ImagesList[key]?.type ? ImagesList[key].type : 'unknown_type';
 			WriteLogFile(type+' Макс "'+key+'"'+' в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 			//готовим объект data: { text, path, paths[], elements[] }
-			let data = {};
-			data.text = ImagesList[key].caption || '';//подпись
+			const data = {};
 			if(ImagesList[key].caption_entities)
-			{	if(napr==='web') data.elements = utils.EntitiesToMax(ImagesList[key].caption_entities || []);//форматирование
+			{	if(napr==='web') 
+				{	data.text = ImagesList[key].caption || '';//подпись
+					data.elements = utils.EntitiesToMax(ImagesList[key].caption_entities || []);//форматирование
+				}
 				else
-				{	data.text = utils.EntitiesToMarkdown(data.text, ImagesList[key].caption_entities || [], napr);
+				{	data.text = utils.EntitiesToMarkdown(ImagesList[key].caption || '', ImagesList[key].caption_entities || [], napr);
 					data.format = 'markdown';
 				}
 			}
@@ -5825,7 +5829,7 @@ async function send_Text_max(now,offset,chatList,napr)
           { let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
 			WriteLogFile('text Макс "'+key+'"'+' в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 			//готовим текст
-			let data = {};
+			const data = {};
 			if(napr==='web')
 			{	data.text = TextList[key].text;
 				data.elements = utils.EntitiesToMax(TextList[key].entities || []);
