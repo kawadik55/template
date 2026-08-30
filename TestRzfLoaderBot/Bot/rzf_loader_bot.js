@@ -344,7 +344,7 @@ try{slaveBot = (config.slavebot===true) ? new SlaveBot(
 	) : null;
 }catch(err) {WriteLogFile('Ошибка создания slaveBot: '+err);}
 //====================================================================
-//Функция-колбэк для уведомлений об изменениях из Макс слэйв бота
+//Функция-колбэк для уведомлений об изменениях из МАКС слэйв бота
 let slaveMaxBot = null;
 const onConfigMaxUpdate = (update) => {
     switch(update.event) {
@@ -459,18 +459,18 @@ var Cron1 = cron.schedule(timeCron, async function()
 			}
 		}
 		
-		//потом в Макс
+		//потом в МАКС
 		//ежик
 		if(config.Eg===true) 
-		{	await send_Eg_max(now);//Макс
+		{	await send_Eg_max(now);//МАКС
 		}
 		//расписание
 		if(config.Raspis===true) 
 		{	if(config.fromES && config.fromES===true) 
-			{	await send_Raspis_ES_max(now);//Макс
+			{	await send_Raspis_ES_max(now);//МАКС
 			}
 			else 
-			{	await send_Raspis_standart_max(now);//Макс
+			{	await send_Raspis_standart_max(now);//МАКС
 			}
 		}
 		
@@ -500,7 +500,7 @@ var Cron2 = cron.schedule('10 '+'*/2 * * * *', async function()
 			await send_Images(now, offset[i]);
 		}
 		
-		//публикуем тексты и фото в Макс
+		//публикуем тексты и фото в МАКС
 		offset = (queueWebMax && chat_news_maxweb) ? Object.keys(chat_news_maxweb) : [];
 		for(let i=0;i<offset.length;i++) 
 		{
@@ -677,8 +677,8 @@ else if(!Object.hasOwn(AdminList, 'coordinatorName'))
 }
 
 if(queue) WriteLogFile('Очередь ТГ-queue создана');
-if(queueWebMax) WriteLogFile('Очередь Макс-queueWebMax создана');
-if(queueBotMax) WriteLogFile('Очередь Макс-queueBotMax создана');
+if(queueWebMax) WriteLogFile('Очередь МАКС-queueWebMax создана');
+if(queueBotMax) WriteLogFile('Очередь МАКС-queueBotMax создана');
 if(slaveBot) WriteLogFile('slaveBot @'+nameNews+' запущен в polling-режиме');
 if(slaveMaxBot) WriteLogFile('slaveMaxBot @'+nameBotMax+' запущен в polling-режиме');
 if(logBot) WriteLogFile('logBot запущен в пассивном режиме');
@@ -734,7 +734,7 @@ if(fs.existsSync(currentDir+'/queue_bot_max.json') && queueBotMax)
 	if (config.useWebMax && SESSION_NAME) 
 	{
 		const result = await max.init(tokenWebMax, 'WEB', currentDir, SESSION_NAME);
-		WriteLogFile('Инициализация токена Web Макс = '+JSON.stringify(result,null,2));
+		WriteLogFile('Инициализация токена Web МАКС = '+JSON.stringify(result,null,2));
 	}
 	}catch(err){console.log(err);}
 })();
@@ -751,7 +751,7 @@ try{
 	let valid = validUser(userId);
 	
 	let str='Привет, '+name+'! Это чат-бот '+area+'! ';
-	let tmp = (config?.useWebMax||config?.useBotMax) ? '/Макс' : '';
+	let tmp = (config?.useWebMax||config?.useBotMax) ? '/МАКС' : '';
 	str+='С моей помощью Вы сможете опубликовать в NAших ТГ'+tmp+'-каналах свои файлы и текстовые объявления. ';
 	
 	//проверим юзера
@@ -2374,7 +2374,7 @@ try{
 						//публикуем файл сразу в ТГ первый раз, если по условиям совпадает
 						let offset = chat_news ? Object.keys(chat_news) : [];
 						for(let i=0;i<offset.length;i++) await publicImage(ImagesList[len], offset[i]);
-						//публикуем файл сразу в Макс первый раз, если по условиям совпадает
+						//публикуем файл сразу в МАКС первый раз, если по условиям совпадает
 						if(queueWebMax)
 						{	offset = chat_news_maxweb ? Object.keys(chat_news_maxweb) : [];
 							for(let i=0;i<offset.length;i++)
@@ -2394,7 +2394,7 @@ try{
 						//публикуем альбом сразу в ТГ первый раз, если по условиям совпадает
 						let offset = chat_news ? Object.keys(chat_news) : [];
 						for(let i=0;i<offset.length;i++) await publicImage(ImagesList[len], offset[i]);
-						//публикуем альбом сразу в Макс первый раз, если по условиям совпадает
+						//публикуем альбом сразу в МАКС первый раз, если по условиям совпадает
 						offset = chat_news_maxweb ? Object.keys(chat_news_maxweb) : [];
 						for(let i=0;i<offset.length;i++) await publicImage_max(ImagesList[len], offset[i], chat_news_maxweb, 'web');
 						offset = chat_news_maxbot ? Object.keys(chat_news_maxbot) : [];
@@ -3354,7 +3354,7 @@ catch(err){
 		//сохраняем ТГ чаты
 		sortObjectByKeys(chat_news);
 		WriteFileJson(currentDir+"/chatId.json", chat_news);
-		//сохраняем Макс чаты
+		//сохраняем МАКС чаты
 		sortObjectByKeys(chat_news_maxbot);
 		WriteFileJson(currentDir+"/chatId_maxbot.json", chat_news_maxbot);
 		//очередь ТГ
@@ -3393,7 +3393,7 @@ catch(err){
 					}))
 				};
 				await WriteFileJson(currentDir+'/queue_web_max.json', state);
-				await WriteLogFile('Остатки очереди Макс='+queueWebMax.queue.length+', записали в queue_web_max.json');
+				await WriteLogFile('Остатки очереди МАКС='+queueWebMax.queue.length+', записали в queue_web_max.json');
 			}
 		}
 		//очередь Bot Max
@@ -3413,7 +3413,7 @@ catch(err){
 					}))
 				};
 				await WriteFileJson(currentDir+'/queue_bot_max.json', state);
-				await WriteLogFile('Остатки очереди Макс='+queueBotMax.queue.length+', записали в queue_bot_max.json');
+				await WriteLogFile('Остатки очереди МАКС='+queueBotMax.queue.length+', записали в queue_bot_max.json');
 			}
 		}
 		
@@ -3885,7 +3885,7 @@ try{
 }
 //====================================================================
 //эта функция используется только при загрузке поста, в рассылке не участвует
-async function publicText_max(obj,offset,chatList,napr)//тут текст на публикацию в napr Макс
+async function publicText_max(obj,offset,chatList,napr)//тут текст на публикацию в napr МАКС
 {
 try{
 	//проверяем разрешение на публикацию немедленно
@@ -3911,7 +3911,7 @@ try{
 	{	let timestr = !!obj.time?(' '+obj.time):'';//запись времени
 		let day = !!obj.dayOfWeek?obj.dayOfWeek:'';//запись дня
 		let date = !!obj.date?obj.date:'';//запись даты
-		WriteLogFile('text Макс "Сегодня" в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
+		WriteLogFile('text МАКС "Сегодня" в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 		//готовим текст
 		const data = {};
 		if(napr==='web') 
@@ -3935,7 +3935,7 @@ try{
 			if(data && data.text && data.text !== '') await addToQueueMax('sendText',chatId,name,data,napr);
 			count_chats++;
 		}
-		await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats+' = ОК');
+		await WriteLogFile('МАКС Всего чатов '+napr+' = '+count_chats+' = ОК');
 	}
 }catch(err){WriteLogFile(err+'\nfrom publicText_max()','вчат');}
 }
@@ -4156,7 +4156,7 @@ try{
     {	let timestr = obj?.time || '';//запись времени
 		let day = obj?.dayOfWeek || '';//запись дня
 		let date = obj?.date || '';//запись даты
-		WriteLogFile(obj.type+' Макс "Сегодня" в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
+		WriteLogFile(obj.type+' МАКС "Сегодня" в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 		let type = obj?.type ? obj.type : 'unknown_type';
 		//готовим объект data: { text, path, paths[], elements[] }
 		const data = {};
@@ -4195,7 +4195,7 @@ try{
 				count_chats++;
 			}
 		}
-		await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats);
+		await WriteLogFile('МАКС Всего чатов '+napr+' = '+count_chats);
 	}
 }catch(err){WriteLogFile(err+'\nfrom publicImage_max()','вчат');}
 }
@@ -4958,7 +4958,7 @@ async function send_Eg_max(time)
 		}
 		
 		const hasTrue = chat.some(item => item.Eg === true);//есть ли разрешенные вообще
-		if(hasTrue) await WriteLogFile('Макс Рассылка *Ежика* '+refdate+' подписчикам '+napr+' '+groffset+':');
+		if(hasTrue) await WriteLogFile('МАКС Рассылка *Ежика* '+refdate+' подписчикам '+napr+' '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
@@ -4975,14 +4975,14 @@ async function send_Eg_max(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Eg_max()=>for()','вчат');}
 		}
-		if(hasTrue) await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats);
+		if(hasTrue) await WriteLogFile('МАКС Всего чатов '+napr+' = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Eg_max()','вчат');
   }
 }
 //====================================================================
-//рассылка стандартного расписания местности в Макс
+//рассылка стандартного расписания местности в МАКС
 async function send_Raspis_standart_max(time)
 { try
   {		if(!queueWebMax && !queueBotMax) return;
@@ -5052,7 +5052,7 @@ async function send_Raspis_standart_max(time)
 			}
 		}
 		else return;
-		if(hasTrue) await WriteLogFile('Макс Рассылка *Расписания* подписчикам '+napr+' '+groffset+':');
+		if(hasTrue) await WriteLogFile('МАКС Рассылка *Расписания* подписчикам '+napr+' '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{	
@@ -5069,14 +5069,14 @@ async function send_Raspis_standart_max(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis_standart_max()=>for()','вчат');}
 		}
-		if(hasTrue) await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats);
+		if(hasTrue) await WriteLogFile('МАКС Всего чатов '+napr+' = '+count_chats);
 	}
   } catch (err) 
   {WriteLogFile(err+'\nfrom send_Raspis_standart_max()','вчат');
   }
 }
 //====================================================================
-//рассылка в Макс расписаний для городов юзеров из настроек
+//рассылка в МАКС расписаний для городов юзеров из настроек
 async function send_Raspis_ES_max(time)
 { try
   {	if(!queueWebMax && !queueBotMax) return;
@@ -5117,7 +5117,7 @@ async function send_Raspis_ES_max(time)
 	{
 		if(!Array.isArray(chat) || chat.length==0) return;//если не массив
 		const hasTrue = chat.some(item => item.Raspis === true);//есть ли разрешенные вообще
-		if(hasTrue) await WriteLogFile('Макс Рассылка *Расписания* подписчикам '+napr+' '+groffset+':');
+		if(hasTrue) await WriteLogFile('МАКС Рассылка *Расписания* подписчикам '+napr+' '+groffset+':');
 		let count_chats = 0;
 		for(let i=0;i<chat.length;i++) 
 		{  try{
@@ -5165,7 +5165,7 @@ async function send_Raspis_ES_max(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis_ES_max()=>for()','вчат');}
 		}
-		if(hasTrue) await WriteLogFile('Всего чатов '+napr+' Макс = '+count_chats);
+		if(hasTrue) await WriteLogFile('Всего чатов '+napr+' МАКС = '+count_chats);
 	}
 	
   } catch (err) 
@@ -5474,7 +5474,7 @@ async function send_Images(now,offset)
   }
 }
 //====================================================================
-//используется в рассылке Макс
+//используется в рассылке МАКС
 async function send_Images_max(now,offset,chatList,napr)
 { try
   {	if(!now || now.isValid()==false) now = moment();//проверяем
@@ -5553,7 +5553,7 @@ async function send_Images_max(now,offset,chatList,napr)
           if(flag) 
           { let timestr = !!ImagesList[key].time?(' '+ImagesList[key].time):'';
 			let type = ImagesList[key]?.type ? ImagesList[key].type : 'unknown_type';
-			WriteLogFile(type+' Макс "'+key+'"'+' в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
+			WriteLogFile(type+' МАКС "'+key+'"'+' в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 			//готовим объект data: { text, path, paths[], elements[] }
 			const data = {};
 			if(ImagesList[key].caption_entities)
@@ -5589,7 +5589,7 @@ async function send_Images_max(now,offset,chatList,napr)
 					count_chats++;
 				}
 			}
-			await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats);
+			await WriteLogFile('МАКС Всего чатов '+napr+' = '+count_chats);
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Images_max()=>for()','вчат');}
 	}
@@ -5825,7 +5825,7 @@ async function send_Text_max(now,offset,chatList,napr)
           //публикуем текст
 		  if(flag)
           { let timestr = !!TextList[key].time?(' '+TextList[key].time):'';
-			WriteLogFile('text Макс "'+key+'"'+' в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
+			WriteLogFile('text МАКС "'+key+'"'+' в зону '+offset+' '+napr+' => день='+day+'; дата='+date+timestr);
 			//готовим текст
 			const data = {};
 			if(napr==='web')
@@ -5852,7 +5852,7 @@ async function send_Text_max(now,offset,chatList,napr)
 					count_chats++;
 				}
 			}
-			await WriteLogFile('Макс Всего чатов '+napr+' = '+count_chats);
+			await WriteLogFile('МАКС Всего чатов '+napr+' = '+count_chats);
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Text()=>for()','вчат');}
 	}
@@ -5987,10 +5987,10 @@ if(queueWebMax)
 	queueWebMax.on('sent', (item) => 
 	{	const type = item.type.replace('send','');
 		const id = item.id ? item.id : '000';
-		WriteLogFile(`${type} ${id} успешно отправлен в чат Макс -> ${item.username || item.chatId}`);
+		WriteLogFile(`${type} ${id} успешно отправлен в чат МАКС -> ${item.username || item.chatId}`);
 	});
 	queueWebMax.on('failed', (item, error) => 
-	{WriteLogFile('Ошибка отправки сообщения '+(item.id||'number')+' из очереди Web Макс: '+(error.message||error)+' ('+(item.username || item.chatId)+')');
+	{WriteLogFile('Ошибка отправки сообщения '+(item.id||'number')+' из очереди Web МАКС: '+(error.message||error)+' ('+(item.username || item.chatId)+')');
 	});
 	queueWebMax.on('connected', () => {WriteLogFile('=> WebMaxClient connected');});
 	queueWebMax.on('disconnected', (error) => {WriteLogFile('=> WebMaxClient disconnected = '+(error.message||error));});
@@ -6008,7 +6008,7 @@ if(queueBotMax)
 	queueBotMax.on('failed', (item, error) => 
 	{if(!!item.bot) delete item.bot;
 	 try
-	 {	WriteLogFile('Ошибка отправки сообщения из очереди Bot Макс: '+(error.message||error)+' ('+(item.chatId||'unknown')+')');
+	 {	WriteLogFile('Ошибка отправки сообщения из очереди Bot МАКС: '+(error.message||error)+' ('+(item.chatId||'unknown')+')');
 		// Ошибки, при которых нужно удалить чат/пользователя
 		const errorMessage = (error.message||error).toLowerCase();
 		const chatErrors = ['forbidden','403','404','not found'];
@@ -6180,7 +6180,7 @@ try {
 			data: data
 		});
 		const typestr = type.replace('send','');
-		//await WriteLogFile(typestr+' '+res+' поставили в Web очередь для чата Макс: '+name);
+		//await WriteLogFile(typestr+' '+res+' поставили в Web очередь для чата МАКС: '+name);
 	}
 	else if(queueBotMax && que==='bot')
 	{	let res = await queueBotMax.addToQueue(
@@ -6191,9 +6191,9 @@ try {
 			bot: bot
 		});
 		const typestr = type.replace('send','');
-		//await WriteLogFile(typestr+' '+res+' поставили в Bot очередь для чата Макс: '+name);
+		//await WriteLogFile(typestr+' '+res+' поставили в Bot очередь для чата МАКС: '+name);
 	}
-} catch (err) {await WriteLogFile('Ошибка постановки  '+type+' для '+chatId+' в очередь чата Макс: '+name+': '+err);}
+} catch (err) {await WriteLogFile('Ошибка постановки  '+type+' для '+chatId+' в очередь чата МАКС: '+name+': '+err);}
 }
 //====================================================================
 
