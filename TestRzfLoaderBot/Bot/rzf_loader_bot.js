@@ -3350,7 +3350,7 @@ catch(err){
 {	process.on(event, async (...args)=>
 	{	fs.writeFileSync(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2));
 		clearInterval(timer);
-		if(event==='uncaughtException') await WriteLogFile('Ошибка:', JSON.stringify(args[0],null,2));
+		if(event==='uncaughtException') await WriteLogFile('Ошибка:', JSON.stringify(args,null,2));
 		//сохраняем ТГ чаты
 		sortObjectByKeys(chat_news);
 		WriteFileJson(currentDir+"/chatId.json", chat_news);
