@@ -193,13 +193,14 @@ function HtmlToMarkdown(htmlText, napr = 'web') {
     const result = HtmlToEntities(htmlText);
     
     // 2. Entities → Markdown
-    return EntitiesToMarkdown(result.text, result.entities, napr);
+    const res = EntitiesToMarkdown(result.text, result.entities, napr);
+	return res;
 }
 //====================================================================
 function HtmlToElements(htmlText) 
 {
     // 1. HTML → Entities
-    const result = HtmlToEntities(htmlText);
+	const result = HtmlToEntities(htmlText);
     
     // 2. Entities → Elements (MAX)
     const elements = EntitiesToElements(result.entities);
@@ -218,48 +219,52 @@ function HtmlToEntities(htmlText) {
     
     // Маппинг тегов → типы сущностей
     const tagMap = {
-        'strong': 'bold', 'b': 'bold',
-        'em': 'italic', 'i': 'italic',
-        's': 'strikethrough', 'strike': 'strikethrough', 'del': 'strikethrough',
-        'u': 'underline', 'ins': 'underline',
+        'strong': 'bold',
+        'b': 'bold',
+        'em': 'italic',
+        'i': 'italic',
+        's': 'strikethrough',
+        'strike': 'strikethrough',
+        'del': 'strikethrough',
+        'u': 'underline',
+        'ins': 'underline',
         'code': 'code',
-        'pre': 'pre'
+        'pre': 'pre',
+        'a': 'text_link'
     };
     
-    // Обработка тегов с содержимым
-    for (const [tag, type] of Object.entries(tagMap)) {
-        const regex = new RegExp(`<${tag}>(.*?)<\\/${tag}>`, 'g');
-        text = text.replace(regex, (match, content, offset) => {
-            entities.push({
-                offset: offset,
-                length: content.length,
-                type: type
-            });
-            return content;
-        });
+    // Создаем регулярку из ключей tagMap (без флага 'i')
+    const tags = Object.keys(tagMap).join('|');
+    const tagRegex = new RegExp(`<(${tags})\\b[^>]*>([\\s\\S]*?)<\\/\\1>`, 'g');
+    let match;
+    
+    while ((match = tagRegex.exec(text)) !== null) {
+        const tag = match[1].toLowerCase();
+        const content = match[2];
+        const offset = match.index;
+        const type = tagMap[tag];
+        let url = '';
+        
+        // Для ссылки извлекаем URL
+        if (tag === 'a') {
+            const hrefMatch = match[0].match(/href="([^"]*)"/);
+            url = hrefMatch ? hrefMatch[1] : '';
+        }
+        
+        const entity = { offset, length: content.length, type };
+        if (url) entity.url = url;
+        entities.push(entity);
+        
+        text = text.substring(0, offset) + content + text.substring(offset + match[0].length);
+        tagRegex.lastIndex = 0;
     }
     
-    // Ссылки
-    text = text.replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"(?:\s+[^>]*?)?>(.*?)<\/a>/gi, (match, url, content, offset) => {
-        entities.push({
-            offset: offset,
-            length: content.length,
-            type: 'text_link',
-            url: url
-        });
-        return content;
-    });
-    
-    // Переносы
     text = text.replace(/<br\s*\/?>/gi, '\n');
-    
-    // Удаляем оставшиеся HTML-теги
     text = removeHtmlTags(text);
     
-    // Сортируем по offset
     entities.sort((a, b) => a.offset - b.offset);
     
-    return { text: text, entities: entities };
+    return { text, entities };
 }
 //====================================================================
 function EntitiesToElements(entities) {
@@ -375,11 +380,12 @@ function EntitiesToMarkdown(text, entities, napr = 'web')
         try { entities = JSON.parse(entities); } catch (e) { entities = []; }
     }
     
-    const sorted = [...entities].sort((a, b) => b.offset - a.offset);
+    const sorted = [...entities].sort((a, b) => a.offset - b.offset);
     let result = '';
     let lastPos = 0;
     
-    for (const entity of sorted) {
+    for (const entity of sorted) 
+	{
         const from = entity.offset;
         const to = from + entity.length;
         
