@@ -1,5 +1,4 @@
 const TelegramBot = require('node-telegram-bot-api');
-const moment = require('moment-timezone');
 
 class SlaveBot {
     constructor(token, onConfigUpdate, mainChatNewsRef, mainArea, needTown) {
@@ -77,7 +76,7 @@ class SlaveBot {
 				const botInfo = await this.bot.getMe();
 				this.botName = botInfo.first_name || '';
 				this.botUsername = botInfo.username || '';
-				this.sendErrorMessage('Имя слэйв-бота установлено: '+this.botName);
+				this.sendErrorMessage('Имя слэйв-бота ТГ установлено: '+this.botName);
 			} catch (err) {
 				this.sendErrorMessage('Ошибка получения имени слэйв-бота: ' + (err.message||err));
 			}
@@ -1498,6 +1497,7 @@ class SlaveBot {
             chatEntry.Eg = Boolean(contentSettings.Eg);
             chatEntry.News = Boolean(contentSettings.News);
 			chatEntry.Raspis = Boolean(contentSettings.Raspis);
+			chatEntry.timeAt = new Date().toISOString();
 			
 			//добавляем настройки на город
 			if (pending.townData) {
@@ -1865,9 +1865,12 @@ class SlaveBot {
 						// Чат существует - ничего не делаем
 					} catch (err) {
 						// Проверяем, не ошибка ли это сети
-						if (err.message === 'Timeout' || err.message.includes('502') || 
-							err.message.includes('Bad Gateway') || err.message.includes('ETIMEDOUT') ||
-							err.message.includes('ECONNRESET')) 
+						const errors = ['timeout', '502', 'bad gateway', 'etimedout', 'econnreset', 
+										'econnrefused', 'enotfound', 'eai_again', 'ehostunreach', 
+										'enetunreach', 'epipe', 'econnaborted', 'socket hang up',
+										'503', 'service unavailable'];
+						const msg = (err.message || err.response?.message || '').toLowerCase();
+						if (errors.some(e => msg.includes(e)))
 						{
 							// Это ошибка сети - прерываем очистку
 							this.sendErrorMessage('Обнаружена проблема со связью, очистка прервана');
