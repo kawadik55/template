@@ -1,5 +1,6 @@
 // Slave_max_bot.js
-const { Bot, Keyboard } = require('@maxhub/max-bot-api');
+//const { Bot, Keyboard } = require('@maxhub/max-bot-api');
+const { Bot, Keyboard } = require('@irklva/max-bot-api');
 
 class SlaveMaxBot {
 	constructor(token, onConfigUpdate, mainChatNewsRef, mainArea, needTown) {
