@@ -3350,7 +3350,23 @@ catch(err){
 {	process.on(event, async (...args)=>
 	{	fs.writeFileSync(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2));
 		clearInterval(timer);
-		if(event==='uncaughtException') await WriteLogFile('Ошибка:', JSON.stringify(args,null,2));
+		if(event==='uncaughtException') 
+		{	await WriteLogFile('Длина args = ', String(args.length));
+			for (let i = 0; i < args.length; i++) {
+				const arg = args[i];
+				await WriteLogFile('тип: '+ typeof arg);
+				await WriteLogFile('значение: '+ String(arg));
+				// Для ошибок используем специальную обработку
+				if (arg instanceof Error) {
+					await WriteLogFile('message: '+ String(arg.message || 'no message'));
+					await WriteLogFile('stack: '+ String(arg.stack || 'no stack'));
+					await WriteLogFile('name: '+ String(arg.name || 'no name'));
+				} else {
+					// Для всего остального - JSON
+					await WriteLogFile(JSON.stringify(arg, null, 2));
+				}
+			}
+		}
 		//сохраняем ТГ чаты
 		sortObjectByKeys(chat_news);
 		WriteFileJson(currentDir+"/chatId.json", chat_news);
