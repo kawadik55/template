@@ -4,6 +4,6 @@
 	"node-cron": "^3.0.3",
     "node-telegram-bot-api": "^0.64.0",
 	"mywebmaxsocket": "github:kawadik55/mywebmaxsocket",
-	"@irklva/max-bot-api": "^0.2.3"
+	"@kawadik55/my-max-bot-api": "github:kawadik55/my-max-bot-api-client-ts"
   }
 }
