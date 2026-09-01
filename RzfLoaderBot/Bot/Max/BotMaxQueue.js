@@ -74,7 +74,7 @@ class BotMaxQueue extends EventEmitter {
             if (netCodes.includes(code)) {
                 return true;
             }
-			const httpCodes = ['429', '500', '503', '504'];
+			const httpCodes = ['429', '500', '502', '503', '504'];
 			if (httpCodes.includes(String(code))) {
 				return true;
 			}
@@ -90,7 +90,7 @@ class BotMaxQueue extends EventEmitter {
             if (netCodes.includes(code)) {
                 return true;
             }
-			const httpCodes = ['429', '500', '503', '504'];
+			const httpCodes = ['429', '500', '502', '503', '504'];
 			if (httpCodes.includes(String(code))) {
 				return true;
 			}
