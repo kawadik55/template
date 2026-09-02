@@ -1395,7 +1395,7 @@ class SlaveMaxBot {
 	}
 
 	setupCleanupTimer() {
-		const CHAT_CLEANUP_INTERVAL = 6 * 60 * 60 * 1000 + 11*60000; // 6 часов 11 мин
+		const CHAT_CLEANUP_INTERVAL = 9 * 60 * 60 * 1000 + 11*60000; // 9 часов 11 мин
 		let nextChatCleanup = Date.now() + CHAT_CLEANUP_INTERVAL;
 
 		// Очистка старых pending сессий каждые timeout минут
