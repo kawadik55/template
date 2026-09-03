@@ -4451,6 +4451,8 @@ async function sleep(ms) {return new Promise(resolve => setTimeout(resolve, ms))
 //====================================================================
 function getMessageCount()
 {
+	return true;//отключаем это дело
+	
 	if(sendMessage.count >= SPEEDLIMIT) return false;//достигли максимума
 	sendMessage.count = (sendMessage.count || 0) + 1;//счетчик сообщений в секунду
 	if(sendMessage.count == 1) setTimeout(doAfter, 1000);//на первом заряжаем таймер
