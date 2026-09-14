@@ -1819,13 +1819,13 @@ class SlaveBot {
 	async cleanupDeadChats() 
 	{
 		try {
-			this.sendErrorMessage('Начинаем очистку несуществующих чатов...');
+			//this.sendErrorMessage('Начинаем очистку несуществующих чатов...');
 			let cleaned = 0;
 			
 			try {
 				await this.bot.getMe();
 			} catch (err) {
-				this.sendErrorMessage('Нет соединения с Telegram, очистка отложена');
+				this.sendErrorMessage('Нет соединения с Telegram, очистка несуществующих чатов отложена');
 				return; // Прерываем очистку при отсутствии связи
 			}
 			
@@ -1836,24 +1836,26 @@ class SlaveBot {
 			{	if (!Array.isArray(chats)) continue;
 				
 				// Собираем ID всех чатов в этой таймзоне
-				const chatIds = [];
+				const chatIds = {};
 				for (const chat of chats) {
 					let chatId = null;
+					let chatName = null;
 					// Ищем chatId в объекте (исключая служебные поля)
 					for (const [key, value] of Object.entries(chat)) {
 						if (key !== 'message_thread_id' && key !== 'Eg' && key !== 'News' && key !== 'Raspis') {
 							chatId = value;
+							chatName = key;
 							break;
 						}
 					}
-					if (chatId) chatIds.push(chatId);
+					if (chatId) chatIds[chatId] = chatName;
 				}
 				
-				if (chatIds.length === 0) continue;
+				if (Object.keys(chatIds).length === 0) continue;
 				
 				// Проверяем каждый чат и собираем ID мертвых
 				const deadIds = [];
-				for (const chatId of chatIds) {
+				for (const chatId of Object.keys(chatIds)) {
 					try {
 						// Проверяем существование чата с таймаутом
 						await Promise.race([
@@ -1877,7 +1879,7 @@ class SlaveBot {
 							return;
 						}
 						// Ошибка означает что чат не существует или бот не в нем
-						console.log('Чат ' + chatId + ' не существует или бот удален, удаляем из конфига');
+						this.sendErrorMessage('Чат ' + chatIds[chatId] + ' не существует или бот удален, удаляем из конфига');
 						deadIds.push(chatId.toString());
 						cleaned++;
 					}
@@ -1907,7 +1909,7 @@ class SlaveBot {
 			{	this.saveConfig('cleanup_completed', {cleanedCount: cleaned, timestamp: Date.now()});
 			} 
 			else
-			{	this.sendErrorMessage('Очистка завершена: нет удаленных чатов');
+			{	//this.sendErrorMessage('Очистка завершена: нет удаленных чатов');
 			}
 			
 		} catch (err) 
