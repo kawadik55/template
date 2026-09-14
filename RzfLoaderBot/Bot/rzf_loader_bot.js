@@ -3896,7 +3896,7 @@ try{
 		  }
 		 }catch(err){WriteLogFile(err+'\nfrom publicText()=>for()','вчат');}
 		}
-		await WriteLogFile('Всего чатов ТГ = '+count_chats+' = ОК');
+		await WriteLogFile('ТГ Всего чатов = '+count_chats+' = ОК');
 	}
 }catch(err){WriteLogFile(err+'\nfrom publicText()','вчат');}
 }
@@ -4140,7 +4140,7 @@ try{//проверяем разрешение на публикацию неме
 		  }
 		}catch(err){WriteLogFile(err+'\nfrom publicImage()=>for()','вчат');}
 	 }
-	 await WriteLogFile('Всего чатов = '+count_chats);
+	 await WriteLogFile('ТГ Всего чатов = '+count_chats);
 	}
 }catch(err){WriteLogFile(err+'\nfrom publicImage()','вчат');}
 }
@@ -5184,7 +5184,7 @@ async function send_Raspis_ES_max(time)
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis_ES_max()=>for()','вчат');}
 		}
-		if(hasTrue) await WriteLogFile('Всего чатов '+napr+' МАКС = '+count_chats);
+		if(hasTrue) await WriteLogFile('МАКС Всего чатов '+napr+' = '+count_chats);
 	}
 	
   } catch (err) 
@@ -5483,7 +5483,7 @@ async function send_Images(now,offset)
 					count_chats++;
 				}
 			}
-			await WriteLogFile('Всего чатов = '+count_chats);
+			await WriteLogFile('ТГ Всего чатов = '+count_chats);
           }
 		}catch(err){WriteLogFile(err+'\nfrom send_Images()=>for()','вчат');}
 	}
