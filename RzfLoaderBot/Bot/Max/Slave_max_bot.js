@@ -1432,7 +1432,7 @@ class SlaveMaxBot {
 
 	async cleanupDeadChats() {
 		try {
-			this.sendErrorMessage('Начинаем очистку несуществующих чатов...');
+			//this.sendErrorMessage('Начинаем очистку несуществующих чатов...');
 			let cleaned = 0;
 			
 			try {
@@ -1448,15 +1448,15 @@ class SlaveMaxBot {
 			{
 				if (!Array.isArray(chats)) continue;
 				
-				const chatIds = [];
+				const chatIds = {};
 				for (const chat of chats)
-				{	if (chat.chatId) chatIds.push(chat.chatId);
+				{	if (chat.chatId) chatIds[chat.chatId] = chat.name;
 				}
 				
-				if (chatIds.length === 0) continue;
+				if (Object.keys(chatIds).length === 0) continue;
 				
 				const deadIds = [];
-				for (const chatId of chatIds) {
+				for (const chatId of Object.keys(chatIds)) {
 					try {
 						await Promise.race([
 							this.bot.api.getChat(chatId),
@@ -1469,12 +1469,12 @@ class SlaveMaxBot {
 						if(	msg.includes('forbidden') || msg.includes('403') || 
 							msg.includes('404') || msg.includes('not found'))
 						{							
-							console.log('Чат ' + chatId + ' не существует или бот удален, удаляем из конфига');
+							this.sendErrorMessage('Чат ' + chatIds[chatId] + ' не существует или бот удален, удаляем из конфига');
 							deadIds.push(chatId.toString());
 							cleaned++;
 						}
 						else
-						{	this.sendErrorMessage('Обнаружена проблема со связью, очистка прервана', msg);
+						{	this.sendErrorMessage('Обнаружена проблема со связью, очистка прервана:\n' + msg);
 							return;
 						}
 					}
@@ -1496,7 +1496,7 @@ class SlaveMaxBot {
 			if (cleaned > 0) {
 				this.saveConfig('cleanup_completed', {cleanedCount: cleaned, timestamp: Date.now()});
 			} else {
-				this.sendErrorMessage('Очистка завершена: нет удаленных чатов');
+				//this.sendErrorMessage('Очистка завершена: нет удаленных чатов');
 			}
 			
 		} catch (err) {
