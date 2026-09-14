@@ -5178,7 +5178,7 @@ async function send_Raspis_ES_max(time)
 			if(data && data.text && data.text !== '') 
 			{
 				await addToQueueMax('sendText', chatId, name, data, napr);
-				await WriteLogFile('город = '+town);
+				await WriteLogFile('город <'+name+'> = '+town);
 				count_chats++;
 			}
 
@@ -5267,8 +5267,7 @@ async function send_Raspis_ES(time)
 				}
 			}
 			else 
-			{	await WriteLogFile('город = '+town);
-				//if (town.includes('не выбран')) chat[i].Raspis = false;//принудительно убираем, если без города
+			{	await WriteLogFile('город <'+name[0]+'> = '+town);
 				count_chats++;
 			}
 
