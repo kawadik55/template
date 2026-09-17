@@ -6214,4 +6214,4 @@ try {
 } catch (err) {await WriteLogFile('Ошибка постановки  '+type+' для '+chatId+' в очередь чата МАКС: '+name+': '+err);}
 }
 //====================================================================
-
+setInterval(() => {console.error(`[heartbeat] ${new Date().toISOString()}`);}, 5 * 60 * 1000);
