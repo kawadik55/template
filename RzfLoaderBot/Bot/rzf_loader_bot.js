@@ -6216,6 +6216,6 @@ try {
 //====================================================================
 setInterval(() => {
   const mem = process.memoryUsage();
-  const line = `${new Date().toISOString()} [state] uptime=${process.uptime().toFixed(0)}s rss=${(mem.rss/1024/1024).toFixed(1)}MB heap=${(mem.heapUsed/1024/1024).toFixed(1)}MB queue=${queue.queue.length} processing=${queue.isProcessing} connected=${queue.isConnected}\n`;
+  const line = `${moment().format('DD.MM.YY HH:mm:ss:ms')} [state] uptime=${process.uptime().toFixed(0)}s rss=${(mem.rss/1024/1024).toFixed(1)}MB heap=${(mem.heapUsed/1024/1024).toFixed(1)}MB queue=${queue.queue.length} processing=${queue.isProcessing} connected=${queue.isConnected}\n`;
   try { fs.appendFileSync(PathToLog+'/events.log', line); } catch (e) {}
 }, 5 * 60 * 1000);
