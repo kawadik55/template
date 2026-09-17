@@ -6214,4 +6214,8 @@ try {
 } catch (err) {await WriteLogFile('Ошибка постановки  '+type+' для '+chatId+' в очередь чата МАКС: '+name+': '+err);}
 }
 //====================================================================
-setInterval(() => {console.error(`[heartbeat] ${new Date().toISOString()}`);}, 5 * 60 * 1000);
+setInterval(() => {
+  const mem = process.memoryUsage();
+  const line = `${new Date().toISOString()} [state] uptime=${process.uptime().toFixed(0)}s rss=${(mem.rss/1024/1024).toFixed(1)}MB heap=${(mem.heapUsed/1024/1024).toFixed(1)}MB queue=${queue.queue.length} processing=${queue.isProcessing} connected=${queue.isConnected}\n`;
+  try { fs.appendFileSync(PathToLog+'/events.log', line); } catch (e) {}
+}, 5 * 60 * 1000);
