@@ -6249,7 +6249,8 @@ setInterval(async () => {
 	` getMe.NewsBot=${getMeStatus.NewsBot}` +
 	` getMe.logBot=${getMeStatus.logBot}` +
     `\n`;
-  try { fs.appendFileSync(PathToLog+'/events.log', line); } catch (e) {}
+  const filename = 'events'+LogFile;
+  try { fs.appendFileSync(filename, line); } catch (e) {}
 }, 5 * 60 * 1000);
 
 async function getMeWithTimeout(bot, ms = 5000) {
