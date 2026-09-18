@@ -6243,7 +6243,7 @@ setInterval(async () => {
 		  new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
 		]);
 	  pending = info.pending_update_count || 0;
-	} catch (e) { pending = -1; }
+	} catch (e) { pending = 'timeout'; }
   const line =
     `${moment().format('DD.MM.YY HH:mm:ss:ms')}` +
     ` uptime=${process.uptime().toFixed(0)}s` +
