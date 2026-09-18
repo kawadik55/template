@@ -6249,7 +6249,7 @@ setInterval(async () => {
 	` getMe.NewsBot=${getMeStatus.NewsBot}` +
 	` getMe.logBot=${getMeStatus.logBot}` +
     `\n`;
-  const filename = 'events_'+LogFile;
+  const filename = LogFile.replace('.log','')+'_events.log';
   try { fs.appendFileSync(filename, line); } catch (e) {}
 }, 5 * 60 * 1000);
 
