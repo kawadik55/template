@@ -6228,13 +6228,13 @@ setInterval(async () => {
     await getMeWithTimeout(NewsBot);
 	getMeStatus.NewsBot = 'ok';
   } catch (e) {
-    getMeStatus.NewsBot = `fail:${e.code || e.message}`;
+    getMeStatus.NewsBot = `code:${e.code || null}: ${e.message || null}`;
   }
   try {
     await getMeWithTimeout(logBot);
 	getMeStatus.logBot = 'ok';
   } catch (e) {
-    getMeStatus.logBot = `fail:${e.code || e.message}`;
+    getMeStatus.logBot = `code:${e.code || null}: ${e.message || null}`;
   }
   const line =
     `${moment().format('DD.MM.YY HH:mm:ss:ms')}` +

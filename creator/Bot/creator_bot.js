@@ -5637,13 +5637,13 @@ setInterval(async () => {
     await getMeWithTimeout(Bot);
 	getMeStatus.InfoBot = 'ok';
   } catch (e) {
-    getMeStatus.InfoBot = `fail:${e.code || e.message}`;
+    getMeStatus.InfoBot = `code:${e.code || null}: ${e.message || null}`;
   }
   try {
     await getMeWithTimeout(logBot);
 	getMeStatus.logBot = 'ok';
   } catch (e) {
-    getMeStatus.logBot = `fail:${e.code || e.message}`;
+    getMeStatus.logBot = `code:${e.code || null}: ${e.message || null}`;
   }
   const line =
     `${moment().format('DD.MM.YY HH:mm:ss:ms')}` +
@@ -5654,8 +5654,8 @@ setInterval(async () => {
     ` queue=${queue.queue.length}` +
     ` processing=${queue.isProcessing}` +
     ` connected=${queue.isConnected}` +
-    ` getMe.InfoBot=${getMeStatus.InfoBot}` +
-	` getMe.logBot=${getMeStatus.logBot}` +
+    (getMeStatus.InfoBot==='ok'?` getMe.InfoBot=${getMeStatus.InfoBot}`:`\ngetMe.InfoBot=${getMeStatus.InfoBot}\n`) +
+	(getMeStatus.logBot==='ok'?` getMe.logBot=${getMeStatus.logBot}`:`\ngetMe.logBot=${getMeStatus.logBot}\n`) +
     `\n`;
   const filename = LogFile.replace('.log','')+'_events.log';
   try { fs.appendFileSync(filename, line); } catch (e) {}
