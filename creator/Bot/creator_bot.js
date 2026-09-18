@@ -5629,5 +5629,47 @@ function isButtonNameUnique(parentId, buttonName)
   return true; // Имя уникально
 }
 //====================================================================
-		
+setInterval(async () => {
+  const mem = process.memoryUsage();
+  const getMeStatus = {};
+  
+  try {
+    await getMeWithTimeout(Bot);
+	getMeStatus.InfoBot = 'ok';
+  } catch (e) {
+    getMeStatus.InfoBot = `fail:${e.code || e.message}`;
+  }
+  try {
+    await getMeWithTimeout(logBot);
+	getMeStatus.logBot = 'ok';
+  } catch (e) {
+    getMeStatus.logBot = `fail:${e.code || e.message}`;
+  }
+  const line =
+    `${moment().format('DD.MM.YY HH:mm:ss:ms')}` +
+    ` [state]` +
+    ` uptime=${process.uptime().toFixed(0)}s` +
+    ` rss=${(mem.rss/1024/1024).toFixed(1)}MB` +
+    ` heap=${(mem.heapUsed/1024/1024).toFixed(1)}MB` +
+    ` queue=${queue.queue.length}` +
+    ` processing=${queue.isProcessing}` +
+    ` connected=${queue.isConnected}` +
+    ` getMe.InfoBot=${getMeStatus.InfoBot}` +
+	` getMe.logBot=${getMeStatus.logBot}` +
+    `\n`;
+  const filename = 'events_'+LogFile;
+  try { fs.appendFileSync(filename, line); } catch (e) {}
+}, 5 * 60 * 1000);
+
+async function getMeWithTimeout(bot, ms = 5000) {
+  let timer;
+  try {
+    return await Promise.race([
+      bot.getMe(),
+      new Promise((_, rej) => { timer = setTimeout(() => rej(new Error('timeout')), ms); })
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}		
 
