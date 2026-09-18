@@ -6236,18 +6236,24 @@ setInterval(async () => {
   } catch (e) {
     getMeStatus.logBot = `code:${e.code || null}: ${e.message || null}`;
   }
+	let pending = -1;
+	try {
+	  const info = await Promise.race([
+		  LoaderBot.getWebHookInfo(),
+		  new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+		]);
+	  pending = info.pending_update_count || 0;
+	} catch (e) { pending = -1; }
   const line =
     `${moment().format('DD.MM.YY HH:mm:ss:ms')}` +
     ` uptime=${process.uptime().toFixed(0)}s` +
     ` rss=${(mem.rss/1024/1024).toFixed(1)}MB` +
     ` heap=${(mem.heapUsed/1024/1024).toFixed(1)}MB` +
-    ` queue=${queue.queue.length}` +
-    ` processing=${queue.isProcessing}` +
-    ` connected=${queue.isConnected}` +
     (getMeStatus.LoaderBot==='ok'?` getMe.LoaderBot=${getMeStatus.LoaderBot}`:`\ngetMe.LoaderBot=${getMeStatus.LoaderBot}\n`) +
 	(getMeStatus.NewsBot==='ok'?` getMe.NewsBot=${getMeStatus.NewsBot}`:`\ngetMe.NewsBot=${getMeStatus.NewsBot}\n`) +
 	(getMeStatus.logBot==='ok'?` getMe.logBot=${getMeStatus.logBot}`:`\ngetMe.logBot=${getMeStatus.logBot}\n`) +
-    `\n`;
+    ` pending=${pending}` +
+	`\n`;
   const filename = LogFile.replace('.log','')+'_events.log';
   try { fs.appendFileSync(filename, line); } catch (e) {}
 }, 5 * 60 * 1000);
