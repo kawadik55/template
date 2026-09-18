@@ -6238,16 +6238,15 @@ setInterval(async () => {
   }
   const line =
     `${moment().format('DD.MM.YY HH:mm:ss:ms')}` +
-    ` [state]` +
     ` uptime=${process.uptime().toFixed(0)}s` +
     ` rss=${(mem.rss/1024/1024).toFixed(1)}MB` +
     ` heap=${(mem.heapUsed/1024/1024).toFixed(1)}MB` +
     ` queue=${queue.queue.length}` +
     ` processing=${queue.isProcessing}` +
     ` connected=${queue.isConnected}` +
-    ` getMe.LoaderBot=${getMeStatus.LoaderBot}` +
-	` getMe.NewsBot=${getMeStatus.NewsBot}` +
-	` getMe.logBot=${getMeStatus.logBot}` +
+    (getMeStatus.LoaderBot==='ok'?` getMe.LoaderBot=${getMeStatus.LoaderBot}`:`\ngetMe.LoaderBot=${getMeStatus.LoaderBot}\n`) +
+	(getMeStatus.NewsBot==='ok'?` getMe.NewsBot=${getMeStatus.NewsBot}`:`\ngetMe.NewsBot=${getMeStatus.NewsBot}\n`) +
+	(getMeStatus.logBot==='ok'?` getMe.logBot=${getMeStatus.logBot}`:`\ngetMe.logBot=${getMeStatus.logBot}\n`) +
     `\n`;
   const filename = LogFile.replace('.log','')+'_events.log';
   try { fs.appendFileSync(filename, line); } catch (e) {}
