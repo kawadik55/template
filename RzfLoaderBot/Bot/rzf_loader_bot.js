@@ -242,7 +242,7 @@ if(config.useWebMax) queueWebMax = new WebMaxQueue(tokenWebMax, currentDir, SESS
 
 //создадим очередь Bot Max
 let queueBotMax = null;
-if(config.useBotMax===true && tokenBotMax)
+if(tokenBotMax)
 {	const MaxNewsBot = new Bot(tokenBotMax);//этот без поллинга
 	queueBotMax = new BotMaxQueue(MaxNewsBot, {	//'default' бот
 		maxRetries: 5,

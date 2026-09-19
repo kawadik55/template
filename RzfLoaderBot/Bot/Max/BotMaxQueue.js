@@ -9,7 +9,7 @@ class BotMaxQueue extends EventEmitter {
         this.bot = bot;
         this.queue = [];
         this.isProcessing = false;
-        this.isConnected = true; // При polling: true изначально считаем соединение активным.
+        this.isConnected = true; // изначально считаем соединение активным.
         
         // Настройки
         this.maxRetries = options.maxRetries || 3;
