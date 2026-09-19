@@ -193,7 +193,7 @@ if(SESSION_NAME.includes(' '))
 	WriteFileJson(TokenDir+"/max_web.json", {token:tokenWebMax, comment:SESSION_NAME});
 }
 try{const tmp = JSON.parse(fs.readFileSync(TokenDir+"/max_bot.json", 'utf8'));
-	if(config.useBotMax) {tokenBotMax = tmp.token || ''; nameBotMax = tmp.comment || '';}//юзернейм бота
+	if(tmp && tmp.token) {tokenBotMax = tmp.token || ''; nameBotMax = tmp.comment || '';}//юзернейм бота
 	else {tokenBotMax = ''; nameBotMax = '';}
 }catch(err){console.log(err); WriteFileJson(TokenDir+"/max_bot.json", {token:"",comment:""});}
 
@@ -6064,11 +6064,11 @@ if(queueBotMax)
 				WriteLogFile('Чат "'+(chat_name||'unknown')+'"('+chatId+') удален из списка чатов Bot Max.');
 			}
 		}		
-	 }catch(err){WriteLogFile('Ошибка в обработке failed из очереди Bot Max: '+err);}
+	 }catch(err){WriteLogFile('Ошибка в обработке failed из очереди Bot МАКС: '+err);}
 	});
-	queueBotMax.on('connected', () => {WriteLogFile('=> bot Max connected');});
-	queueBotMax.on('disconnected', (error) => {WriteLogFile((error.message||error)+'; => bot Max disconnected');});
-	queueBotMax.on('error_response', (error) => 
+	queueBotMax.on('connected', () => {WriteLogFile('=> queueBotMax connected');});
+	queueBotMax.on('disconnected', (error) => {WriteLogFile((error.message||error)+'; => queueBotMax disconnected');});
+	queueBotMax.on('error_response', (error) => //тут строка
 	{	if (error && error.includes('Can\'t deserialize body')) return;
 		WriteLogFile('error_response from queueBotMax => '+(error.message||error));
 	});

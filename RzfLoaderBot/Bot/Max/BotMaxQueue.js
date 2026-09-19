@@ -9,7 +9,7 @@ class BotMaxQueue extends EventEmitter {
         this.bot = bot;
         this.queue = [];
         this.isProcessing = false;
-        this.isConnected = true; // изначально считаем соединение активным.
+        this.isConnected = false;
         
         // Настройки
         this.maxRetries = options.maxRetries || 3;
@@ -24,14 +24,17 @@ class BotMaxQueue extends EventEmitter {
 		this.queueCount = 0;
         
         // Настройка обработчиков ошибок для polling бота
-        this._setupErrorHandlers();
+        //this._setupErrorHandlers();
 		this.connectTimer = null;
+		
+		// Проверка соединения при создании
+		this._checkConnection();
     }
 	//====================================================================
     /**
      * Обработчики ошибок для polling бота (max-bot-api)
      */
-    _setupErrorHandlers() {
+    /*_setupErrorHandlers() {
         this.bot.on('error', (error) => {
             this.consecutiveErrors++;
             console.error(`Bot error (${this.consecutiveErrors}):`, error.message);
@@ -57,7 +60,7 @@ class BotMaxQueue extends EventEmitter {
 				}
 			}
         });
-    }
+    }*/
 	//====================================================================
     /**
      * Проверка типа ошибки (сетевая или API), возвращает true/false
@@ -152,7 +155,7 @@ class BotMaxQueue extends EventEmitter {
      */
     async _checkConnection() {
         try {
-            await this.bot.getMyInfo();
+            await this.bot.api.getMyInfo();
             if (!this.isConnected) {
                 this.isConnected = true;
                 this.consecutiveErrors = 0;
@@ -160,7 +163,9 @@ class BotMaxQueue extends EventEmitter {
                 this._processQueue();
             }
         } catch (error) {
-            console.error('Connection check failed:', error.message);
+            //console.error('Connection check failed:', error.message);
+			this.isConnected = false;
+			this.emit('disconnected', error);
             // Продолжаем попытки
             this._scheduleReconnection();
         }
