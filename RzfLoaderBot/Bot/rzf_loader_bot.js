@@ -6222,7 +6222,7 @@ setInterval(async () => {
     await getMeWithTimeout(LoaderBot);
 	getMeStatus.LoaderBot = 'ok';
   } catch (e) {
-    getMeStatus.LoaderBot = `fail:${e.code || e.message}`;
+    getMeStatus.LoaderBot = `code:${e.code || null}: ${e.message || null}`;
   }
   try {
     await getMeWithTimeout(NewsBot);
