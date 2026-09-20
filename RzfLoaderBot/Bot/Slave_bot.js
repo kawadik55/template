@@ -1446,7 +1446,7 @@ class SlaveBot {
 
             // Проверяем, что выбран хотя бы один тип контента
             const contentSettings = pending.contentSettings || { Eg: true, News: true, Raspis: false };
-            if (!contentSettings.Eg && !contentSettings.News && !contentSettings.Raspis) {
+            /*if (!contentSettings.Eg && !contentSettings.News && !contentSettings.Raspis) {
                 await this.bot.sendMessage(chatId, 
                     '❌ <b>Ошибка: должен быть выбран хотя бы один тип контента</b>\n\n' +
                     `<b>Выберите хоть что нибудь и нажмите "Сохранить"</b>`,
@@ -1456,7 +1456,7 @@ class SlaveBot {
                     }
                 );
                 return;
-            }
+            }*/
 
             const offsetNum = pending.timezoneOffset;
             

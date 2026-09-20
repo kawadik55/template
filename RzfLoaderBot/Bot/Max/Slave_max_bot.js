@@ -1134,7 +1134,7 @@ class SlaveMaxBot {
 			}
 
 			const contentSettings = pending.contentSettings || { Eg: true, News: true, Raspis: false };
-			if (!contentSettings.Eg && !contentSettings.News && !contentSettings.Raspis) {
+			/*if (!contentSettings.Eg && !contentSettings.News && !contentSettings.Raspis) {
 				await this.bot.api.sendMessageToChat(chatId,
 					'❌ <b>Ошибка: должен быть выбран хотя бы один тип контента</b>\n\n' +
 					`<b>Выберите хоть что нибудь и нажмите "Сохранить"</b>`,
@@ -1143,7 +1143,7 @@ class SlaveMaxBot {
 				if(last) await this.deleteMessage(last, chatId);
 				if(lastContent) await this.deleteMessage(lastContent, chatId);
 				return;
-			}
+			}*/
 
 			const offsetNum = pending.timezoneOffset;
 			const offsetKey = offsetNum >= 0 ? `+${offsetNum}` : `${offsetNum}`;
