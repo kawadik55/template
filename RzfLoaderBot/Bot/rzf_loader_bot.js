@@ -2088,7 +2088,10 @@ try{
 						obj[offset[i]] = {}; obj[offset[i]].groups = 0; obj[offset[i]].users = 0;
 						obj[offset[i]].groupMembers = 0; obj[offset[i]].channels = 0; obj[offset[i]].channelMembers = 0;
 						for(let j=0;j<chats.length;j++)
-						{	let chatId = Object.values(chats[j])[0].toString();
+						{	if(!chats[j].Eg && !chats[j].News && !chats[j].Raspis)
+							{	continue;
+							}
+							let chatId = Object.values(chats[j])[0].toString();
 							if(chatId.startsWith('-'))
 							{	
 								let chatInfo;
@@ -2155,7 +2158,10 @@ try{
 						obj[offset[i]] = {}; obj[offset[i]].groups = 0; obj[offset[i]].users = 0;
 						obj[offset[i]].groupMembers = 0; obj[offset[i]].channels = 0; obj[offset[i]].channelMembers = 0;
 						for(let j=0;j<chats.length;j++)
-						{	let chatId = chats[j].chatId.toString();
+						{	if(!chats[j].Eg && !chats[j].News && !chats[j].Raspis)
+							{	continue;
+							}
+							let chatId = chats[j].chatId.toString();
 							if(chatId.startsWith('-'))
 							{	
 								let chatInfo;
@@ -2223,7 +2229,10 @@ try{
 						obj[offset[i]] = {}; obj[offset[i]].groups = 0; obj[offset[i]].users = 0;
 						obj[offset[i]].groupMembers = 0; obj[offset[i]].channels = 0; obj[offset[i]].channelMembers = 0;
 						for(let j=0;j<chats.length;j++)
-						{	let chatId = chats[j].chatId.toString();
+						{	if(!chats[j].Eg && !chats[j].News && !chats[j].Raspis)
+							{	continue;
+							}
+							let chatId = chats[j].chatId.toString();
 							if(chatId.startsWith('-'))
 							{	let chatInfo;
 								let membersCount;
