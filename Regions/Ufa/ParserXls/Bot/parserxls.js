@@ -425,7 +425,7 @@ try{
 					{	let tema = mas[n].tema;
 						let online;
 						if(!!mas[n].online) online = mas[n].online;
-						if(!!online) tema = '<b><a  href="'+online+'" >'+tema+'</a></b>';//гиперссылкой
+						if(!!online) tema = '<a  href="'+online+'" >'+tema+'</a>';//гиперссылкой
 						if(tema.indexOf('Открытое')+1) out[town[i]][cnt][3] += '\nТема: <b>'+tema+'</b>';//жирный
 						else if(tema.indexOf('Рабочее')+1) out[town[i]][cnt][3] += '\nТема: <b>'+tema+'</b>';//жирный
 						else out[town[i]][cnt][3] += '\nТема: <i>'+tema+'</i>';//курсивом
