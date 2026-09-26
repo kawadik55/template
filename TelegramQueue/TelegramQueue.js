@@ -407,7 +407,14 @@ class TelegramQueue extends EventEmitter {
             const isRateLimit = error.response?.body?.error_code === 429 || 
 				(error.response?.body?.description || error.message || '').toLowerCase().includes('too many requests');
 			const migrateToChatId = error.response?.body?.parameters?.migrate_to_chat_id;
-			this.emit('error_response', error.message + (migrateToChatId ? ` [migrate_to_chat_id: ${migrateToChatId}]` : ''));
+			this.emit('error_response', error.message);
+			if(migrateToChatId)
+			{	this.emit('chat_migrated', 
+					{	chatId: chatId,
+						migrateToChatId: migrateToChatId
+					}
+				);
+			}
 			if (isRateLimit && attempts < maxAttempts)
 			{
                 const retryAfter = error.response.body.parameters?.retry_after || 5;

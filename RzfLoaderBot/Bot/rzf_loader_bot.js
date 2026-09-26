@@ -5942,6 +5942,26 @@ function clearTempWait(chatId)
 	numOfDelete[chatId]='';
 }
 //====================================================================
+// Поиск объекта чата в chat_news по chatId
+function findChatInList(chatId, list = chat_news)
+{
+	chatId = String(chatId);
+	for(let offset in list)
+	{	if(!Array.isArray(list[offset])) continue;
+		for(let i=0; i<list[offset].length; i++)
+		{	const chatObj = list[offset][i];
+			const values = Object.values(chatObj || {});
+			for(let v of values)
+			{	if(String(v) === chatId)
+				{	return { offset: offset, index: i, chat: chatObj };
+				}
+			}
+		}
+	}
+	return null;
+}
+//====================================================================
+//====================================================================
 // Обработчики событий очереди ТГ
 queue.on('error', (error) => {WriteLogFile((error.message||error));});
 //queue.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь: ${item.id}`);});
@@ -5968,33 +5988,19 @@ queue.on('failed', (item, error) =>
 	const shouldRemoveChat = chatErrors.some(err => errorMessage.toLowerCase().includes(err.toLowerCase()));
 	
 	if(shouldRemoveChat && item.chatId)//левый чат в списке, удалим
-	{	let flag = 0;
-		let chatId = String(item.chatId);
-		let chat_name = null;
-		Object.keys(chat_news || {}).forEach(key => 
-		{
-			if (Array.isArray(chat_news[key])) {
-				const originalLength = chat_news[key].length;
-				chat_news[key] = chat_news[key].filter(chatObj => {
-					const keys = Object.keys(chatObj || {});
-					const values = Object.values(chatObj || {});
-					let found = false;
-					for (let i = 0; i < values.length; i++) 
-					{	if (String(values[i]) === chatId) 
-						{	found = true;
-							chat_name = keys[i];
-							break;
-						}
-					}
-					return !found;
-				});
-				if (chat_news[key].length !== originalLength) flag++;
-			}
-		});
+	{	let chatId = String(item.chatId);
+		const found = findChatInList(chatId);
 		
-		if(flag)
-		{	sortObjectByKeys(chat_news);
-			WriteFileJson(currentDir+"/chatId.json",chat_news);
+		if(found)
+		{	const { offset, index, chat } = found;
+			const chat_name = Object.keys(chat)[0];//имя группы — первый ключ
+			//удаляем найденный чат из массива
+			chat_news[offset].splice(index, 1);
+			//если массив пустой — удаляем и сам offset
+			if(chat_news[offset].length === 0) delete chat_news[offset];
+			
+			sortObjectByKeys(chat_news);
+			WriteFileJson(currentDir+"/chatId.json", chat_news);
 			WriteLogFile('Чат "'+(chat_name||'unknown')+'"('+chatId+') удален из списка чатов ТГ.');
 		}
 	}		
@@ -6007,6 +6013,29 @@ queue.on('disconnected', (error) => {WriteLogFile((error.message||error)+'; => b
 //queue.on('processing_finished', () => {WriteLogFile('processing_finished');});
 //queue.on('cleared', (item) => {WriteLogFile('cleared = '+item);});
 queue.on('error_response', (error) => {WriteLogFile('error_response from queue => '+(error.message||error));});
+queue.on('chat_migrated', ({ chatId, migrateToChatId }) => 
+{	WriteLogFile('Миграция группы: ' + chatId + ' -> ' + migrateToChatId);
+	
+	const foundOld = findChatInList(chatId);
+	const foundNew = findChatInList(migrateToChatId);
+	
+	const chat_name = Object.keys(foundOld.chat)[0];
+	// удаляем старый
+	chat_news[foundOld.offset].splice(foundOld.index, 1);
+	if(chat_news[foundOld.offset].length === 0) delete chat_news[foundOld.offset];
+	
+	sortObjectByKeys(chat_news);
+	WriteFileJson(currentDir+"/chatId.json", chat_news);
+	
+	// если новый уже настроен — сообщаем
+	if(foundNew)
+	{	const new_chat_name = Object.keys(foundNew.chat)[0];
+		WriteLogFile('Чат "'+chat_name+'"('+chatId+') удален. Новый чат "'+new_chat_name+'"('+migrateToChatId+') уже настроен в списке.');
+	}
+	else
+	{	WriteLogFile('Чат "'+chat_name+'"('+chatId+') удален. Новый чат ('+migrateToChatId+') пока не настроен.');
+	}
+});
 //====================================================================
 // Обработчики событий очереди Web Max
 if(queueWebMax)
