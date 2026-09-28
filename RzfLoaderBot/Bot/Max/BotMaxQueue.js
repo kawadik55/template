@@ -428,7 +428,7 @@ class BotMaxQueue extends EventEmitter {
 	{	if (bot == null || bot==='default') bot = this.bot;
 		let obj = {};
 		if(data.format) obj.format = data.format;
-		if (data.text.length > 4000) 
+		if (data.text && data.text.length > 4000) 
 		{	delete obj.format;
 			data.text = data.text.substring(0, 4000);
 		}
@@ -442,7 +442,7 @@ class BotMaxQueue extends EventEmitter {
 		const attach = await bot.api.uploadImage({ source: data.path });//загружаем файл
 		let obj = {attachments: [attach.toJson()]};
 		if(data.format) obj.format = data.format;
-		if (data.text.length > 4000) 
+		if (data.text && data.text.length > 4000) 
 		{	delete obj.format;
 			data.text = data.text.substring(0, 4000);
 		}
@@ -456,7 +456,7 @@ class BotMaxQueue extends EventEmitter {
 		const attach = await bot.api.uploadVideo({ source: data.path });//загружаем файл
 		let obj = {attachments: [attach.toJson()]};
 		if(data.format) obj.format = data.format;
-		if (data.text.length > 4000) 
+		if (data.text && data.text.length > 4000) 
 		{	delete obj.format;
 			data.text = data.text.substring(0, 4000);
 		}
@@ -470,7 +470,7 @@ class BotMaxQueue extends EventEmitter {
 		const attach = await bot.api.uploadAudio({ source: data.path });//загружаем файл
 		let obj = {attachments: [attach.toJson()]};
 		if(data.format) obj.format = data.format;
-		if (data.text.length > 4000) 
+		if (data.text && data.text.length > 4000) 
 		{	delete obj.format;
 			data.text = data.text.substring(0, 4000);
 		}
@@ -484,7 +484,7 @@ class BotMaxQueue extends EventEmitter {
 		const attach = await bot.api.uploadFile({ source: data.path });//загружаем файл
 		let obj = {attachments: [attach.toJson()]};
 		if(data.format) obj.format = data.format;
-		if (data.text.length > 4000) 
+		if (data.text && data.text.length > 4000) 
 		{	delete obj.format;
 			data.text = data.text.substring(0, 4000);
 		}
@@ -511,7 +511,7 @@ class BotMaxQueue extends EventEmitter {
 		if (attachments.length === 0) throw new Error('Нет валидных файлов альбома для '+username);
 		let obj = {attachments: attachments};
 		if(data.format) obj.format = data.format;
-		if (data.text.length > 4000) 
+		if (data.text && data.text.length > 4000) 
 		{	delete obj.format;
 			data.text = data.text.substring(0, 4000);
 		}
