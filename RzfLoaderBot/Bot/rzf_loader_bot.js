@@ -6279,8 +6279,15 @@ setInterval(async () => {
 		  LoaderBot.getWebHookInfo(),
 		  new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
 		]);
-	  getMeStatus.pending = info.pending_update_count || 0;
+	  getMeStatus.pending = Number(info.pending_update_count) || 0;
 	} catch (e) { getMeStatus.pending = `code:${e.code || null}: ${e.message || null}`;}
+	
+	if (getMeStatus.pending >= 2) 
+	{
+	  console.error(`[watchdog] pending_LoaderBot=${getMeStatus.pending} — exit`);
+	  process.exit(1);
+	}
+	
   const line =
     `${moment().format('DD.MM.YY HH:mm:ss:ms')}` +
     ` uptime=${process.uptime().toFixed(0)}s` +
