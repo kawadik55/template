@@ -6285,7 +6285,7 @@ setInterval(async () => {
 	if (getMeStatus.pending >= 2) 
 	{
 	  console.error(`[watchdog] pending_LoaderBot=${getMeStatus.pending} — exit`);
-	  process.exit(1);
+	  process.emit('SIGTERM');
 	}
 	
   const line =
