@@ -3356,7 +3356,7 @@ catch(err){
 }
 //====================================================================
 //подписка на выход из скрипта
-[`SIGINT`, `uncaughtException`, `SIGTERM`].forEach((event) => 
+['SIGINT', 'uncaughtException', 'SIGTERM', 'Watchdog'].forEach((event) => 
 {	process.on(event, async (...args)=>
 	{	fs.writeFileSync(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2));
 		clearInterval(timer);
@@ -3446,7 +3446,8 @@ catch(err){
 		if(slaveBot) await slaveBot.stop();
 		if(slaveMaxBot) await slaveMaxBot.stop();
 		await WriteLogFile('выход из процесса по '+event);
-		process.exit();
+		if(event==='uncaughtException' || event==='Watchdog') process.exit(1);
+		else process.exit();
 	});
 });
 //====================================================================
@@ -6252,28 +6253,19 @@ try {
 } catch (err) {await WriteLogFile('Ошибка постановки  '+type+' для '+chatId+' в очередь чата МАКС: '+name+': '+err);}
 }
 //====================================================================
+let pendingStrikes = 0;
+
 setInterval(async () => {
   const mem = process.memoryUsage();
   const getMeStatus = {};
-  
+
   try {
     await getMeWithTimeout(LoaderBot);
 	getMeStatus.LoaderBot = 'ok';
   } catch (e) {
     getMeStatus.LoaderBot = `code:${e.code || null}: ${e.message || null}`;
   }
-  try {
-    await getMeWithTimeout(NewsBot);
-	getMeStatus.NewsBot = 'ok';
-  } catch (e) {
-    getMeStatus.NewsBot = `code:${e.code || null}: ${e.message || null}`;
-  }
-  try {
-    await getMeWithTimeout(logBot);
-	getMeStatus.logBot = 'ok';
-  } catch (e) {
-    getMeStatus.logBot = `code:${e.code || null}: ${e.message || null}`;
-  }
+
 	try {
 	  const info = await Promise.race([
 		  LoaderBot.getWebHookInfo(),
@@ -6281,26 +6273,30 @@ setInterval(async () => {
 		]);
 	  getMeStatus.pending = Number(info.pending_update_count) || 0;
 	} catch (e) { getMeStatus.pending = `code:${e.code || null}: ${e.message || null}`;}
-	
-	if (getMeStatus.pending >= 2) 
-	{
+
+  if (getMeStatus.LoaderBot !== 'ok' || getMeStatus.pending > 0)
+  {
+	  const line =
+		`${moment().format('DD.MM.YY HH:mm:ss:ms')}` +
+		` uptime=${process.uptime().toFixed(0)}s` +
+		` rss=${(mem.rss/1024/1024).toFixed(1)}MB` +
+		` heap=${(mem.heapUsed/1024/1024).toFixed(1)}MB` +
+		` getMe.LoaderBot=${getMeStatus.LoaderBot}` +
+		` pending=${getMeStatus.pending}` +
+		`\n`;
+	  const filename = LogFile.replace('.log','')+'_events.log';
+	  try { fs.appendFileSync(filename, line); } catch (e) {}
+  }
+
+  if (getMeStatus.pending > 0) pendingStrikes++;
+  else pendingStrikes = 0;
+
+  if (pendingStrikes >= 2)
+  {
 	  console.error(`[watchdog] pending_LoaderBot=${getMeStatus.pending} — exit`);
-	  process.emit('SIGTERM');
-	}
-	
-  const line =
-    `${moment().format('DD.MM.YY HH:mm:ss:ms')}` +
-    ` uptime=${process.uptime().toFixed(0)}s` +
-    ` rss=${(mem.rss/1024/1024).toFixed(1)}MB` +
-    ` heap=${(mem.heapUsed/1024/1024).toFixed(1)}MB` +
-    (getMeStatus.LoaderBot==='ok'?` getMe.LoaderBot=${getMeStatus.LoaderBot}`:`\ngetMe.LoaderBot=${getMeStatus.LoaderBot}\n`) +
-	(getMeStatus.NewsBot==='ok'?` getMe.NewsBot=${getMeStatus.NewsBot}`:`\ngetMe.NewsBot=${getMeStatus.NewsBot}\n`) +
-	(getMeStatus.logBot==='ok'?` getMe.logBot=${getMeStatus.logBot}`:`\ngetMe.logBot=${getMeStatus.logBot}\n`) +
-    ` pending=${getMeStatus.pending}` +
-	`\n`;
-  const filename = LogFile.replace('.log','')+'_events.log';
-  try { fs.appendFileSync(filename, line); } catch (e) {}
-}, 5 * 60 * 1000);
+	  process.emit('Watchdog');
+  }
+}, 3 * 60 * 1000);
 
 async function getMeWithTimeout(bot, ms = 5000) {
   let timer;
