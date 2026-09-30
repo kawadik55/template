@@ -2954,7 +2954,7 @@ try{//а также DayCount в недельном файле только но�
 },time_interval1*1000);
 //====================================================================
 //подписка на выход из скрипта
-[`SIGINT`, `uncaughtException`, `SIGTERM`].forEach((event) => 
+['SIGINT', 'uncaughtException', 'SIGTERM', 'Watchdog'].forEach((event) => 
 {	process.on(event, async ()=>
 	{	fs.writeFileSync(currentDir+'/LastMessId.txt', JSON.stringify(LastMessId,null,2));
 		fs.writeFileSync(currentDir+'/FileId.txt', JSON.stringify(FileId,null,2));
@@ -2965,11 +2965,12 @@ try{//а также DayCount в недельном файле только но�
         fs.writeFileSync(FileWeekCount, JSON.stringify(WeekCount,null,2));
         await WriteLogFile('выход из процесса по '+event);
         fs.writeFileSync(FileGrandCount, JSON.stringify(GrandCount,null,2));
-        if(event==`uncaughtException`) console.log(event);
+        if(event=='uncaughtException') console.log(event);
         fs.writeFileSync(currentDir+"/answer.txt", JSON.stringify(AnswerList));
 		if(!!interval1) clearInterval(interval1);
 		if(!!interval2) clearInterval(interval2);
-		process.exit();
+		if(event==='uncaughtException' || event==='Watchdog') process.exit(1);
+		else process.exit();
 	});
 });
 //====================================================================
@@ -5629,37 +5630,50 @@ function isButtonNameUnique(parentId, buttonName)
   return true; // Имя уникально
 }
 //====================================================================
+let pendingStrikes = 0;
+
 setInterval(async () => {
   const mem = process.memoryUsage();
   const getMeStatus = {};
-  
+
   try {
-    await getMeWithTimeout(Bot);
+    await getMeWithTimeout(InfoBot);
 	getMeStatus.InfoBot = 'ok';
   } catch (e) {
     getMeStatus.InfoBot = `code:${e.code || null}: ${e.message || null}`;
   }
-  try {
-    await getMeWithTimeout(logBot);
-	getMeStatus.logBot = 'ok';
-  } catch (e) {
-    getMeStatus.logBot = `code:${e.code || null}: ${e.message || null}`;
+
+	try {
+	  const info = await Promise.race([
+		  InfoBot.getWebHookInfo(),
+		  new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+		]);
+	  getMeStatus.pending = Number(info.pending_update_count) || 0;
+	} catch (e) { getMeStatus.pending = `code:${e.code || null}: ${e.message || null}`;}
+
+  if (getMeStatus.InfoBot !== 'ok' || getMeStatus.pending > 0)
+  {
+	  const line =
+		`${moment().format('DD.MM.YY HH:mm:ss:ms')}` +
+		` uptime=${process.uptime().toFixed(0)}s` +
+		` rss=${(mem.rss/1024/1024).toFixed(1)}MB` +
+		` heap=${(mem.heapUsed/1024/1024).toFixed(1)}MB` +
+		` getMe.InfoBot=${getMeStatus.InfoBot}` +
+		` pending=${getMeStatus.pending}` +
+		`\n`;
+	  const filename = LogFile.replace('.log','')+'_events.log';
+	  try { fs.appendFileSync(filename, line); } catch (e) {}
   }
-  const line =
-    `${moment().format('DD.MM.YY HH:mm:ss:ms')}` +
-    ` [state]` +
-    ` uptime=${process.uptime().toFixed(0)}s` +
-    ` rss=${(mem.rss/1024/1024).toFixed(1)}MB` +
-    ` heap=${(mem.heapUsed/1024/1024).toFixed(1)}MB` +
-    ` queue=${queue.queue.length}` +
-    ` processing=${queue.isProcessing}` +
-    ` connected=${queue.isConnected}` +
-    (getMeStatus.InfoBot==='ok'?` getMe.InfoBot=${getMeStatus.InfoBot}`:`\ngetMe.InfoBot=${getMeStatus.InfoBot}\n`) +
-	(getMeStatus.logBot==='ok'?` getMe.logBot=${getMeStatus.logBot}`:`\ngetMe.logBot=${getMeStatus.logBot}\n`) +
-    `\n`;
-  const filename = LogFile.replace('.log','')+'_events.log';
-  try { fs.appendFileSync(filename, line); } catch (e) {}
-}, 5 * 60 * 1000);
+
+  if (getMeStatus.pending > 0) pendingStrikes++;
+  else pendingStrikes = 0;
+
+  if (pendingStrikes >= 2)
+  {
+	  console.error(`[watchdog] pending_InfoBot=${getMeStatus.pending} — exit`);
+	  process.emit('Watchdog');
+  }
+}, 3 * 60 * 1000);
 
 async function getMeWithTimeout(bot, ms = 5000) {
   let timer;
@@ -5671,5 +5685,5 @@ async function getMeWithTimeout(bot, ms = 5000) {
   } finally {
     clearTimeout(timer);
   }
-}		
+}	
 
