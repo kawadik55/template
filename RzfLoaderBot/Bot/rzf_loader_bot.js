@@ -6263,7 +6263,7 @@ setInterval(async () => {
     await getMeWithTimeout(LoaderBot);
 	getMeStatus.LoaderBot = 'ok';
   } catch (e) {
-    getMeStatus.LoaderBot = `code:${e.code || null}: ${e.message || null}`;
+    getMeStatus.LoaderBot = (e.code?'code: '+(e.code+' '):'')+(e.message || null);
   }
 
 	try {
@@ -6272,7 +6272,7 @@ setInterval(async () => {
 		  new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
 		]);
 	  getMeStatus.pending = Number(info.pending_update_count) || 0;
-	} catch (e) { getMeStatus.pending = `code:${e.code || null}: ${e.message || null}`;}
+	} catch (e) { getMeStatus.pending = (e.code?'code: '+(e.code+' '):'')+(e.message || null);}
 
   if (getMeStatus.LoaderBot !== 'ok' || getMeStatus.pending > 0)
   {
