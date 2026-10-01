@@ -5637,19 +5637,19 @@ setInterval(async () => {
   const getMeStatus = {};
 
   try {
-    await getMeWithTimeout(InfoBot);
+    await getMeWithTimeout(Bot);
 	getMeStatus.InfoBot = 'ok';
   } catch (e) {
-    getMeStatus.InfoBot = `code:${e.code || null}: ${e.message || null}`;
+    getMeStatus.InfoBot = (e.code?'code: '+(e.code+' '):'')+(e.message || null);
   }
 
 	try {
 	  const info = await Promise.race([
-		  InfoBot.getWebHookInfo(),
+		  Bot.getWebHookInfo(),
 		  new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
 		]);
 	  getMeStatus.pending = Number(info.pending_update_count) || 0;
-	} catch (e) { getMeStatus.pending = `code:${e.code || null}: ${e.message || null}`;}
+	} catch (e) { getMeStatus.pending = (e.code?'code: '+(e.code+' '):'')+(e.message || null);}
 
   if (getMeStatus.InfoBot !== 'ok' || getMeStatus.pending > 0)
   {
