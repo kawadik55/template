@@ -240,9 +240,13 @@ class BotMaxQueue extends EventEmitter {
 					//если пропала связь, то выходим
 					if (this._isNetworkError(error) || !this.isConnected) 
 					{
-						await this._delay(60000);
+						queueItem.networkAttempts = (queueItem.networkAttempts || 0) + 1;
+						const netDelays = [60000, 180000, 600000];
+						const idx = Math.min(queueItem.networkAttempts - 1, netDelays.length - 1);
+						const netDelay = netDelays[idx];
+						await this._delay(netDelay);
 						this.consecutiveErrors = 0;
-						continue; // Бесконечные попытки при потере связи
+						continue;// Бесконечные попытки при потере связи
 					}
                 }
 				//удаляем из очереди в любом случае
