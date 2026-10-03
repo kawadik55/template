@@ -304,7 +304,11 @@ class BotMaxQueue extends EventEmitter {
             const isRateLimit = errorBody.includes('too many requests') || errorBody.includes('rate limit') || 
 								errorBody.includes('429');
 			let str = error.message;
-			if(str.includes('fetch failed')) str += ' '+error.cause?.code+' '+ error.cause?.message+' '+ error.cause?.address;
+			if(str.includes('fetch failed'))
+			{				
+				str += ' '+error.cause?.code+' '+ error.cause?.message+' '+ error.cause?.address;
+				str += ' | stack: ' + (error.stack || '').split('\n').slice(0,3).join(' <- ');
+			}
 			this.emit('error_response', str);//отдаем строку в эмит
 			if (isRateLimit && attempts < maxAttempts)
 			{
