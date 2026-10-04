@@ -1,5 +1,5 @@
 # Образ builder ноды
-FROM node:18.18.2-alpine as builder
+FROM node:18.18.2 as builder
 
 # Исходники
 WORKDIR /app
