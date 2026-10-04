@@ -6292,7 +6292,8 @@ setInterval(async () => {
   if (getMeStatus.pending > 0) pendingStrikes++;
   else pendingStrikes = 0;
 
-  if (pendingStrikes >= 2)
+  //if (pendingStrikes >= 2)
+  if (getMeStatus.pending > 2)
   {
 	  console.error(`[watchdog] pending_LoaderBot=${getMeStatus.pending} — exit`);
 	  process.emit('Watchdog');
