@@ -2194,7 +2194,7 @@ class SlaveMaxBot {
 			}
 			return false;
 		} catch(err) {
-			this.sendErrorMessage('Ошибка проверки прав бота: ' + (err.message||err));
+			this.sendErrorMessage('Ошибка проверки прав бота в isBotAdmin(): ' + (err.message||err) + ' ('+chatId+')');
 			return false;
 		}
 	}
@@ -2277,7 +2277,7 @@ class SlaveMaxBot {
 			}
 			return true;
 		} catch(err) {
-			this.sendErrorMessage('Ошибка проверки прав бота: ' + (err.message||err));
+			this.sendErrorMessage('Ошибка проверки прав бота в checkBotPerm(): ' + (err.message||err) + ' ('+chatId+')');
 			return false;
 		}
 	}
