@@ -6283,6 +6283,7 @@ setInterval(async () => {
 		` heap=${(mem.heapUsed/1024/1024).toFixed(1)}MB` +
 		` getMe.LoaderBot=${getMeStatus.LoaderBot}` +
 		` pending=${getMeStatus.pending}` +
+		` count=${pendingStrikes}` +
 		`\n`;
 	  const filename = LogFile.replace('.log','')+'_events.log';
 	  try { fs.appendFileSync(filename, line); } catch (e) {}
