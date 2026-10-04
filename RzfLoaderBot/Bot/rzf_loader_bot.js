@@ -6296,7 +6296,7 @@ setInterval(async () => {
 	  console.error(`[watchdog] pending_LoaderBot=${getMeStatus.pending} — exit`);
 	  process.emit('Watchdog');
   }
-}, 3 * 60 * 1000);
+}, 2 * 60 * 1000);
 
 async function getMeWithTimeout(bot, ms = 5000) {
   let timer;
