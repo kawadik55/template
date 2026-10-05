@@ -4294,6 +4294,7 @@ async function WriteLogFile(arr, flag)
 		await fs.appendFileSync(LogFile, str);
 		if(!!logBot && !!flag) 
 		{str='From @'+namebot+' '+area+'\n'+str;
+		 if(str.length > 4000) str = str.substring(0, 4000);
 		 while(queue.getQueueStats().queueLength >= QUEUELIMIT) await sleep(50);//ограничение очереди
 		 await queue.addToQueue({type:'sendMessage', chatId:chat_Supervisor, data:str, bot:logBot});
 		 //await logBot.sendMessage(chat_Supervisor, str);
@@ -6107,9 +6108,9 @@ if(queueBotMax)
 	});
 	queueBotMax.on('connected', () => {WriteLogFile('=> queueBotMax connected');});
 	queueBotMax.on('disconnected', (error) => {WriteLogFile((error.message||error)+'; => queueBotMax disconnected');});
-	queueBotMax.on('error_response', (error) => //тут строка
+	queueBotMax.on('error_response', (error, toBot) => //тут строка
 	{	if (error && error.includes('Can\'t deserialize body')) return;
-		WriteLogFile('error_response from queueBotMax => '+(error.message||error));
+		WriteLogFile('error_response from queueBotMax => '+(error.message||error), toBot || null);
 	});
 	//queueBotMax.on('queued', (item) => {WriteLogFile(`Сообщение добавлено в очередь Max: ${item.id}`);});
 }

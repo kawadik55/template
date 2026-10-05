@@ -308,8 +308,11 @@ class BotMaxQueue extends EventEmitter {
 			{				
 				str += ' '+error.cause?.code+' '+ error.cause?.message+' '+ error.cause?.address;
 				str += ' | stack: ' + (error.stack || '').split('\n').slice(0,3).join(' <- ');
+				str += ' | queueItem: ' + JSON.stringify(queueItem);
 			}
-			this.emit('error_response', str);//отдаем строку в эмит
+			let toBot = null;
+			if(queueItem.networkAttempts && queueItem.networkAttempts===3) toBot = 'вчат';
+			this.emit('error_response', str, toBot);//отдаем строку в эмит
 			if (isRateLimit && attempts < maxAttempts)
 			{
                 const retryAfter = 5;
