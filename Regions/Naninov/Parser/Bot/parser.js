@@ -5,7 +5,7 @@ const moment = require('moment');
 const needle = require('needle');
 const jsdom = require("jsdom"); // Подключение модуля jsdom для работы с DOM-деревом (1)
 const { JSDOM } = jsdom; // Подключение модуля jsdom для работы с DOM-деревом (2)
-const {htmlToText} = require('html-to-text');//преобразователь html в текст.
+const {htmlToText} = require('html-to-text');//преобразователь html в текст
 
 const currentDir = (process.env.CURRENT_DIR) ? process.env.CURRENT_DIR : __dirname;
 const RassilkaDir = currentDir+"/../Rassilka";
