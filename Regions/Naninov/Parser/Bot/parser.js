@@ -197,7 +197,14 @@ async function parser_raspis()
 	 for(let n=0;n<mas.length;n++)//по кол-ву групп 
 	 {temp = mas[n].getElementsByClassName("left");//7 дней недели
 	  daystime[n]=[];
-	  for(let j=0;j<temp.length;j++) daystime[n][j] = temp[j].innerHTML;
+	  //for(let j=0;j<temp.length;j++) daystime[n][j] = temp[j].innerHTML;
+	  for(let j=0;j<temp.length;j++)
+	  {	let t = temp[j].innerHTML;
+		t = t.replace(/<br\s*\/?>/gi, ' ');
+		t = t.replace(/<[^>]+>/g, '');
+		t = t.replace(/\s+/g, ' ').trim();
+		daystime[n][j] = t;
+	  }
 	 }
 	 //соберем все в один недельный массив день=имя=время,адрес
 	 for(let d=0;d<masDay.length-1;d++)//по дням недели из массива
@@ -252,8 +259,9 @@ async function get_adres(name)
 				let temp = dom.window.document.getElementsByClassName('field field-name-field-adres field-type-text field-label-above');
 				temp = temp[0].getElementsByClassName('field-item even');
 				let str = temp[0].innerHTML;
-				str = str.replace(/<p>/g, '');//удаляем теги подчеркивания
-				str = str.replace(/<\/p>/g, '');
+				str = str.replace(/<br\s*\/?>/gi, ' ');//br -> пробел
+				str = str.replace(/<[^>]+>/g, '');//вырезаем все теги
+				str = str.replace(/\s+/g, ' ').trim();//убираем лишние пробелы
 				//console.log(temp[0].innerHTML);
 				resolve (str);
 			}
