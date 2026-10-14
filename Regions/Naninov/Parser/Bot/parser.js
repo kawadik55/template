@@ -259,9 +259,9 @@ async function get_adres(name)
 				let temp = dom.window.document.getElementsByClassName('field field-name-field-adres field-type-text field-label-above');
 				temp = temp[0].getElementsByClassName('field-item even');
 				let str = temp[0].innerHTML;
-				str = str.replace(/<br\s*\/?>/gi, ' ');//br -> пробел
-				str = str.replace(/<[^>]+>/g, '');//вырезаем все теги
-				str = str.replace(/\s+/g, ' ').trim();//убираем лишние пробелы
+				str = str.replace(/<p>/g, '');//удаляем теги подчеркивания
+				str = str.replace(/<\/p>/g, '');
+				str = str.replace(/<br\s*\/?>/gi, ' ')//удаляем переводы строки
 				//console.log(temp[0].innerHTML);
 				resolve (str);
 			}
