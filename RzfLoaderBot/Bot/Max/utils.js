@@ -28,12 +28,14 @@ const ENTITY_TO_MARKDOWN = [
     { type: 'strikethrough', fn: (f) => `~~${f}~~` },
     // Подчеркнутый
     { type: 'underline', fn: (f) => `++${f}++` },
-    // Ссылка
+    // Ссылка с текстом
     { type: 'text_link', fn: (f, url) => `[${f}](${url})` },
     // Моноширинный
     { type: 'code', fn: (f) => `\`${f}\`` },
     // Блок кода
     { type: 'pre', fn: (f) => `\`\`\`\n${f}\n\`\`\`` },
+	// Ссылка без текста
+	{ type: 'url', fn: (f) => f },
 ];
 
 //====================================================================
@@ -399,7 +401,11 @@ function EntitiesToMarkdown(text, entities, napr = 'web')
         
         // Находим правило для типа сущности
         const rule = ENTITY_TO_MARKDOWN.find(r => r.type === entity.type);
-        if (!rule) continue;
+        if (!rule) {
+			result += fragment;  // добавляем фрагмент как есть
+			lastPos = to;        // обновляем lastPos
+			continue;
+		}
         
         let replacement;
         if (rule.fn) {
