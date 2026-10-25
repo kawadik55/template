@@ -5191,6 +5191,12 @@ async function send_Raspis_ES_max(time)
 				await addToQueueMax('sendText', chatId, name, data, napr);
 				await WriteLogFile('город <'+name+'> = '+town);
 				count_chats++;
+				//отменяем Расписание, если города нет
+				if(town.includes('не выбран ('))
+				{	chat[i].Raspis = false;
+					if(napr === 'web') WriteFileJson(currentDir+"/chatId_max.json", chat_news_maxweb);
+					else if(napr === 'bot') WriteFileJson(currentDir+"/chatId_maxbot.json", chat_news_maxbot);
+				}
 			}
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis_ES_max()=>for()','вчат');}
@@ -5280,6 +5286,11 @@ async function send_Raspis_ES(time)
 			else 
 			{	await WriteLogFile('город <'+name[0]+'> = '+town);
 				count_chats++;
+				//отменяем Расписание, если города нет
+				if(town.includes('не выбран ('))
+				{	chat[i].Raspis = false;
+					WriteFileJson(currentDir+"/chatId.json",chat_news);
+				}
 			}
 
 		  }catch(err){WriteLogFile(err+'\nfrom send_Raspis_ES()=>for()','вчат');}
